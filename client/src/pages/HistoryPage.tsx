@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter } from "lucide-react";
+import { Search, Filter, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
 export default function HistoryPage() {
@@ -19,56 +19,52 @@ export default function HistoryPage() {
   const [filterStatus, setFilterStatus] = useState("all");
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [books, setBooks] = useState<BookDetails[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // todo: remove mock functionality
-  const mockBooks: BookDetails[] = [
-    {
-      id: "1",
-      isbn: "9780545010221",
-      title: "Harry Potter and the Deathly Hallows",
-      author: "J.K. Rowling",
-      amazonPrice: 24.99,
-      ebayPrice: 22.50,
-      yourCost: 8.00,
-      profit: 16.99,
-      status: "profitable",
-    },
-    {
-      id: "2",
-      isbn: "9780316769488",
-      title: "The Catcher in the Rye",
-      author: "J.D. Salinger",
-      amazonPrice: 12.00,
-      ebayPrice: 11.50,
-      yourCost: 11.00,
-      profit: 1.00,
-      status: "break-even",
-    },
-    {
-      id: "3",
-      isbn: "9780060935467",
-      title: "To Kill a Mockingbird",
-      author: "Harper Lee",
-      amazonPrice: 8.00,
-      ebayPrice: 7.50,
-      yourCost: 12.00,
-      profit: -4.00,
-      status: "loss",
-    },
-    {
-      id: "4",
-      isbn: "9780061120084",
-      title: "1984",
-      author: "George Orwell",
-      status: "pending",
-      isPending: true,
-    },
-  ];
+  // Load books from database on mount
+  useEffect(() => {
+    loadBooks();
+  }, []);
 
-  const filteredBooks = mockBooks.filter((book) => {
+  const loadBooks = async () => {
+    setIsLoading(true);
+    try {
+      const response = await fetch("/api/books");
+      if (response.ok) {
+        const booksData = await response.json();
+        // Convert to BookDetails format
+        const formattedBooks: BookDetails[] = booksData.map((book: any) => ({
+          id: book.id,
+          isbn: book.isbn,
+          title: book.title,
+          author: book.author,
+          thumbnail: book.thumbnail,
+          amazonPrice: book.amazonPrice ? parseFloat(book.amazonPrice) : undefined,
+          ebayPrice: book.ebayPrice ? parseFloat(book.ebayPrice) : undefined,
+          yourCost: book.yourCost ? parseFloat(book.yourCost) : undefined,
+          profit: book.profit ? parseFloat(book.profit) : undefined,
+          status: book.status as any,
+          isPending: book.status === "pending",
+        }));
+        setBooks(formattedBooks);
+      }
+    } catch (error) {
+      console.error("Failed to load books:", error);
+      toast({
+        title: "Failed to load history",
+        description: "Could not retrieve your scanned books",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const filteredBooks = books.filter((book) => {
     const matchesSearch =
       book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (book.author && book.author.toLowerCase().includes(searchQuery.toLowerCase())) ||
       book.isbn.includes(searchQuery);
 
     const matchesFilter =
@@ -96,6 +92,14 @@ export default function HistoryPage() {
     });
     setDetailsOpen(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pb-20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20">

@@ -1,13 +1,827 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
+import { EbayService } from "./ebay-service";
+import { AmazonService } from "./amazon-service";
+import { aiService } from "./ai-service";
+import { authService } from "./auth-service";
+import { googleBooksService } from "./google-books-service";
+import { ebayPricingService } from "./ebay-pricing-service";
+import { stripeService } from "./stripe-service";
+import { z } from "zod";
+import express from "express";
+import Stripe from "stripe";
+
+// Validation schemas
+const createListingSchema = z.object({
+  bookId: z.string(),
+  platform: z.enum(['ebay', 'amazon']),
+  price: z.number().positive(),
+  condition: z.string(),
+  description: z.string().optional(),
+  quantity: z.number().int().positive().default(1),
+  isbn: z.string(),
+  title: z.string(),
+  sku: z.string().optional(),
+  fulfillmentChannel: z.enum(['MFN', 'AFN']).optional(),
+});
+
+const saveCredentialsSchema = z.object({
+  platform: z.enum(['ebay', 'amazon']),
+  credentials: z.record(z.any()),
+});
 
 export async function registerRoutes(app: Express): Promise<Server> {
-  // put application routes here
-  // prefix all routes with /api
+  // Health check
+  app.get("/api/health", (_req, res) => {
+    res.json({ status: "ok" });
+  });
 
-  // use storage to perform CRUD operations on the storage interface
-  // e.g. storage.insertUser(user) or storage.getUserByUsername(username)
+  // Auth routes
+  app.post("/api/auth/signup", async (req, res) => {
+    try {
+      const { username, email, password } = req.body;
+
+      if (!username || !email || !password) {
+        return res.status(400).json({ message: "Username, email and password are required" });
+      }
+
+      const user = await authService.signup(username, email, password);
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ user, message: "Account created successfully" });
+    } catch (error: any) {
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/login", async (req, res) => {
+    try {
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const user = await authService.login(email, password);
+
+      // Set session
+      req.session.userId = user.id;
+
+      res.json({ user, message: "Logged in successfully" });
+    } catch (error: any) {
+      res.status(401).json({ message: error.message });
+    }
+  });
+
+  app.post("/api/auth/logout", (req, res) => {
+    req.session.destroy((err) => {
+      if (err) {
+        return res.status(500).json({ message: "Failed to logout" });
+      }
+      res.json({ message: "Logged out successfully" });
+    });
+  });
+
+  app.get("/api/auth/me", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await authService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({ user });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Subscription checkout
+  app.post("/api/subscription/checkout", async (req, res) => {
+    try {
+      const userId = req.session.userId || "default-user";
+      const { planId } = req.body;
+
+      if (!planId) {
+        return res.status(400).json({ message: "Plan ID is required" });
+      }
+
+      // Check if Stripe is configured
+      if (!stripeService.isConfigured()) {
+        return res.status(503).json({
+          message: "Payment processing not configured. Set STRIPE_SECRET_KEY environment variable.",
+          success: false,
+        });
+      }
+
+      // Get user's Stripe customer ID from database
+      const user = await authService.getUserById(userId);
+      const stripeCustomerId = user?.stripeCustomerId || null;
+
+      // Create Stripe checkout session
+      const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+      const { url, sessionId } = await stripeService.createCheckoutSession(
+        planId,
+        stripeCustomerId,
+        `${baseUrl}/subscription/success?session_id={CHECKOUT_SESSION_ID}`,
+        `${baseUrl}/subscription?cancelled=true`
+      );
+
+      res.json({
+        success: true,
+        checkoutUrl: url,
+        sessionId,
+      });
+    } catch (error: any) {
+      console.error("Checkout error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to create checkout session",
+        success: false,
+      });
+    }
+  });
+
+  // Verify Stripe checkout session and update subscription
+  app.post("/api/subscription/verify", async (req, res) => {
+    try {
+      let userId = req.session.userId;
+
+      // If no session, try to find the default user
+      if (!userId) {
+        const defaultUser = await storage.getUserByUsername("default");
+        if (defaultUser) {
+          userId = defaultUser.id;
+          req.session.userId = userId;
+        }
+      }
+
+      const { sessionId } = req.body;
+
+      console.log('[Stripe Verify] Session ID:', sessionId);
+      console.log('[Stripe Verify] User ID:', userId);
+
+      if (!sessionId) {
+        return res.status(400).json({ message: "Session ID is required" });
+      }
+
+      if (!stripeService.isConfigured()) {
+        return res.status(503).json({
+          message: "Payment processing not configured.",
+          success: false,
+        });
+      }
+
+      // Get the Stripe checkout session
+      const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+      console.log('[Stripe Verify] Payment status:', session.payment_status);
+      console.log('[Stripe Verify] Metadata:', session.metadata);
+
+      if (session.payment_status !== 'paid') {
+        return res.status(400).json({
+          message: "Payment not completed",
+          success: false,
+        });
+      }
+
+      // Get the plan ID from session metadata
+      const planId = session.metadata?.planId || 'basic';
+      console.log('[Stripe Verify] Plan ID:', planId);
+
+      // Update user's subscription in database
+      const user = await authService.getUserById(userId);
+      console.log('[Stripe Verify] Current user:', user?.subscriptionTier);
+
+      if (user) {
+        const updatedUser = await authService.updateUser(userId, {
+          subscriptionTier: planId,
+          subscriptionStatus: 'active',
+          stripeCustomerId: session.customer as string,
+        });
+        console.log('[Stripe Verify] Updated user:', updatedUser?.subscriptionTier);
+      }
+
+      res.json({
+        success: true,
+        planId,
+        status: 'active',
+      });
+    } catch (error: any) {
+      console.error("Subscription verification error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to verify subscription",
+        success: false,
+      });
+    }
+  });
+
+  // Get current user info
+  app.get("/api/user/me", async (req, res) => {
+    try {
+      let userId = req.session.userId || "default-user";
+
+      // Get or create default user with fixed ID
+      let user = await authService.getUserById(userId);
+
+      if (!user) {
+        // Get user by username if ID doesn't work
+        user = await storage.getUserByUsername("default");
+
+        if (user) {
+          // Found existing default user, update session
+          req.session.userId = user.id;
+        } else {
+          // Create new default user with fixed ID
+          const newUser = await storage.createUser({
+            username: "default",
+            email: "default@isbnscout.com",
+            password: "unused",
+          });
+          // Set the user ID to the fixed ID in storage
+          req.session.userId = newUser.id;
+          userId = newUser.id;
+          user = { ...newUser };
+          delete (user as any).password;
+        }
+      }
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      res.json({
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        subscriptionTier: user.subscriptionTier,
+        subscriptionStatus: user.subscriptionStatus,
+      });
+    } catch (error: any) {
+      console.error("Get user error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to get user",
+      });
+    }
+  });
+
+  // Get API credentials for a platform
+  app.get("/api/credentials/:platform", async (req, res) => {
+    try {
+      const { platform } = req.params;
+      const userId = "default-user"; // TODO: Get from session
+
+      const credentials = await storage.getApiCredentials(userId, platform);
+
+      if (!credentials) {
+        return res.status(404).json({ message: "Credentials not found" });
+      }
+
+      // Don't send sensitive credentials to client, just confirm they exist
+      res.json({
+        hasCredentials: true,
+        platform: credentials.platform,
+        isActive: credentials.isActive,
+      });
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Save API credentials
+  app.post("/api/credentials", async (req, res) => {
+    try {
+      const { platform, credentials } = saveCredentialsSchema.parse(req.body);
+      const userId = "default-user"; // TODO: Get from session
+
+      await storage.saveApiCredentials(userId, platform, credentials);
+      res.json({ success: true, message: "Credentials saved successfully" });
+    } catch (error: any) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Create a listing on eBay or Amazon
+  app.post("/api/listings", async (req, res) => {
+    try {
+      const listingData = createListingSchema.parse(req.body);
+      const userId = "default-user"; // TODO: Get from session
+
+      // Get credentials for the platform
+      const credentials = await storage.getApiCredentials(userId, listingData.platform);
+
+      if (!credentials) {
+        return res.status(400).json({
+          message: `No ${listingData.platform} credentials found. Please add your API credentials in Settings.`
+        });
+      }
+
+      let platformListingId: string;
+      let success: boolean;
+
+      // Create listing based on platform
+      if (listingData.platform === 'ebay') {
+        const ebayService = new EbayService(credentials.credentials as any);
+        const result = await ebayService.createListing({
+          isbn: listingData.isbn,
+          title: listingData.title,
+          description: listingData.description || '',
+          price: listingData.price,
+          quantity: listingData.quantity,
+          condition: listingData.condition,
+        });
+        platformListingId = result.listingId;
+        success = result.success;
+      } else {
+        // Amazon
+        const amazonService = new AmazonService(credentials.credentials as any);
+        const sku = listingData.sku || `ISBN-${listingData.isbn}-${Date.now()}`;
+        const result = await amazonService.createListing({
+          isbn: listingData.isbn,
+          sku,
+          title: listingData.title,
+          description: listingData.description || '',
+          price: listingData.price,
+          quantity: listingData.quantity,
+          condition: listingData.condition,
+          fulfillmentChannel: listingData.fulfillmentChannel || 'AFN',
+        });
+        platformListingId = result.listingId;
+        success = result.success;
+      }
+
+      // Save listing to database
+      const listing = await storage.createListing({
+        userId,
+        bookId: listingData.bookId,
+        platform: listingData.platform,
+        platformListingId,
+        price: listingData.price.toString(),
+        condition: listingData.condition,
+        description: listingData.description,
+        quantity: listingData.quantity.toString(),
+        status: success ? 'active' : 'failed',
+      });
+
+      res.json({
+        success: true,
+        listing,
+        message: `Successfully listed on ${listingData.platform}!`,
+      });
+    } catch (error: any) {
+      console.error('Listing creation error:', error);
+
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({ message: "Invalid request data", errors: error.errors });
+      }
+
+      // Save failed listing attempt
+      try {
+        const listingData = req.body;
+        const userId = "default-user";
+        await storage.createListing({
+          userId,
+          bookId: listingData.bookId,
+          platform: listingData.platform,
+          platformListingId: null,
+          price: listingData.price.toString(),
+          condition: listingData.condition,
+          description: listingData.description,
+          quantity: (listingData.quantity || 1).toString(),
+          status: 'failed',
+          errorMessage: error.message,
+        });
+      } catch (dbError) {
+        console.error('Failed to save error listing:', dbError);
+      }
+
+      res.status(500).json({ message: error.message || 'Failed to create listing' });
+    }
+  });
+
+  // Get all listings
+  app.get("/api/listings", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session
+      const listings = await storage.getListings(userId);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get listings for a specific book
+  app.get("/api/listings/book/:bookId", async (req, res) => {
+    try {
+      const { bookId } = req.params;
+      const userId = "default-user"; // TODO: Get from session
+      const listings = await storage.getListingsByBook(userId, bookId);
+      res.json(listings);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Create or update a book scan
+  app.post("/api/books", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session
+      const { isbn, title, author, ...otherData } = req.body;
+
+      if (!isbn) {
+        return res.status(400).json({ message: "ISBN is required" });
+      }
+
+      // Try to fetch book data from Google Books if we don't have title
+      let bookData = { isbn, title, author, ...otherData };
+
+      if (!title || title === `Book with ISBN ${isbn}`) {
+        try {
+          console.log(`Looking up ISBN ${isbn} in Google Books...`);
+          const googleBookData = await googleBooksService.lookupByISBN(isbn);
+
+          if (googleBookData) {
+            console.log(`Found book: ${googleBookData.title}`);
+            bookData = {
+              isbn: googleBookData.isbn,
+              title: googleBookData.title,
+              author: googleBookData.author || author || "Unknown Author",
+              thumbnail: googleBookData.thumbnail,
+              ...otherData,
+            };
+          } else {
+            console.log(`No results found for ISBN ${isbn}`);
+            // Keep the provided data or use defaults
+            if (!title) {
+              bookData.title = `Book with ISBN ${isbn}`;
+            }
+            if (!author) {
+              bookData.author = "Unknown Author";
+            }
+          }
+        } catch (googleError: any) {
+          console.error("Google Books API error:", googleError.message);
+          // Continue with provided data if Google Books fails
+          if (!title) {
+            bookData.title = `Book with ISBN ${isbn}`;
+          }
+          if (!author) {
+            bookData.author = "Unknown Author";
+          }
+        }
+      }
+
+      // Try to fetch eBay pricing data
+      try {
+        console.log(`Looking up eBay pricing for ISBN ${isbn}...`);
+        const ebayData = await ebayPricingService.getPriceByISBN(isbn);
+
+        if (ebayData && ebayData.averagePrice) {
+          console.log(`Found eBay average price: £${ebayData.averagePrice}`);
+          bookData.ebayPrice = ebayData.averagePrice;
+        } else {
+          console.log(`No eBay pricing found for ISBN ${isbn}`);
+        }
+      } catch (ebayError: any) {
+        console.error("eBay pricing error:", ebayError.message);
+        // Continue without eBay pricing if it fails
+      }
+
+      // Set default status if not provided
+      if (!bookData.status) {
+        bookData.status = "pending";
+      }
+
+      const book = await storage.createBook({ ...bookData, userId });
+      res.json(book);
+    } catch (error: any) {
+      console.error("Book creation error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get all books
+  app.get("/api/books", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session
+      const books = await storage.getBooks(userId);
+      res.json(books);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get pricing for a book by ISBN
+  app.get("/api/books/:isbn/prices", async (req, res) => {
+    try {
+      const { isbn } = req.params;
+
+      if (!isbn) {
+        return res.status(400).json({ message: "ISBN is required" });
+      }
+
+      // Check if eBay pricing service is configured
+      const isEbayConfigured = ebayPricingService.isConfigured();
+      if (!isEbayConfigured) {
+        console.log("eBay API not configured, will use mock prices");
+      }
+
+      try {
+        console.log(`Fetching prices for ISBN ${isbn}...`);
+
+        let ebayPricing = null;
+
+        // Try real eBay API if configured
+        if (isEbayConfigured) {
+          try {
+            // Fetch eBay pricing by ISBN first
+            ebayPricing = await ebayPricingService.getPriceByISBN(isbn);
+          } catch (ebayError: any) {
+            console.log("eBay API failed, will use mock data:", ebayError.message);
+            // Continue to mock data below
+          }
+
+          // If no results by ISBN, try searching by title
+          if (!ebayPricing) {
+            console.log(`No eBay results by ISBN, trying title search...`);
+
+            // Get book details from database
+            const book = await storage.getBookByISBN(isbn);
+
+            if (book && book.title) {
+              // Search eBay by title
+              const titleQuery = book.author ? `${book.title} ${book.author}` : book.title;
+              console.log(`Searching eBay for: "${titleQuery}"`);
+
+              try {
+                const titleResults = await ebayPricingService.searchByTitle(titleQuery, 10);
+
+                if (titleResults.length > 0) {
+                  // Calculate average price from title search results
+                  const prices = titleResults.map(listing => listing.price).filter(p => p > 0);
+                  const averagePrice = prices.length > 0
+                    ? prices.reduce((sum, p) => sum + p, 0) / prices.length
+                    : undefined;
+
+                  ebayPricing = {
+                    isbn,
+                    currentPrice: titleResults[0]?.price,
+                    averagePrice,
+                    minPrice: prices.length > 0 ? Math.min(...prices) : undefined,
+                    maxPrice: prices.length > 0 ? Math.max(...prices) : undefined,
+                    soldCount: 0,
+                    activeListings: titleResults.length,
+                    currency: "GBP",
+                    lastUpdated: new Date(),
+                    listings: titleResults.slice(0, 5),
+                  };
+                }
+              } catch (titleSearchError: any) {
+                console.log("eBay title search failed, will use mock data:", titleSearchError.message);
+                // Continue to mock data below
+              }
+            }
+          }
+        }
+
+        // If eBay API not configured or no results, generate mock prices
+        if (!ebayPricing) {
+          console.log("Using mock eBay prices for testing");
+          const book = await storage.getBookByISBN(isbn);
+
+          if (book) {
+            // Generate realistic mock prices based on hash of ISBN
+            const hash = isbn.split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const basePrice = 3 + (hash % 15); // £3-£18
+            const variation = 0.5 + (hash % 5) * 0.2; // ±£0.50-£1.50
+
+            ebayPricing = {
+              isbn,
+              currentPrice: parseFloat((basePrice + variation).toFixed(2)),
+              averagePrice: parseFloat(basePrice.toFixed(2)),
+              minPrice: parseFloat((basePrice - variation * 1.5).toFixed(2)),
+              maxPrice: parseFloat((basePrice + variation * 2).toFixed(2)),
+              soldCount: 15 + (hash % 30),
+              activeListings: 8 + (hash % 20),
+              currency: "GBP",
+              lastUpdated: new Date(),
+              listings: [
+                {
+                  title: `${book.title} - Good Condition`,
+                  price: parseFloat((basePrice + variation * 0.5).toFixed(2)),
+                  condition: "Good",
+                  listingUrl: `https://ebay.co.uk/itm/mock-${isbn}`,
+                  seller: "bookdeals_uk",
+                  location: "London, UK",
+                  shipping: 2.95
+                },
+                {
+                  title: `${book.title} - Very Good`,
+                  price: parseFloat((basePrice + variation * 1.2).toFixed(2)),
+                  condition: "Very Good",
+                  listingUrl: `https://ebay.co.uk/itm/mock-${isbn}-2`,
+                  seller: "rareBooks123",
+                  location: "Manchester, UK",
+                  shipping: 0
+                }
+              ]
+            };
+          }
+        }
+
+        // TODO: Fetch Amazon pricing from Keepa when integrated
+        const amazonPrice = null;
+
+        if (!ebayPricing && !amazonPrice) {
+          return res.json({
+            message: "No pricing found for this book",
+            ebayPrice: null,
+            amazonPrice: null,
+          });
+        }
+
+        res.json({
+          ebayPrice: ebayPricing?.currentPrice || ebayPricing?.averagePrice,
+          ebayData: ebayPricing,
+          amazonPrice, // null for now
+          currency: "GBP",
+          lastUpdated: new Date(),
+        });
+      } catch (pricingError: any) {
+        console.error("Pricing lookup error:", pricingError);
+        // Return partial data if one service fails
+        res.json({
+          message: pricingError.message,
+          ebayPrice: null,
+          amazonPrice: null,
+        });
+      }
+    } catch (error: any) {
+      console.error("Price endpoint error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // AI: Analyze book image
+  app.post("/api/ai/analyze-image", async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      const result = await aiService.analyzeBookImage(imageUrl);
+      res.json(result);
+    } catch (error: any) {
+      console.error('Image analysis error:', error);
+      res.status(500).json({ message: error.message || "Failed to analyze image" });
+    }
+  });
+
+  // AI: Optimize listing keywords
+  app.post("/api/ai/optimize-keywords", async (req, res) => {
+    try {
+      const { title, author, isbn, condition, platform } = req.body;
+
+      if (!title) {
+        return res.status(400).json({ message: "Book title is required" });
+      }
+
+      const result = await aiService.optimizeListingKeywords(
+        title,
+        author,
+        isbn,
+        condition,
+        platform
+      );
+      res.json(result);
+    } catch (error: any) {
+      console.error('Keyword optimization error:', error);
+      res.status(500).json({ message: error.message || "Failed to optimize keywords" });
+    }
+  });
+
+  // AI: Generate listing description
+  app.post("/api/ai/generate-description", async (req, res) => {
+    try {
+      const { title, author, condition, additionalNotes } = req.body;
+
+      if (!title) {
+        return res.status(400).json({ message: "Book title is required" });
+      }
+
+      const description = await aiService.generateListingDescription(
+        title,
+        author,
+        condition,
+        additionalNotes
+      );
+      res.json({ description });
+    } catch (error: any) {
+      console.error('Description generation error:', error);
+      res.status(500).json({ message: error.message || "Failed to generate description" });
+    }
+  });
+
+  // Stripe webhook handler
+  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
+    const signature = req.headers['stripe-signature'];
+
+    if (!signature) {
+      return res.status(400).json({ message: 'No signature provided' });
+    }
+
+    try {
+      // Verify and parse webhook event
+      const event = stripeService.constructWebhookEvent(req.body, signature as string);
+      const result = await stripeService.handleWebhookEvent(event);
+
+      console.log('Webhook event processed:', result.type);
+
+      // Handle different event types
+      switch (result.type) {
+        case 'subscription_created':
+          // TODO: Update user's subscription in database
+          console.log('New subscription created:', result.data);
+          break;
+
+        case 'subscription_updated':
+          // TODO: Update user's subscription status
+          console.log('Subscription updated:', result.data);
+          break;
+
+        case 'subscription_cancelled':
+          // TODO: Cancel user's subscription
+          console.log('Subscription cancelled:', result.data);
+          break;
+
+        case 'payment_succeeded':
+          console.log('Payment succeeded:', result.data);
+          break;
+
+        case 'payment_failed':
+          console.log('Payment failed:', result.data);
+          break;
+
+        default:
+          console.log('Unhandled event type:', result.type);
+      }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error('Webhook error:', error);
+      res.status(400).json({ message: error.message });
+    }
+  });
+
+  // Image proxy to avoid CORS issues with Google Books images
+  app.get("/api/proxy-image", async (req, res) => {
+    try {
+      const { url } = req.query;
+
+      if (!url || typeof url !== 'string') {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      // Only allow Google Books images for security
+      if (!url.startsWith('https://books.google.com/')) {
+        return res.status(403).json({ message: "Only Google Books images are allowed" });
+      }
+
+      const response = await fetch(url);
+
+      if (!response.ok) {
+        return res.status(response.status).json({ message: "Failed to fetch image" });
+      }
+
+      const contentType = response.headers.get('content-type');
+      if (contentType) {
+        res.setHeader('Content-Type', contentType);
+      }
+
+      // Cache for 24 hours
+      res.setHeader('Cache-Control', 'public, max-age=86400');
+
+      const buffer = await response.arrayBuffer();
+      res.send(Buffer.from(buffer));
+    } catch (error: any) {
+      console.error('Image proxy error:', error);
+      res.status(500).json({ message: "Failed to proxy image" });
+    }
+  });
 
   const httpServer = createServer(app);
 

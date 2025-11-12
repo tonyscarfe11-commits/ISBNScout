@@ -1,51 +1,50 @@
-import { useState } from "react";
-import { ListingForm, type ListingFormData } from "@/components/ListingForm";
+import { useState, useEffect } from "react";
+import { ListingForm } from "@/components/ListingForm";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Package, ExternalLink } from "lucide-react";
+import { Package, ExternalLink, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-interface MockListing {
+interface Listing {
   id: string;
-  bookTitle: string;
-  isbn: string;
+  bookId: string;
   platform: "amazon" | "ebay";
-  price: number;
-  status: "active" | "sold" | "draft";
+  price: string;
+  condition: string;
+  status: string;
+  platformListingId?: string | null;
+  errorMessage?: string | null;
+  listedAt: string;
 }
 
 export default function ListingsPage() {
   const { toast } = useToast();
   const [showNewListing, setShowNewListing] = useState(false);
+  const [listings, setListings] = useState<Listing[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // todo: remove mock functionality
-  const mockListings: MockListing[] = [
-    {
-      id: "1",
-      bookTitle: "Harry Potter and the Deathly Hallows",
-      isbn: "9780545010221",
-      platform: "amazon",
-      price: 24.99,
-      status: "active",
-    },
-    {
-      id: "2",
-      bookTitle: "The Catcher in the Rye",
-      isbn: "9780316769488",
-      platform: "ebay",
-      price: 12.00,
-      status: "sold",
-    },
-  ];
+  const fetchListings = async () => {
+    try {
+      const response = await fetch("/api/listings");
+      if (response.ok) {
+        const data = await response.json();
+        setListings(data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch listings:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  const handleCreateListing = (data: ListingFormData) => {
-    console.log("Creating listing:", data);
-    toast({
-      title: "Listing created!",
-      description: `Your book has been listed on ${data.platform}`,
-    });
+  useEffect(() => {
+    fetchListings();
+  }, []);
+
+  const handleListingSuccess = () => {
     setShowNewListing(false);
+    fetchListings();
   };
 
   const getStatusBadge = (status: string) => {
@@ -54,12 +53,26 @@ export default function ListingsPage() {
         return <Badge variant="default">Active</Badge>;
       case "sold":
         return <Badge variant="secondary">Sold</Badge>;
+      case "pending":
+        return <Badge variant="outline">Pending</Badge>;
+      case "failed":
+        return <Badge variant="destructive">Failed</Badge>;
       case "draft":
         return <Badge variant="outline">Draft</Badge>;
+      case "cancelled":
+        return <Badge variant="secondary">Cancelled</Badge>;
       default:
         return null;
     }
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen pb-20 flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen pb-20">
@@ -68,7 +81,7 @@ export default function ListingsPage() {
           <div>
             <h1 className="text-2xl font-bold mb-1">My Listings</h1>
             <p className="text-sm text-muted-foreground">
-              {mockListings.length} active listing{mockListings.length !== 1 ? "s" : ""}
+              {listings.length} listing{listings.length !== 1 ? "s" : ""}
             </p>
           </div>
           <Button
@@ -81,25 +94,34 @@ export default function ListingsPage() {
 
         {showNewListing && (
           <ListingForm
+            bookId="demo-book-id"
             bookTitle="Harry Potter and the Deathly Hallows"
+            author="J.K. Rowling"
             isbn="9780545010221"
             suggestedPrice={24.99}
-            onSubmit={handleCreateListing}
+            onSuccess={handleListingSuccess}
           />
         )}
 
         <div className="space-y-4">
-          {mockListings.map((listing) => (
+          {listings.map((listing) => (
             <Card key={listing.id} className="p-4 hover-elevate" data-testid={`card-listing-${listing.id}`}>
               <div className="flex items-start justify-between gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-2">
-                    <h3 className="font-semibold truncate">{listing.bookTitle}</h3>
+                    <h3 className="font-semibold truncate">Listing #{listing.id.slice(0, 8)}</h3>
                     {getStatusBadge(listing.status)}
                   </div>
-                  <p className="text-xs font-mono text-muted-foreground mb-3">
-                    ISBN: {listing.isbn}
-                  </p>
+                  {listing.platformListingId && (
+                    <p className="text-xs font-mono text-muted-foreground mb-3">
+                      Platform ID: {listing.platformListingId}
+                    </p>
+                  )}
+                  {listing.errorMessage && (
+                    <p className="text-xs text-destructive mb-3">
+                      Error: {listing.errorMessage}
+                    </p>
+                  )}
                   <div className="flex items-center gap-4">
                     <div>
                       <div className="text-xs text-muted-foreground uppercase">Platform</div>
@@ -110,23 +132,32 @@ export default function ListingsPage() {
                     <div>
                       <div className="text-xs text-muted-foreground uppercase">Price</div>
                       <div className="text-sm font-semibold font-mono">
-                        ${listing.price.toFixed(2)}
+                        £{parseFloat(listing.price).toFixed(2)}
+                      </div>
+                    </div>
+                    <div>
+                      <div className="text-xs text-muted-foreground uppercase">Condition</div>
+                      <div className="text-sm font-medium capitalize">
+                        {listing.condition.replace("-", " ")}
                       </div>
                     </div>
                   </div>
                 </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  data-testid={`button-view-listing-${listing.id}`}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                </Button>
+                {listing.platformListingId && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    data-testid={`button-view-listing-${listing.id}`}
+                    title="View on platform"
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
             </Card>
           ))}
 
-          {mockListings.length === 0 && !showNewListing && (
+          {listings.length === 0 && !showNewListing && (
             <div className="text-center py-12">
               <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
               <p className="text-muted-foreground mb-4">No listings yet</p>

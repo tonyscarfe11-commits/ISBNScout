@@ -1,11 +1,12 @@
-import { Camera, Clock, Package, Settings } from "lucide-react";
+import { LayoutDashboard, Camera, Clock, Package, Settings } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 const navItems = [
-  { path: "/", icon: Camera, label: "Scan" },
-  { path: "/history", icon: Clock, label: "History" },
-  { path: "/listings", icon: Package, label: "Listings" },
-  { path: "/settings", icon: Settings, label: "Settings" },
+  { path: "/app", icon: LayoutDashboard, label: "Dashboard" },
+  { path: "/app/scan", icon: Camera, label: "Scan" },
+  { path: "/app/history", icon: Clock, label: "History" },
+  { path: "/app/listings", icon: Package, label: "Listings" },
+  { path: "/app/settings", icon: Settings, label: "Settings" },
 ];
 
 export function BottomNav() {
@@ -13,9 +14,9 @@ export function BottomNav() {
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border z-40">
-      <div className="flex items-center justify-around h-16 max-w-2xl mx-auto">
+      <div className="flex items-center justify-around h-16 max-w-full mx-auto">
         {navItems.map((item) => {
-          const isActive = location === item.path;
+          const isActive = location === item.path || (item.path === "/app" && location === "/app/dashboard");
           const Icon = item.icon;
           
           return (

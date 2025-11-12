@@ -1,0 +1,34 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm install:*)",
+      "Bash(npm run check:*)",
+      "Bash(pkill:*)",
+      "Bash(lsof:*)",
+      "Bash(xargs kill:*)",
+      "Bash(fuser:*)",
+      "Bash(npm run dev:*)",
+      "Bash(kill:*)",
+      "Bash(curl:*)",
+      "Bash(awk:*)",
+      "Bash(xargs:*)",
+      "Bash(chmod:*)",
+      "Bash(npm run dev:clean:*)",
+      "Bash(NODE_ENV=development tsx:*)",
+      "Bash(ss:*)",
+      "Bash(netstat:*)",
+      "Bash(python3:*)",
+      "Bash(psql:*)",
+      "Bash(killall:*)",
+      "Bash(test:*)",
+      "Bash(source .env)",
+      "Bash(echo:*)",
+      "Bash(cat:*)",
+      "Bash(npm run build:*)",
+      "Bash(env)",
+      "Bash(git add:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
