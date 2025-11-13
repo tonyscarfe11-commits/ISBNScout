@@ -8,9 +8,17 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { BookOpen, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { BookOpen, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { useState } from "react";
 import type { BookStatus } from "./BookCard";
+import { calculateProfit, calculateProfitAllPlatforms, type Platform, PLATFORM_FEES } from "@/lib/profitCalculator";
 
 export interface BookDetails {
   id: string;
@@ -41,8 +49,28 @@ export function BookDetailsModal({
   onList,
 }: BookDetailsModalProps) {
   const [yourCost, setYourCost] = useState(book?.yourCost?.toString() || "");
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>("amazon-fba");
+  const [showComparison, setShowComparison] = useState(false);
 
   if (!book) return null;
+
+  // Use eBay price if available, otherwise Amazon price
+  const salePrice = book.ebayPrice || book.amazonPrice || 0;
+  const costValue = parseFloat(yourCost) || 0;
+
+  // Calculate profit for selected platform
+  const profitCalc = salePrice && costValue
+    ? calculateProfit({
+        platform: selectedPlatform,
+        salePrice,
+        purchaseCost: costValue,
+      })
+    : null;
+
+  // Calculate for all platforms for comparison
+  const allPlatforms = salePrice && costValue
+    ? calculateProfitAllPlatforms(salePrice, costValue)
+    : null;
 
   const getStatusConfig = () => {
     switch (book.status) {
@@ -60,9 +88,8 @@ export function BookDetailsModal({
   const statusConfig = getStatusConfig();
   const StatusIcon = statusConfig.icon;
 
-  const calculatedProfit = book.amazonPrice && yourCost
-    ? book.amazonPrice - parseFloat(yourCost)
-    : book.profit;
+  const isProfitable = profitCalc ? profitCalc.netProfit > 0 : false;
+  const isGoodDeal = profitCalc ? profitCalc.roi >= 100 : false;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -123,7 +150,7 @@ export function BookDetailsModal({
                 Amazon Price
               </Label>
               <div className="text-2xl font-bold font-mono">
-                {book.amazonPrice ? `$${book.amazonPrice.toFixed(2)}` : "-"}
+                {book.amazonPrice ? `£${book.amazonPrice.toFixed(2)}` : "-"}
               </div>
             </div>
             <div className="space-y-2">
@@ -131,7 +158,7 @@ export function BookDetailsModal({
                 eBay Price
               </Label>
               <div className="text-2xl font-bold font-mono">
-                {book.ebayPrice ? `$${book.ebayPrice.toFixed(2)}` : "-"}
+                {book.ebayPrice ? `£${book.ebayPrice.toFixed(2)}` : "-"}
               </div>
             </div>
           </div>
@@ -149,14 +176,118 @@ export function BookDetailsModal({
             />
           </div>
 
-          {calculatedProfit !== undefined && (
-            <div className="p-4 bg-muted rounded-md">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-medium">Estimated Profit</span>
-                <div className={`flex items-center gap-2 text-2xl font-bold font-mono ${statusConfig.color}`}>
-                  <StatusIcon className="h-6 w-6" />
-                  ${calculatedProfit.toFixed(2)}
+          {profitCalc && (
+            <div className="space-y-4">
+              {/* Platform Selector */}
+              <div className="space-y-2">
+                <Label>Selling Platform</Label>
+                <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as Platform)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="amazon-fba">Amazon FBA</SelectItem>
+                    <SelectItem value="amazon-fbm">Amazon FBM</SelectItem>
+                    <SelectItem value="ebay">eBay</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {PLATFORM_FEES[selectedPlatform].description}
+                </p>
+              </div>
+
+              {/* Profit Summary */}
+              <div className={`p-4 rounded-lg border-2 ${
+                isGoodDeal
+                  ? 'bg-green-50 border-green-500 dark:bg-green-950'
+                  : isProfitable
+                  ? 'bg-yellow-50 border-yellow-500 dark:bg-yellow-950'
+                  : 'bg-red-50 border-red-500 dark:bg-red-950'
+              }`}>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium">Net Profit</span>
+                  <div className={`flex items-center gap-2 text-2xl font-bold font-mono ${
+                    isProfitable ? 'text-green-600' : 'text-red-600'
+                  }`}>
+                    {isProfitable ? <TrendingUp className="h-6 w-6" /> : <TrendingDown className="h-6 w-6" />}
+                    £{profitCalc.netProfit.toFixed(2)}
+                  </div>
                 </div>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <div>
+                    <span className="text-muted-foreground">Margin:</span>{" "}
+                    <span className="font-semibold">{profitCalc.profitMargin.toFixed(1)}%</span>
+                  </div>
+                  <div>
+                    <span className="text-muted-foreground">ROI:</span>{" "}
+                    <span className="font-semibold">{profitCalc.roi.toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Detailed Breakdown */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-sm">
+                  <button
+                    onClick={() => setShowComparison(!showComparison)}
+                    className="flex items-center gap-1 text-primary hover:underline"
+                  >
+                    <Info className="h-4 w-4" />
+                    {showComparison ? 'Hide' : 'Show'} breakdown & comparison
+                  </button>
+                </div>
+
+                {showComparison && (
+                  <div className="space-y-3 p-3 bg-muted rounded-lg text-sm">
+                    {/* Fee Breakdown */}
+                    <div>
+                      <p className="font-semibold mb-2">Fees:</p>
+                      <div className="space-y-1 ml-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Commission ({(PLATFORM_FEES[selectedPlatform].commission * 100).toFixed(1)}%):</span>
+                          <span className="text-red-600">-£{profitCalc.commissionFee.toFixed(2)}</span>
+                        </div>
+                        {profitCalc.fulfillmentFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Fulfillment:</span>
+                            <span className="text-red-600">-£{profitCalc.fulfillmentFee.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {profitCalc.storageFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Storage (avg):</span>
+                            <span className="text-red-600">-£{profitCalc.storageFee.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {profitCalc.closingFee > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Closing fee:</span>
+                            <span className="text-red-600">-£{profitCalc.closingFee.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Platform Comparison */}
+                    {allPlatforms && (
+                      <div>
+                        <p className="font-semibold mb-2">Platform Comparison:</p>
+                        <div className="space-y-1 ml-2">
+                          {Object.entries(allPlatforms).map(([platform, calc]) => (
+                            <div key={platform} className="flex justify-between">
+                              <span className={`${platform === selectedPlatform ? 'font-semibold' : 'text-muted-foreground'}`}>
+                                {PLATFORM_FEES[platform as Platform].name}:
+                              </span>
+                              <span className={`${calc.netProfit > 0 ? 'text-green-600' : 'text-red-600'} ${platform === selectedPlatform ? 'font-bold' : ''}`}>
+                                £{calc.netProfit.toFixed(2)} ({calc.roi.toFixed(0)}% ROI)
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
               </div>
             </div>
           )}

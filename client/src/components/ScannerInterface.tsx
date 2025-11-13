@@ -27,6 +27,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const codeReaderRef = useRef<BrowserMultiFormatReader | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const isProcessingRef = useRef(false);
 
   // Initialize barcode reader
   useEffect(() => {
@@ -41,11 +42,19 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
       streamRef.current.getTracks().forEach(track => track.stop());
       streamRef.current = null;
     }
+    if (codeReaderRef.current) {
+      try {
+        codeReaderRef.current.reset();
+      } catch (e) {
+        // Ignore reset errors
+      }
+    }
     if (videoRef.current) {
       videoRef.current.srcObject = null;
     }
     setIsCameraActive(false);
     setIsScanning(false);
+    isProcessingRef.current = false;
   };
 
   const startBarcodeScanning = async () => {
@@ -53,30 +62,74 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
     setIsScanning(true);
 
     try {
+      console.log("Requesting camera access...");
+
+      // Detect if mobile device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
       // Request camera permission
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" } // Use back camera on mobile
+        video: isMobile ? { facingMode: "environment" } : true
       });
 
+      console.log("Camera stream obtained:", stream.getVideoTracks());
       streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
+      if (!videoRef.current) {
+        throw new Error("Video element not found");
+      }
 
-        // Start scanning
-        if (codeReaderRef.current) {
+      console.log("Setting video srcObject...");
+      const video = videoRef.current;
+      video.srcObject = stream;
+
+      // Immediately show camera UI
+      setIsCameraActive(true);
+      setIsScanning(false);
+      console.log("Camera UI now active");
+
+      // Try to play the video
+      try {
+        await video.play();
+        console.log("Video playing!");
+      } catch (playErr) {
+        console.log("Initial play failed, will retry:", playErr);
+        // Some browsers need user interaction first, but this should still work
+      }
+
+      // Start scanning after a brief delay
+      setTimeout(() => {
+        if (codeReaderRef.current && videoRef.current) {
+          console.log("Starting barcode detection...");
           codeReaderRef.current.decodeFromVideoDevice(
-            undefined, // Use default camera
+            undefined,
             videoRef.current,
             (result, err) => {
-              if (result) {
+              if (result && !isProcessingRef.current) {
                 const text = result.getText();
-                // Check if it's a valid ISBN (10 or 13 digits)
+                console.log("Barcode detected:", text);
                 const cleanedText = text.replace(/[-\s]/g, "");
                 if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
-                  onIsbnScan(cleanedText);
+                  console.log("Valid ISBN found:", cleanedText);
+
+                  // IMMEDIATELY set processing flag and stop camera
+                  isProcessingRef.current = true;
+
+                  // Stop camera immediately to prevent re-scanning
+                  if (codeReaderRef.current) {
+                    try {
+                      codeReaderRef.current.reset();
+                    } catch (e) {
+                      // Ignore
+                    }
+                  }
+
                   stopCamera();
+
+                  // Then notify parent with small delay to ensure camera is stopped
+                  setTimeout(() => {
+                    onIsbnScan(cleanedText);
+                  }, 100);
                 }
               }
               if (err && !(err instanceof NotFoundException)) {
@@ -85,12 +138,12 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             }
           );
         }
-      }
+      }, 1000);
     } catch (err: any) {
       console.error("Camera error:", err);
       setError(err.name === "NotAllowedError"
         ? "Camera permission denied. Please allow camera access."
-        : "Failed to access camera. Please check your device settings."
+        : `Failed to access camera: ${err.message}`
       );
       setIsScanning(false);
       setIsCameraActive(false);
@@ -140,15 +193,29 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
     setIsScanning(true);
 
     try {
+      // Detect if mobile device
+      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" }
+        video: isMobile ? { facingMode: "environment" } : true
       });
 
       streamRef.current = stream;
 
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
-        setIsCameraActive(true);
+
+        // Wait for video to be ready before setting active
+        videoRef.current.onloadedmetadata = async () => {
+          try {
+            await videoRef.current?.play();
+            setIsCameraActive(true);
+          } catch (err) {
+            console.error("Video play error:", err);
+            setError("Failed to start video playback");
+            setIsScanning(false);
+          }
+        };
       }
     } catch (err: any) {
       console.error("Camera error:", err);
@@ -182,20 +249,23 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
 
         <TabsContent value="isbn" className="space-y-4">
           <Card className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
+            {/* Always render video element, but hide when not active */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${!isCameraActive ? 'hidden' : ''}`}
+            />
+
             {isCameraActive ? (
               <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-3/4 h-1/2 border-2 border-primary rounded-lg relative">
-                    <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+                  <div className="w-[90%] h-3/4 border-2 border-primary rounded-lg relative">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   </div>
                 </div>
                 <Button
@@ -215,11 +285,11 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             ) : (
               <>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-3/4 h-1/2 border-2 border-primary rounded-lg relative">
-                    <div className="absolute top-0 left-0 w-6 h-6 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-6 h-6 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-6 h-6 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-6 h-6 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
+                  <div className="w-[90%] h-3/4 border-2 border-primary rounded-lg relative">
+                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
+                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
+                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
+                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
                   </div>
                 </div>
                 <div className="text-center z-10">
@@ -281,14 +351,17 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
 
         <TabsContent value="cover" className="space-y-4">
           <Card className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
+            {/* Always render video element, but hide when not active */}
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className={`w-full h-full object-cover ${!isCameraActive ? 'hidden' : ''}`}
+            />
+
             {isCameraActive ? (
               <>
-                <video
-                  ref={videoRef}
-                  autoPlay
-                  playsInline
-                  className="w-full h-full object-cover"
-                />
                 <Button
                   size="icon"
                   variant="destructive"

@@ -7,47 +7,26 @@ import { useState, useEffect } from "react";
 
 const plans = [
   {
-    id: "free",
-    name: "Starter",
-    price: "£0",
-    period: "forever",
-    icon: Check,
-    description: "Test the waters with basic scouting tools",
-    features: [
-      "10 book scans per month",
-      "Basic price comparison (Amazon & eBay)",
-      "Manual listing creation",
-      "7-day price history",
-      "Community forum access",
-      "Mobile app access",
-    ],
-    limitations: [
-      "No AI-powered features",
-      "No bulk operations",
-      "Limited analytics",
-    ],
-    buttonText: "Current Plan",
-    highlighted: false,
-  },
-  {
     id: "basic",
     name: "Basic",
     price: "£9.99",
     period: "per month",
+    trialDays: 14,
     icon: Sparkles,
     description: "Perfect for part-time sellers (10-50 books/week)",
     features: [
+      "14-day free trial - no card required",
       "100 scans per month (~25/week)",
       "AI photo recognition",
       "AI keyword optimization",
       "Auto-listing to 1 platform (choose Amazon FBA, FBM, or eBay)",
       "30-day price history & trends",
       "Email support (48hr response)",
-      "Basic profit calculator",
+      "Advanced profit calculator",
       "Offline scanning mode",
     ],
     limitations: [],
-    buttonText: "Upgrade to Basic",
+    buttonText: "Start 14-Day Free Trial",
     highlighted: false,
   },
   {
@@ -55,9 +34,11 @@ const plans = [
     name: "Pro",
     price: "£24.99",
     period: "per month",
+    trialDays: 14,
     icon: Zap,
     description: "For serious sellers making £2K+/month",
     features: [
+      "14-day free trial - no card required",
       "Unlimited scans (scan as much as you want)",
       "Full AI suite (photo, keywords, descriptions)",
       "AI-generated product descriptions",
@@ -71,7 +52,7 @@ const plans = [
       "Tax report export",
     ],
     limitations: [],
-    buttonText: "Upgrade to Pro",
+    buttonText: "Start 14-Day Free Trial",
     highlighted: true,
     badge: "Most Popular - Best Value",
   },
@@ -80,9 +61,11 @@ const plans = [
     name: "Enterprise",
     price: "£99.99",
     period: "per month",
+    trialDays: 14,
     icon: Crown,
     description: "For established businesses & teams",
     features: [
+      "14-day free trial with onboarding call",
       "Everything in Pro, plus:",
       "Up to 5 team user accounts",
       "Full API access for custom integrations",
@@ -180,18 +163,17 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-4">
-            Pricing Plans
+            14-Day Free Trial
           </Badge>
           <h1 className="text-4xl font-bold">
-            Choose the Perfect Plan for Your Book Business
+            Try ISBNScout Free for 14 Days
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start free and upgrade as you grow. All plans include our core scanning
-            and pricing features.
+            No credit card required. Get full access to all features. Cancel anytime during your trial.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mt-12">
+        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
           {plans.map((plan) => {
             const Icon = plan.icon;
             return (
@@ -247,15 +229,11 @@ export default function SubscriptionPage() {
 
                 <Button
                   onClick={() => handleSubscribe(plan.id)}
-                  disabled={plan.id === "free" || isLoading === plan.id}
+                  disabled={isLoading === plan.id}
                   variant={plan.highlighted ? "default" : "outline"}
                   className="w-full"
                 >
-                  {isLoading === plan.id
-                    ? "Processing..."
-                    : plan.id === "free"
-                    ? "Current Plan"
-                    : plan.buttonText}
+                  {isLoading === plan.id ? "Processing..." : plan.buttonText}
                 </Button>
               </Card>
             );
@@ -297,7 +275,7 @@ export default function SubscriptionPage() {
         </div>
 
         <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>All prices in GBP. Cancel anytime. 14-day money-back guarantee.</p>
+          <p>All prices in GBP. 14-day free trial, no credit card required. Cancel anytime.</p>
         </div>
       </div>
     </div>

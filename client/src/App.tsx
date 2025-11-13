@@ -9,6 +9,8 @@ import DashboardPage from "@/pages/DashboardPage";
 import ScanPage from "@/pages/ScanPage";
 import ProfitCalculatorPage from "@/pages/ProfitCalculatorPage";
 import HistoryPage from "@/pages/HistoryPage";
+import AnalyticsPage from "@/pages/AnalyticsPage";
+import AlertsPage from "@/pages/AlertsPage";
 import ListingsPage from "@/pages/ListingsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
@@ -79,6 +81,16 @@ function Router() {
         <Route path="/app/history">
           <AppLayout>
             <HistoryPage />
+          </AppLayout>
+        </Route>
+        <Route path="/app/analytics">
+          <AppLayout>
+            <AnalyticsPage />
+          </AppLayout>
+        </Route>
+        <Route path="/app/alerts">
+          <AppLayout>
+            <AlertsPage />
           </AppLayout>
         </Route>
         <Route path="/app/listings">

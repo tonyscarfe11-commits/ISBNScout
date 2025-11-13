@@ -3,17 +3,22 @@ import { ScannerInterface } from "@/components/ScannerInterface";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { BookPhotoRecognition, type RecognizedBookData } from "@/components/BookPhotoRecognition";
+import { BatchScanner } from "@/components/BatchScanner";
 import { OfflineBanner } from "@/components/OfflineBanner";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useToast } from "@/hooks/use-toast";
+import { useTrialStatus } from "@/hooks/useTrialStatus";
 import { useLocation } from "wouter";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { trialStatus } = useTrialStatus();
   const [isOnline] = useState(true);
   const [pendingCount] = useState(0);
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [recentScans, setRecentScans] = useState<BookDetails[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -48,6 +53,17 @@ export default function ScanPage() {
   };
 
   const handleIsbnScan = async (isbn: string) => {
+    // Check trial status before allowing scan
+    if (trialStatus && !trialStatus.hasAccess) {
+      setUpgradeModalOpen(true);
+      toast({
+        title: "Trial Expired",
+        description: "Please upgrade to continue scanning books.",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (isLoading) return;
 
     setIsLoading(true);
@@ -83,6 +99,24 @@ export default function ScanPage() {
           ebayPrice = priceData.ebayPrice;
           amazonPrice = priceData.amazonPrice;
           console.log("Pricing fetched:", { ebayPrice, amazonPrice });
+
+          // Save prices to database
+          if (ebayPrice !== undefined || amazonPrice !== undefined) {
+            try {
+              await fetch(`/api/books/${isbn}`, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  ebayPrice,
+                  amazonPrice,
+                  status: ebayPrice ? "profitable" : "pending"
+                }),
+              });
+              console.log("Prices saved to database");
+            } catch (updateError) {
+              console.error("Failed to update book with prices:", updateError);
+            }
+          }
         }
       } catch (priceError) {
         console.error("Failed to fetch prices:", priceError);
@@ -208,6 +242,15 @@ export default function ScanPage() {
     }
   };
 
+  const handleBatchComplete = () => {
+    // Reload recent scans after batch completes
+    loadRecentScans();
+    toast({
+      title: "Batch scan complete",
+      description: "All books have been processed and saved",
+    });
+  };
+
   return (
     <div className="min-h-screen pb-20">
       <OfflineBanner
@@ -225,6 +268,8 @@ export default function ScanPage() {
         </div>
 
         <BookPhotoRecognition onRecognized={handleBookRecognized} />
+
+        <BatchScanner onComplete={handleBatchComplete} />
 
         <ScannerInterface
           onIsbnScan={handleIsbnScan}
@@ -251,6 +296,12 @@ export default function ScanPage() {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onList={handleListFromModal}
+      />
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        reason="trial_expired"
       />
     </div>
   );

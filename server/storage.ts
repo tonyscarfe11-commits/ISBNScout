@@ -30,6 +30,7 @@ export interface IStorage {
   getBooks(userId: string): Promise<Book[]>;
   getBookById(id: string): Promise<Book | undefined>;
   getBookByISBN(isbn: string): Promise<Book | undefined>;
+  updateBook(isbn: string, updates: Partial<Omit<Book, 'id' | 'userId' | 'isbn' | 'scannedAt'>>): Promise<Book | undefined>;
 
   // Listings
   createListing(listing: InsertListing): Promise<Listing>;
@@ -172,6 +173,21 @@ export class MemStorage implements IStorage {
     );
   }
 
+  async updateBook(isbn: string, updates: Partial<Omit<Book, 'id' | 'userId' | 'isbn' | 'scannedAt'>>): Promise<Book | undefined> {
+    const book = await this.getBookByISBN(isbn);
+    if (!book) {
+      return undefined;
+    }
+
+    const updatedBook: Book = {
+      ...book,
+      ...updates,
+    };
+
+    this.books.set(book.id, updatedBook);
+    return updatedBook;
+  }
+
   // Listings
   async createListing(insertListing: InsertListing): Promise<Listing> {
     const id = randomUUID();
@@ -218,4 +234,8 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Import SQLiteStorage
+import { SQLiteStorage } from "./sqlite-storage";
+
+// Use SQLite for persistent storage
+export const storage = new SQLiteStorage();

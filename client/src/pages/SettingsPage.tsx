@@ -5,8 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { Badge } from "@/components/ui/badge";
-import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown } from "lucide-react";
-import { useState } from "react";
+import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock } from "lucide-react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
   Dialog,
@@ -44,6 +44,61 @@ export default function SettingsPage() {
   const [amazonAwsSecretKey, setAmazonAwsSecretKey] = useState("");
   const [amazonSellerRole, setAmazonSellerRole] = useState("");
   const [amazonRegion, setAmazonRegion] = useState("eu");
+
+  // API usage tracking
+  const [apiUsage, setApiUsage] = useState<{
+    ebay: { callCount: number; remaining: number };
+  } | null>(null);
+
+  // Trial status
+  const [trialInfo, setTrialInfo] = useState<{
+    tier: string;
+    status: string;
+    daysRemaining: number;
+    trialEndsAt: string | null;
+  } | null>(null);
+
+  useEffect(() => {
+    // Fetch trial info
+    const fetchTrialInfo = async () => {
+      try {
+        const response = await fetch('/api/user/trial-status');
+        if (response.ok) {
+          const data = await response.json();
+          setTrialInfo(data);
+        }
+      } catch (error) {
+        console.error('Failed to fetch trial info:', error);
+      }
+    };
+
+    fetchTrialInfo();
+  }, []);
+
+  useEffect(() => {
+    // Fetch API usage on mount and every 30 seconds
+    const fetchUsage = async () => {
+      try {
+        const response = await fetch('/api/usage');
+        if (response.ok) {
+          const data = await response.json();
+          setApiUsage({
+            ebay: {
+              callCount: data.today.ebay.callCount,
+              remaining: data.limits.ebay.remaining
+            }
+          });
+        }
+      } catch (error) {
+        console.error('Failed to fetch API usage:', error);
+      }
+    };
+
+    fetchUsage();
+    const interval = setInterval(fetchUsage, 30000); // Refresh every 30s
+
+    return () => clearInterval(interval);
+  }, []);
 
   const handleClearCache = () => {
     toast({
@@ -143,6 +198,160 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-4">
+          {/* Trial Status Card */}
+          {trialInfo && (trialInfo.status === 'trialing' || trialInfo.tier === 'trial') && (
+            <Card className={`p-4 ${trialInfo.daysRemaining <= 0 ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-primary bg-primary/5'}`}>
+              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                <Clock className={`h-5 w-5 ${trialInfo.daysRemaining <= 0 ? 'text-red-600' : 'text-primary'}`} />
+                {trialInfo.daysRemaining <= 0 ? 'Trial Expired - Grace Period' : 'Free Trial Active'}
+              </h2>
+              <div className="space-y-3">
+                {trialInfo.daysRemaining <= 0 ? (
+                  <>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-red-700 dark:text-red-400">Your trial has ended</p>
+                        <p className="text-xs text-muted-foreground">
+                          You have 3 days of grace period access
+                        </p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-3xl font-bold font-mono text-red-600">
+                          {Math.max(0, 3 + trialInfo.daysRemaining)}
+                        </p>
+                        <p className="text-xs text-muted-foreground">grace days left</p>
+                      </div>
+                    </div>
+                    <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded-lg">
+                      <p className="text-sm font-medium text-red-900 dark:text-red-100">
+                        🚨 Grace period active
+                      </p>
+                      <p className="text-xs text-red-800 dark:text-red-200 mt-1">
+                        Your access will be blocked in {Math.max(0, 3 + trialInfo.daysRemaining)} {Math.max(0, 3 + trialInfo.daysRemaining) === 1 ? 'day' : 'days'}. Upgrade now to keep full access!
+                      </p>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">Trial Status</p>
+                      <p className="text-xs text-muted-foreground">
+                        {trialInfo.daysRemaining} {trialInfo.daysRemaining === 1 ? 'day' : 'days'} remaining
+                      </p>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-3xl font-bold font-mono text-primary">
+                        {trialInfo.daysRemaining}
+                      </p>
+                      <p className="text-xs text-muted-foreground">days left</p>
+                    </div>
+                  </div>
+                )}
+                <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                  <div>
+                    <p className="text-sm font-medium">Enjoying ISBNScout?</p>
+                    <p className="text-xs text-muted-foreground">
+                      Upgrade now to keep all features after trial ends
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    onClick={() => setLocation('/subscription')}
+                  >
+                    <Crown className="h-4 w-4 mr-1" />
+                    Upgrade
+                  </Button>
+                </div>
+                {trialInfo.daysRemaining <= 3 && (
+                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
+                      ⚠️ Trial ending soon!
+                    </p>
+                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                      Your trial expires in {trialInfo.daysRemaining} {trialInfo.daysRemaining === 1 ? 'day' : 'days'}. Upgrade to continue using all features.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {/* Quick Links Card */}
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
+            <div className="space-y-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => setLocation('/app/alerts')}
+              >
+                <Bell className="h-4 w-4 mr-3" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Price Alerts</p>
+                  <p className="text-xs text-muted-foreground">Manage notifications for profit opportunities</p>
+                </div>
+              </Button>
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => setLocation('/app/analytics')}
+              >
+                <Activity className="h-4 w-4 mr-3" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Analytics</p>
+                  <p className="text-xs text-muted-foreground">View your performance dashboard</p>
+                </div>
+              </Button>
+            </div>
+          </Card>
+
+          {/* API Usage Card */}
+          <Card className="p-4">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Activity className="h-5 w-5" />
+              API Usage Today
+            </h2>
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 border rounded-lg">
+                <div>
+                  <p className="text-sm font-medium">eBay API</p>
+                  <p className="text-xs text-muted-foreground">
+                    {apiUsage ? (
+                      <>
+                        {apiUsage.ebay.callCount.toLocaleString()} / 5,000 calls used
+                      </>
+                    ) : (
+                      'Loading...'
+                    )}
+                  </p>
+                </div>
+                <div className="text-right">
+                  {apiUsage && (
+                    <>
+                      <p className="text-2xl font-bold font-mono">
+                        {apiUsage.ebay.remaining.toLocaleString()}
+                      </p>
+                      <p className="text-xs text-muted-foreground">remaining</p>
+                      {apiUsage.ebay.remaining < 1000 && (
+                        <Badge variant="destructive" className="mt-1">
+                          Low Limit
+                        </Badge>
+                      )}
+                      {apiUsage.ebay.remaining >= 1000 && apiUsage.ebay.remaining < 2000 && (
+                        <Badge variant="secondary" className="mt-1">
+                          Warning
+                        </Badge>
+                      )}
+                    </>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Resets daily at 8:00 AM GMT (midnight PST)
+              </p>
+            </div>
+          </Card>
+
           <Card className="p-4">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
               <ShoppingCart className="h-5 w-5" />
@@ -356,10 +565,26 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
                 <div>
                   <p className="text-sm font-medium">Current Plan</p>
-                  <p className="text-xs text-muted-foreground">Starter (Free)</p>
-                  <p className="text-xs text-muted-foreground mt-1">10 scans per month</p>
+                  {trialInfo && trialInfo.status === 'trialing' ? (
+                    <>
+                      <p className="text-xs text-muted-foreground">Free Trial</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {trialInfo.daysRemaining} {trialInfo.daysRemaining === 1 ? 'day' : 'days'} remaining
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <p className="text-xs text-muted-foreground">
+                        {trialInfo?.tier === 'basic' ? 'Basic Plan' : trialInfo?.tier === 'pro' ? 'Pro Plan' : trialInfo?.tier === 'enterprise' ? 'Enterprise Plan' : 'No Active Plan'}
+                      </p>
+                    </>
+                  )}
                 </div>
-                <Badge variant="secondary">Free</Badge>
+                {trialInfo && trialInfo.status === 'trialing' ? (
+                  <Badge variant="default">Trial Active</Badge>
+                ) : (
+                  <Badge variant="secondary">{trialInfo?.tier || 'Free'}</Badge>
+                )}
               </div>
               <Button
                 className="w-full"

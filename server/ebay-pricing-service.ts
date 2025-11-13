@@ -31,12 +31,16 @@ export interface EbayListing {
   shipping?: number;
 }
 
+import type { SQLiteStorage } from "./sqlite-storage";
+
 export class EbayPricingService {
   private appId: string;
   private baseUrl = "https://svcs.ebay.com/services/search/FindingService/v1";
+  private storage?: SQLiteStorage;
 
-  constructor(appId?: string) {
+  constructor(appId?: string, storage?: SQLiteStorage) {
     this.appId = appId || process.env.EBAY_APP_ID || "";
+    this.storage = storage;
     console.log("[eBay] Initialized with App ID:", this.appId ? this.appId.substring(0, 15) + "..." : "MISSING");
   }
 
@@ -140,6 +144,11 @@ export class EbayPricingService {
         throw new Error(`eBay API error: ${response.status}`);
       }
 
+      // Track API usage
+      if (this.storage) {
+        this.storage.incrementApiCall('ebay');
+      }
+
       const text = await response.text();
       const data = this.parseXmlResponse(text);
 
@@ -183,6 +192,11 @@ export class EbayPricingService {
       const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`eBay API error: ${response.status}`);
+      }
+
+      // Track API usage
+      if (this.storage) {
+        this.storage.incrementApiCall('ebay');
       }
 
       const text = await response.text();
@@ -311,6 +325,11 @@ export class EbayPricingService {
         throw new Error(`eBay API error: ${response.status}`);
       }
 
+      // Track API usage
+      if (this.storage) {
+        this.storage.incrementApiCall('ebay');
+      }
+
       const text = await response.text();
       const data = this.parseXmlResponse(text);
 
@@ -332,5 +351,8 @@ export class EbayPricingService {
   }
 }
 
+// Import storage for tracking (imported at the end to avoid circular dependency)
+import { storage } from "./storage";
+
 // Export singleton instance
-export const ebayPricingService = new EbayPricingService();
+export const ebayPricingService = new EbayPricingService(undefined, storage as any);

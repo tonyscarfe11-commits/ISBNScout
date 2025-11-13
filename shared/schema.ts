@@ -8,9 +8,11 @@ export const users = pgTable("users", {
   username: text("username").notNull().unique(),
   email: text("email").notNull().unique(),
   password: text("password").notNull(),
-  subscriptionTier: text("subscription_tier").notNull().default("free"), // 'free', 'basic', 'pro', 'enterprise'
-  subscriptionStatus: text("subscription_status").notNull().default("active"), // 'active', 'cancelled', 'past_due'
+  subscriptionTier: text("subscription_tier").notNull().default("trial"), // 'trial', 'basic', 'pro', 'enterprise'
+  subscriptionStatus: text("subscription_status").notNull().default("active"), // 'active', 'cancelled', 'past_due', 'trialing'
   subscriptionExpiresAt: timestamp("subscription_expires_at"),
+  trialStartedAt: timestamp("trial_started_at"),
+  trialEndsAt: timestamp("trial_ends_at"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
   createdAt: timestamp("created_at").notNull().defaultNow(),

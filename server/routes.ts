@@ -274,6 +274,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get trial status
+  app.get("/api/user/trial-status", async (req, res) => {
+    try {
+      let userId = req.session.userId || "default-user";
+      const user = await authService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // Calculate days remaining if on trial
+      let daysRemaining = 0;
+      if (user.trialEndsAt) {
+        const now = new Date();
+        const trialEnd = new Date(user.trialEndsAt);
+        const diffTime = trialEnd.getTime() - now.getTime();
+        daysRemaining = Math.max(0, Math.ceil(diffTime / (1000 * 60 * 60 * 24)));
+      }
+
+      res.json({
+        tier: user.subscriptionTier,
+        status: user.subscriptionStatus,
+        daysRemaining,
+        trialEndsAt: user.trialEndsAt?.toISOString() || null,
+      });
+    } catch (error: any) {
+      console.error("Get trial status error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to get trial status",
+      });
+    }
+  });
+
   // Get API credentials for a platform
   app.get("/api/credentials/:platform", async (req, res) => {
     try {
@@ -309,6 +342,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (error instanceof z.ZodError) {
         return res.status(400).json({ message: "Invalid request data", errors: error.errors });
       }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get API usage statistics
+  app.get("/api/usage", async (req, res) => {
+    try {
+      const usage = (storage as any).getAllApiUsage();
+      const today = new Date().toISOString().split('T')[0];
+      const ebayUsageToday = (storage as any).getApiUsage('ebay', today);
+
+      res.json({
+        all: usage,
+        today: {
+          ebay: ebayUsageToday || { service: 'ebay', date: today, callCount: 0 }
+        },
+        limits: {
+          ebay: { daily: 5000, remaining: 5000 - (ebayUsageToday?.callCount || 0) }
+        }
+      });
+    } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
   });
@@ -512,12 +566,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update book prices
+  app.patch("/api/books/:isbn", async (req, res) => {
+    try {
+      const { isbn } = req.params;
+      const updates = req.body;
+
+      const updatedBook = await storage.updateBook(isbn, updates);
+
+      if (!updatedBook) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      res.json(updatedBook);
+    } catch (error: any) {
+      console.error("Book update error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Get all books
   app.get("/api/books", async (req, res) => {
     try {
       const userId = "default-user"; // TODO: Get from session
       const books = await storage.getBooks(userId);
       res.json(books);
+    } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Export books data
+  app.get("/api/books/export", async (req, res) => {
+    try {
+      const userId = "default-user"; // TODO: Get from session
+      const books = await storage.getBooks(userId);
+
+      // Convert to exportable format
+      const exportData = books.map((book: any) => ({
+        isbn: book.isbn,
+        title: book.title,
+        author: book.author || 'Unknown',
+        amazonPrice: book.amazonPrice ? parseFloat(book.amazonPrice) : undefined,
+        ebayPrice: book.ebayPrice ? parseFloat(book.ebayPrice) : undefined,
+        yourCost: book.yourCost ? parseFloat(book.yourCost) : undefined,
+        profit: book.profit ? parseFloat(book.profit) : undefined,
+        status: book.status,
+        scannedAt: book.createdAt,
+      }));
+
+      res.json(exportData);
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }

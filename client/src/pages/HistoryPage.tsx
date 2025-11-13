@@ -10,8 +10,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search, Filter, Loader2 } from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Filter, Loader2, Download } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { exportBooks, type ExportableBook, type ExportOptions } from "@/lib/exportUtils";
 
 export default function HistoryPage() {
   const { toast } = useToast();
@@ -21,6 +32,12 @@ export default function HistoryPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   const [books, setBooks] = useState<BookDetails[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+
+  // Export dialog state
+  const [exportDialogOpen, setExportDialogOpen] = useState(false);
+  const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
+  const [exportProfitableOnly, setExportProfitableOnly] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Load books from database on mount
   useEffect(() => {
@@ -93,6 +110,54 @@ export default function HistoryPage() {
     setDetailsOpen(false);
   };
 
+  const handleExport = async () => {
+    setIsExporting(true);
+    try {
+      // Fetch export data from API
+      const response = await fetch('/api/books/export');
+      if (!response.ok) {
+        throw new Error('Failed to fetch export data');
+      }
+
+      const exportData: ExportableBook[] = await response.json();
+
+      if (exportData.length === 0) {
+        toast({
+          title: "No data to export",
+          description: "You haven't scanned any books yet",
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // Prepare export options
+      const exportOptions: ExportOptions = {
+        format: exportFormat,
+        includeHeaders: true,
+        profitableOnly: exportProfitableOnly,
+      };
+
+      // Trigger export
+      exportBooks(exportData, exportOptions);
+
+      toast({
+        title: "Export successful",
+        description: `Downloaded ${exportFormat.toUpperCase()} file with ${exportData.length} book${exportData.length !== 1 ? 's' : ''}`,
+      });
+
+      setExportDialogOpen(false);
+    } catch (error: any) {
+      console.error('Export error:', error);
+      toast({
+        title: "Export failed",
+        description: error.message || "Failed to export data",
+        variant: "destructive",
+      });
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="min-h-screen pb-20 flex items-center justify-center">
@@ -104,11 +169,81 @@ export default function HistoryPage() {
   return (
     <div className="min-h-screen pb-20">
       <div className="max-w-2xl mx-auto p-4 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Scan History</h1>
-          <p className="text-sm text-muted-foreground">
-            {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""} scanned
-          </p>
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Scan History</h1>
+            <p className="text-sm text-muted-foreground">
+              {filteredBooks.length} book{filteredBooks.length !== 1 ? "s" : ""} scanned
+            </p>
+          </div>
+          <Dialog open={exportDialogOpen} onOpenChange={setExportDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="outline" size="sm">
+                <Download className="h-4 w-4 mr-2" />
+                Export
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Export Book Data</DialogTitle>
+                <DialogDescription>
+                  Download your scanned book data as CSV or JSON
+                </DialogDescription>
+              </DialogHeader>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="format">Export Format</Label>
+                  <Select value={exportFormat} onValueChange={(value: 'csv' | 'json') => setExportFormat(value)}>
+                    <SelectTrigger id="format">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="csv">CSV (Spreadsheet)</SelectItem>
+                      <SelectItem value="json">JSON (Data)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="profitable-only"
+                    checked={exportProfitableOnly}
+                    onCheckedChange={(checked) => setExportProfitableOnly(checked as boolean)}
+                  />
+                  <Label htmlFor="profitable-only" className="text-sm font-normal cursor-pointer">
+                    Export profitable books only
+                  </Label>
+                </div>
+
+                <div className="flex gap-2 pt-4">
+                  <Button
+                    onClick={handleExport}
+                    disabled={isExporting}
+                    className="flex-1"
+                  >
+                    {isExporting ? (
+                      <>
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                        Exporting...
+                      </>
+                    ) : (
+                      <>
+                        <Download className="h-4 w-4 mr-2" />
+                        Export {exportFormat.toUpperCase()}
+                      </>
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => setExportDialogOpen(false)}
+                    disabled={isExporting}
+                  >
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         <div className="flex gap-2">
