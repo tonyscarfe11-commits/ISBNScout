@@ -4,9 +4,12 @@ export interface BookRecognitionResult {
   title?: string;
   author?: string;
   isbn?: string;
+  publisher?: string;
+  series?: string;
   condition?: string;
   description?: string;
   keywords: string[];
+  imageType?: 'cover' | 'spine' | 'unknown';
 }
 
 export interface KeywordOptimizationResult {
@@ -41,6 +44,7 @@ export class AIService {
 
   /**
    * Analyze a book image to extract information
+   * Supports both cover photos and spine photos (unique competitive advantage)
    */
   async analyzeBookImage(imageUrl: string): Promise<BookRecognitionResult> {
     const openai = this.getClient();
@@ -53,16 +57,51 @@ export class AIService {
             content: [
               {
                 type: "text",
-                text: `Analyze this book image and extract the following information:
-- Book title
-- Author name
-- ISBN (if visible)
-- Book condition (New, As New, Good, Acceptable, or Collectable)
-- Brief description of the book's physical condition
-- Relevant keywords for selling this book (genre, subject, notable features)
+                text: `You are analyzing a book image that could be either a COVER or a SPINE photo.
 
-Return the information in JSON format with keys: title, author, isbn, condition, description, keywords (array).
-If any information is not clearly visible, omit that field.`,
+IMPORTANT FOR SPINE PHOTOS:
+- Text often runs vertically (top to bottom or bottom to top)
+- Title and author may be abbreviated or partially visible
+- Look for publisher logos, series information, ISBN barcodes
+- The spine typically shows: Title | Author | Publisher logo
+- Text might be rotated 90 degrees - read it carefully
+
+IMPORTANT FOR COVER PHOTOS:
+- Look for title (usually largest text)
+- Author name (often below title)
+- ISBN barcode (usually on back cover)
+- Publisher information
+- Cover art and design elements
+
+Extract the following information:
+1. Book title - Even if abbreviated on spine, provide the full recognized title
+2. Author name - Look carefully, might be initials or last name only on spine
+3. ISBN - Check for barcode on spine or back cover (10 or 13 digits)
+4. Publisher - If visible from logos or text
+5. Series/Edition info - If this is part of a series
+6. Book condition assessment:
+   - New: Pristine, no wear
+   - Like New: Minimal wear, appears unread
+   - Very Good: Minor wear, clean pages
+   - Good: Normal wear, all pages intact
+   - Acceptable: Heavy wear but readable
+7. Physical condition notes - Describe any visible damage, wear, spine creases, cover condition
+8. Relevant keywords - Genre, subject matter, notable features for selling
+
+Return ONLY valid JSON with these exact keys: 
+{
+  "title": "string or omit if not visible",
+  "author": "string or omit if not visible", 
+  "isbn": "string (digits only) or omit if not visible",
+  "publisher": "string or omit if not visible",
+  "series": "string or omit if not applicable",
+  "condition": "New|Like New|Very Good|Good|Acceptable",
+  "description": "brief physical condition description",
+  "keywords": ["array", "of", "relevant", "terms"],
+  "imageType": "cover|spine|unknown"
+}
+
+If any field is not clearly visible, omit it from the response. Do not guess.`,
               },
               {
                 type: "image_url",
