@@ -202,16 +202,18 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.log('[Stripe Verify] Plan ID:', planId);
 
       // Update user's subscription in database
-      const user = await authService.getUserById(userId);
-      console.log('[Stripe Verify] Current user:', user?.subscriptionTier);
+      if (userId) {
+        const user = await authService.getUserById(userId);
+        console.log('[Stripe Verify] Current user:', user?.subscriptionTier);
 
-      if (user) {
-        const updatedUser = await authService.updateUser(userId, {
-          subscriptionTier: planId,
-          subscriptionStatus: 'active',
-          stripeCustomerId: session.customer as string,
-        });
-        console.log('[Stripe Verify] Updated user:', updatedUser?.subscriptionTier);
+        if (user) {
+          const updatedUser = await authService.updateUser(userId, {
+            subscriptionTier: planId,
+            subscriptionStatus: 'active',
+            stripeCustomerId: session.customer as string,
+          });
+          console.log('[Stripe Verify] Updated user:', updatedUser?.subscriptionTier);
+        }
       }
 
       res.json({
@@ -238,11 +240,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!user) {
         // Get user by username if ID doesn't work
-        user = await storage.getUserByUsername("default");
+        const defaultUser = await storage.getUserByUsername("default");
 
-        if (user) {
+        if (defaultUser) {
           // Found existing default user, update session
-          req.session.userId = user.id;
+          req.session.userId = defaultUser.id;
+          user = defaultUser;
         } else {
           // Create new default user with fixed ID
           const newUser = await storage.createUser({
