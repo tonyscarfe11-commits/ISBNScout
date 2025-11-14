@@ -4,6 +4,7 @@ import { storage } from "./storage";
 import { EbayService } from "./ebay-service";
 import { AmazonService } from "./amazon-service";
 import { aiService } from "./ai-service";
+import { salesVelocityService } from "./sales-velocity-service";
 import { authService } from "./auth-service";
 import { googleBooksService } from "./google-books-service";
 import { ebayPricingService } from "./ebay-pricing-service";
@@ -954,6 +955,50 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // AI: Analyze book image
+  // Sales velocity calculation endpoint
+  app.post("/api/books/calculate-velocity", async (req, res) => {
+    try {
+      const { salesRank, profit, profitMargin, yourCost, category } = req.body;
+
+      if (!salesRank || salesRank < 1) {
+        return res.status(400).json({ error: "Valid sales rank is required" });
+      }
+
+      // Calculate velocity analysis
+      const analysis = salesVelocityService.calculateVelocity(salesRank, category || 'Books');
+      const timeToSell = salesVelocityService.getTimeToSell(analysis.velocity.rating);
+      
+      // Calculate buy recommendation if profit data provided
+      let buyRecommendation = analysis.velocity.buyRecommendation;
+      if (profit !== undefined && profitMargin !== undefined && yourCost !== undefined) {
+        buyRecommendation = salesVelocityService.shouldBuy(
+          analysis.velocity.rating,
+          profit,
+          profitMargin,
+          yourCost
+        ).recommendation;
+      }
+
+      const recommendation = salesVelocityService.shouldBuy(
+        analysis.velocity.rating,
+        profit || 0,
+        profitMargin || 0,
+        yourCost || 0
+      );
+
+      res.json({
+        velocity: analysis.velocity,
+        rankCategory: analysis.rankCategory,
+        competitiveLevel: analysis.competitiveLevel,
+        timeToSell,
+        buyRecommendation: recommendation,
+      });
+    } catch (error: any) {
+      console.error("Velocity calculation failed:", error);
+      res.status(500).json({ error: error.message || "Failed to calculate velocity" });
+    }
+  });
+
   app.post("/api/ai/analyze-image", async (req, res) => {
     try {
       const { imageUrl } = req.body;

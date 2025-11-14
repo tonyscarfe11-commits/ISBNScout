@@ -419,7 +419,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             ) : (
               <div className="text-center p-4">
                 <Image className="h-12 w-12 mb-3 mx-auto text-muted-foreground" />
-                <p className="font-semibold mb-1">✨ AI Cover & Spine Recognition</p>
+                <p className="font-semibold mb-1">AI Cover & Spine Recognition</p>
                 <p className="text-sm text-muted-foreground">
                   Capture book cover OR spine photo
                 </p>
@@ -460,9 +460,9 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
           )}
 
           <div className="text-xs text-muted-foreground text-center space-y-1">
-            <p className="font-medium">✨ Revolutionary AI Recognition</p>
+            <p className="font-medium">Revolutionary AI Recognition</p>
             <p>Works with cover photos AND spine photos (even vertical text!)</p>
-            <p className="text-[10px]">No competitor can do this - it's our secret weapon</p>
+            <p className="text-[10px]">No competitor can do this</p>
           </div>
         </TabsContent>
       </Tabs>

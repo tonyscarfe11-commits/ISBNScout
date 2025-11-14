@@ -41,28 +41,75 @@ export default function ScanPage() {
     validatePattern: /^\d{10,13}$/,
   });
 
-  const handleIsbnScan = (isbn: string) => {
+  const handleIsbnScan = async (isbn: string) => {
     console.log("Scanning ISBN:", isbn);
     
-    const mockBook: BookDetails = {
-      id: Date.now().toString(),
-      isbn,
-      title: "Harry Potter and the Deathly Hallows",
-      author: "J.K. Rowling",
-      amazonPrice: 24.99,
-      ebayPrice: 22.50,
-      yourCost: 8.00,
-      profit: 16.99,
-      status: "profitable",
-      description: "The seventh and final adventure in the Harry Potter series.",
-    };
-
-    setRecentScans([mockBook, ...recentScans.slice(0, 2)]);
+    // Mock data - in production this would come from Amazon API
+    const salesRank = 15000; // Example: Fast-selling rank
+    const profit = 16.99;
+    const profitMargin = 70;
+    const yourCost = 8.00;
     
-    toast({
-      title: "Book scanned successfully",
-      description: mockBook.title,
-    });
+    // Call backend service to calculate velocity
+    // For now, we'll call the API which uses the SalesVelocityService
+    try {
+      const response = await fetch("/api/books/calculate-velocity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ 
+          salesRank, 
+          profit,
+          profitMargin,
+          yourCost,
+          category: "Books"
+        }),
+      });
+
+      let velocityData;
+      if (response.ok) {
+        velocityData = await response.json();
+      } else {
+        // Fallback to default if API fails
+        velocityData = {
+          velocity: { rating: 'medium', description: 'Steady seller', estimatedSalesPerMonth: '3-10' },
+          timeToSell: '2-4 weeks',
+          buyRecommendation: { recommendation: 'buy', reason: 'Good profit potential' }
+        };
+      }
+
+      const mockBook: BookDetails = {
+        id: Date.now().toString(),
+        isbn,
+        title: "Harry Potter and the Deathly Hallows",
+        author: "J.K. Rowling",
+        amazonPrice: 24.99,
+        ebayPrice: 22.50,
+        yourCost: 8.00,
+        profit: 16.99,
+        status: "profitable",
+        description: "The seventh and final adventure in the Harry Potter series.",
+        salesRank,
+        velocity: velocityData.velocity.rating,
+        velocityDescription: velocityData.velocity.description,
+        estimatedSalesPerMonth: velocityData.velocity.estimatedSalesPerMonth,
+        timeToSell: velocityData.timeToSell,
+        buyRecommendation: velocityData.buyRecommendation.recommendation,
+        buyRecommendationReason: velocityData.buyRecommendation.reason,
+      };
+
+      setRecentScans([mockBook, ...recentScans.slice(0, 2)]);
+      
+      toast({
+        title: "Book scanned successfully",
+        description: `${mockBook.title} - ${velocityData.velocity.description}`,
+      });
+    } catch (error) {
+      console.error("Velocity calculation failed:", error);
+      toast({
+        title: "Book scanned",
+        description: "Harry Potter and the Deathly Hallows",
+      });
+    }
   };
 
   const handleCoverScan = async (imageData: string) => {

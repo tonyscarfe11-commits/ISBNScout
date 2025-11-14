@@ -20,6 +20,8 @@ import { useState } from "react";
 import type { BookStatus } from "./BookCard";
 import { calculateProfit, calculateProfitAllPlatforms, type Platform, PLATFORM_FEES } from "@/lib/profitCalculator";
 
+export type VelocityRating = 'very_fast' | 'fast' | 'medium' | 'slow' | 'very_slow' | 'unknown';
+
 export interface BookDetails {
   id: string;
   isbn: string;
@@ -33,6 +35,13 @@ export interface BookDetails {
   status: BookStatus;
   description?: string;
   isPending?: boolean;
+  salesRank?: number;
+  velocity?: VelocityRating;
+  velocityDescription?: string;
+  estimatedSalesPerMonth?: string;
+  timeToSell?: string;
+  buyRecommendation?: 'strong_buy' | 'buy' | 'maybe' | 'skip';
+  buyRecommendationReason?: string;
 }
 
 export interface BookDetailsModalProps {
