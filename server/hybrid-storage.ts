@@ -316,6 +316,10 @@ export class HybridStorage implements IStorage {
     return this.local.getListings(userId);
   }
 
+  async getListingById(id: string): Promise<Listing | undefined> {
+    return this.local.getListingById(id);
+  }
+
   async getListingsByBook(
     userId: string,
     bookId: string
@@ -382,6 +386,58 @@ export class HybridStorage implements IStorage {
       await this.queueSync("delete", "inventoryItem", { id });
     }
     return deleted;
+  }
+
+  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
+    const updated = await this.local.updateListingPrice(id, newPrice);
+    if (updated) {
+      await this.queueSync("update", "listing", { id, price: newPrice });
+    }
+    return updated;
+  }
+
+  async createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule> {
+    const created = await this.local.createRepricingRule(rule);
+    await this.queueSync("create", "repricingRule", rule);
+    return created;
+  }
+
+  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
+    return this.local.getRepricingRules(userId);
+  }
+
+  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
+    return this.local.getRepricingRuleById(id);
+  }
+
+  async getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]> {
+    return this.local.getActiveRulesForListing(userId, listingId, platform);
+  }
+
+  async updateRepricingRule(id: string, updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>): Promise<RepricingRule | undefined> {
+    const updated = await this.local.updateRepricingRule(id, updates);
+    if (updated) {
+      await this.queueSync("update", "repricingRule", { id, updates });
+    }
+    return updated;
+  }
+
+  async deleteRepricingRule(id: string): Promise<boolean> {
+    const deleted = await this.local.deleteRepricingRule(id);
+    if (deleted) {
+      await this.queueSync("delete", "repricingRule", { id });
+    }
+    return deleted;
+  }
+
+  async createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory> {
+    const created = await this.local.createRepricingHistory(history);
+    await this.queueSync("create", "repricingHistory", history);
+    return created;
+  }
+
+  async getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]> {
+    return this.local.getRepricingHistory(userId, listingId);
   }
 
   // Sync control methods

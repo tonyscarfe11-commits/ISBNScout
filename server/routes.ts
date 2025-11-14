@@ -10,6 +10,7 @@ import { googleBooksService } from "./google-books-service";
 import { ebayPricingService } from "./ebay-pricing-service";
 import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
+import { RepricingService } from "./repricing-service";
 import { z } from "zod";
 import express from "express";
 import Stripe from "stripe";
@@ -1184,6 +1185,235 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("[OfflineLookup] Stats error:", error);
       res.status(500).json({ error: error.message });
+    }
+  });
+
+  // ======= REPRICING ENDPOINTS =======
+
+  // Create a repricing rule
+  app.post("/api/repricing/rules", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { listingId, platform, strategy, strategyValue, minPrice, maxPrice, isActive, runFrequency } = req.body;
+
+      if (!platform || !strategy || minPrice === undefined || maxPrice === undefined) {
+        return res.status(400).json({ message: "Platform, strategy, minPrice, and maxPrice are required" });
+      }
+
+      const rule = await storage.createRepricingRule({
+        userId,
+        listingId: listingId || null,
+        platform,
+        strategy,
+        strategyValue: strategyValue || null,
+        minPrice: minPrice.toString(),
+        maxPrice: maxPrice.toString(),
+        isActive: isActive !== undefined ? isActive.toString() : "true",
+        runFrequency: runFrequency || "hourly",
+      });
+
+      res.json(rule);
+    } catch (error: any) {
+      console.error("[Repricing] Create rule error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get all repricing rules for user
+  app.get("/api/repricing/rules", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const rules = await storage.getRepricingRules(userId);
+      res.json(rules);
+    } catch (error: any) {
+      console.error("[Repricing] Get rules error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get a specific repricing rule
+  app.get("/api/repricing/rules/:id", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const rule = await storage.getRepricingRuleById(id);
+
+      if (!rule || rule.userId !== userId) {
+        return res.status(404).json({ message: "Rule not found" });
+      }
+
+      res.json(rule);
+    } catch (error: any) {
+      console.error("[Repricing] Get rule error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Update a repricing rule
+  app.patch("/api/repricing/rules/:id", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const existingRule = await storage.getRepricingRuleById(id);
+
+      if (!existingRule || existingRule.userId !== userId) {
+        return res.status(404).json({ message: "Rule not found" });
+      }
+
+      const updates: any = {};
+      if (req.body.listingId !== undefined) updates.listingId = req.body.listingId;
+      if (req.body.platform !== undefined) updates.platform = req.body.platform;
+      if (req.body.strategy !== undefined) updates.strategy = req.body.strategy;
+      if (req.body.strategyValue !== undefined) updates.strategyValue = req.body.strategyValue;
+      if (req.body.minPrice !== undefined) updates.minPrice = req.body.minPrice.toString();
+      if (req.body.maxPrice !== undefined) updates.maxPrice = req.body.maxPrice.toString();
+      if (req.body.isActive !== undefined) updates.isActive = req.body.isActive.toString();
+      if (req.body.runFrequency !== undefined) updates.runFrequency = req.body.runFrequency;
+
+      const updatedRule = await storage.updateRepricingRule(id, updates);
+      res.json(updatedRule);
+    } catch (error: any) {
+      console.error("[Repricing] Update rule error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Delete a repricing rule
+  app.delete("/api/repricing/rules/:id", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { id } = req.params;
+      const existingRule = await storage.getRepricingRuleById(id);
+
+      if (!existingRule || existingRule.userId !== userId) {
+        return res.status(404).json({ message: "Rule not found" });
+      }
+
+      const deleted = await storage.deleteRepricingRule(id);
+      res.json({ success: deleted });
+    } catch (error: any) {
+      console.error("[Repricing] Delete rule error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Manually trigger repricing
+  app.post("/api/repricing/run", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { listingId } = req.body;
+      
+      if (!listingId) {
+        return res.status(400).json({ message: "listingId is required" });
+      }
+
+      const listing = await storage.getListingById(listingId);
+      if (!listing || listing.userId !== userId) {
+        return res.status(404).json({ message: "Listing not found" });
+      }
+
+      // Get active rules for this listing
+      const rules = await storage.getActiveRulesForListing(userId, listing.id, listing.platform);
+      if (rules.length === 0) {
+        return res.status(400).json({ message: "No active repricing rules found for this listing" });
+      }
+
+      // Use the first (most specific) rule
+      const rule = rules[0];
+
+      // Get credentials
+      const amazonCreds = await storage.getApiCredentials(userId, 'amazon');
+      const ebayCreds = await storage.getApiCredentials(userId, 'ebay');
+
+      let amazonService: AmazonService | undefined;
+      let ebayService: EbayService | undefined;
+
+      if (amazonCreds) {
+        try {
+          amazonService = new AmazonService(JSON.parse(amazonCreds.credentials as any));
+        } catch (error) {
+          console.error('[Repricing] Failed to initialize Amazon service:', error);
+        }
+      }
+
+      if (ebayCreds) {
+        try {
+          ebayService = new EbayService(JSON.parse(ebayCreds.credentials as any));
+        } catch (error) {
+          console.error('[Repricing] Failed to initialize eBay service:', error);
+        }
+      }
+
+      // Reprice the listing
+      const repricingService = new RepricingService();
+      const result = await repricingService.repriceListing(
+        listing,
+        rule,
+        amazonService,
+        ebayService
+      );
+
+      // Record history
+      await storage.createRepricingHistory({
+        userId,
+        listingId: listing.id,
+        ruleId: rule.id,
+        oldPrice: result.oldPrice.toString(),
+        newPrice: result.newPrice.toString(),
+        competitorPrice: result.competitorPrice?.toString() || null,
+        reason: result.reason,
+        success: result.success ? "true" : "false",
+        errorMessage: result.errorMessage || null,
+      });
+
+      // Update rule's lastRun timestamp
+      await storage.updateRepricingRule(rule.id, { lastRun: new Date() });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("[Repricing] Run error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get repricing history
+  app.get("/api/repricing/history", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const { listingId } = req.query;
+      const history = await storage.getRepricingHistory(userId, listingId as string | undefined);
+      res.json(history);
+    } catch (error: any) {
+      console.error("[Repricing] Get history error:", error);
+      res.status(500).json({ message: error.message });
     }
   });
 

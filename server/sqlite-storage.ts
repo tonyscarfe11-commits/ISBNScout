@@ -565,6 +565,11 @@ export class SQLiteStorage implements IStorage {
     return rows.map(row => this.deserializeListing(row));
   }
 
+  async getListingById(id: string): Promise<Listing | undefined> {
+    const row = this.db.prepare("SELECT * FROM listings WHERE id = ?").get(id) as any;
+    return row ? this.deserializeListing(row) : undefined;
+  }
+
   async getListingsByBook(userId: string, bookId: string): Promise<Listing[]> {
     const stmt = this.db.prepare("SELECT * FROM listings WHERE userId = ? AND bookId = ? ORDER BY listedAt DESC");
     const rows = stmt.all(userId, bookId) as any[];
@@ -833,6 +838,192 @@ export class SQLiteStorage implements IStorage {
       notes: row.notes,
       createdAt: new Date(row.createdAt),
       updatedAt: new Date(row.updatedAt),
+    };
+  }
+
+  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
+    const now = new Date().toISOString();
+    const stmt = this.db.prepare("UPDATE listings SET price = ?, updatedAt = ? WHERE id = ?");
+    const result = stmt.run(newPrice, now, id);
+    
+    if (result.changes === 0) return undefined;
+    
+    const row = this.db.prepare("SELECT * FROM listings WHERE id = ?").get(id) as any;
+    return row ? this.deserializeListing(row) : undefined;
+  }
+
+  async createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule> {
+    const id = randomUUID();
+    const now = new Date().toISOString();
+    
+    const stmt = this.db.prepare(`
+      INSERT INTO repricing_rules (
+        id, userId, listingId, platform, strategy, strategyValue,
+        minPrice, maxPrice, isActive, runFrequency, lastRun, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      id,
+      rule.userId,
+      rule.listingId || null,
+      rule.platform,
+      rule.strategy,
+      rule.strategyValue || null,
+      rule.minPrice,
+      rule.maxPrice,
+      rule.isActive || "true",
+      rule.runFrequency || "hourly",
+      null,
+      now,
+      now
+    );
+
+    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
+    return this.deserializeRepricingRule(row);
+  }
+
+  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
+    const stmt = this.db.prepare("SELECT * FROM repricing_rules WHERE userId = ? ORDER BY createdAt DESC");
+    const rows = stmt.all(userId) as any[];
+    return rows.map((row) => this.deserializeRepricingRule(row));
+  }
+
+  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
+    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
+    return row ? this.deserializeRepricingRule(row) : undefined;
+  }
+
+  async getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM repricing_rules 
+      WHERE userId = ? 
+        AND isActive = 'true'
+        AND (listingId IS NULL OR listingId = ?)
+        AND (platform = 'all' OR platform = ?)
+      ORDER BY CASE WHEN listingId IS NOT NULL THEN 0 ELSE 1 END
+    `);
+    const rows = stmt.all(userId, listingId, platform) as any[];
+    return rows.map((row) => this.deserializeRepricingRule(row));
+  }
+
+  async updateRepricingRule(
+    id: string,
+    updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>
+  ): Promise<RepricingRule | undefined> {
+    const rule = await this.getRepricingRuleById(id);
+    if (!rule) return undefined;
+
+    const now = new Date().toISOString();
+    const updatedRule = { ...rule, ...updates };
+
+    const stmt = this.db.prepare(`
+      UPDATE repricing_rules SET
+        listingId = ?, platform = ?, strategy = ?, strategyValue = ?,
+        minPrice = ?, maxPrice = ?, isActive = ?, runFrequency = ?,
+        lastRun = ?, updatedAt = ?
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      updatedRule.listingId,
+      updatedRule.platform,
+      updatedRule.strategy,
+      updatedRule.strategyValue,
+      updatedRule.minPrice,
+      updatedRule.maxPrice,
+      updatedRule.isActive,
+      updatedRule.runFrequency,
+      updatedRule.lastRun ? new Date(updatedRule.lastRun).toISOString() : null,
+      now,
+      id
+    );
+
+    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
+    return row ? this.deserializeRepricingRule(row) : undefined;
+  }
+
+  async deleteRepricingRule(id: string): Promise<boolean> {
+    const stmt = this.db.prepare("DELETE FROM repricing_rules WHERE id = ?");
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
+
+  async createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory> {
+    const id = randomUUID();
+    const now = new Date().toISOString();
+    
+    const stmt = this.db.prepare(`
+      INSERT INTO repricing_history (
+        id, userId, listingId, ruleId, oldPrice, newPrice,
+        competitorPrice, reason, success, errorMessage, createdAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      id,
+      history.userId,
+      history.listingId,
+      history.ruleId || null,
+      history.oldPrice,
+      history.newPrice,
+      history.competitorPrice || null,
+      history.reason,
+      history.success || "true",
+      history.errorMessage || null,
+      now
+    );
+
+    const row = this.db.prepare("SELECT * FROM repricing_history WHERE id = ?").get(id) as any;
+    return this.deserializeRepricingHistory(row);
+  }
+
+  async getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]> {
+    let stmt;
+    let rows;
+    
+    if (listingId) {
+      stmt = this.db.prepare("SELECT * FROM repricing_history WHERE userId = ? AND listingId = ? ORDER BY createdAt DESC");
+      rows = stmt.all(userId, listingId) as any[];
+    } else {
+      stmt = this.db.prepare("SELECT * FROM repricing_history WHERE userId = ? ORDER BY createdAt DESC");
+      rows = stmt.all(userId) as any[];
+    }
+    
+    return rows.map((row) => this.deserializeRepricingHistory(row));
+  }
+
+  private deserializeRepricingRule(row: any): RepricingRule {
+    return {
+      id: row.id,
+      userId: row.userId,
+      listingId: row.listingId,
+      platform: row.platform,
+      strategy: row.strategy,
+      strategyValue: row.strategyValue,
+      minPrice: row.minPrice,
+      maxPrice: row.maxPrice,
+      isActive: row.isActive,
+      runFrequency: row.runFrequency,
+      lastRun: row.lastRun ? new Date(row.lastRun) : null,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    };
+  }
+
+  private deserializeRepricingHistory(row: any): RepricingHistory {
+    return {
+      id: row.id,
+      userId: row.userId,
+      listingId: row.listingId,
+      ruleId: row.ruleId,
+      oldPrice: row.oldPrice,
+      newPrice: row.newPrice,
+      competitorPrice: row.competitorPrice,
+      reason: row.reason,
+      success: row.success,
+      errorMessage: row.errorMessage,
+      createdAt: new Date(row.createdAt),
     };
   }
 

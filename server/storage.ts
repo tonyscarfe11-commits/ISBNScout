@@ -41,6 +41,7 @@ export interface IStorage {
   // Listings
   createListing(listing: InsertListing): Promise<Listing>;
   getListings(userId: string): Promise<Listing[]>;
+  getListingById(id: string): Promise<Listing | undefined>;
   getListingsByBook(userId: string, bookId: string): Promise<Listing[]>;
   updateListingStatus(id: string, status: string, errorMessage?: string): Promise<Listing | undefined>;
   updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined>;
@@ -111,9 +112,11 @@ export class MemStorage implements IStorage {
     const user: User = {
       ...insertUser,
       id,
-      subscriptionTier: "free",
+      subscriptionTier: "trial",
       subscriptionStatus: "active",
       subscriptionExpiresAt: null,
+      trialStartedAt: now,
+      trialEndsAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000),
       stripeCustomerId: null,
       stripeSubscriptionId: null,
       createdAt: now,
@@ -250,6 +253,10 @@ export class MemStorage implements IStorage {
       .sort((a, b) => b.listedAt.getTime() - a.listedAt.getTime());
   }
 
+  async getListingById(id: string): Promise<Listing | undefined> {
+    return this.listings.get(id);
+  }
+
   async getListingsByBook(userId: string, bookId: string): Promise<Listing[]> {
     return Array.from(this.listings.values())
       .filter((listing) => listing.userId === userId && listing.bookId === bookId)
@@ -348,6 +355,8 @@ export class MemStorage implements IStorage {
       id,
       listingId: insertRule.listingId || null,
       strategyValue: insertRule.strategyValue || null,
+      isActive: insertRule.isActive || "true",
+      runFrequency: insertRule.runFrequency || "hourly",
       lastRun: null,
       createdAt: now,
       updatedAt: now,
@@ -416,6 +425,7 @@ export class MemStorage implements IStorage {
       id,
       ruleId: insertHistory.ruleId || null,
       competitorPrice: insertHistory.competitorPrice || null,
+      success: insertHistory.success || "true",
       errorMessage: insertHistory.errorMessage || null,
       createdAt: now,
     };

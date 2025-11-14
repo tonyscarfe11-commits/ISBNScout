@@ -219,6 +219,15 @@ export class PostgresStorage implements IStorage {
     }
   }
 
+  async getListingById(id: string): Promise<Listing | undefined> {
+    const result = await this.db
+      .select()
+      .from(listings)
+      .where(eq(listings.id, id))
+      .limit(1);
+    return result[0];
+  }
+
   async getListingsByBook(
     userId: string,
     bookId: string
@@ -330,5 +339,109 @@ export class PostgresStorage implements IStorage {
       .where(eq(inventoryItems.id, id))
       .returning();
     return result.length > 0;
+  }
+
+  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
+    const result = await this.db
+      .update(listings)
+      .set({ price: newPrice, updatedAt: new Date() })
+      .where(eq(listings.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule> {
+    const result = await this.db
+      .insert(repricingRules)
+      .values(rule)
+      .returning();
+    return result[0];
+  }
+
+  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
+    const result = await this.db
+      .select()
+      .from(repricingRules)
+      .where(eq(repricingRules.userId, userId))
+      .orderBy(desc(repricingRules.createdAt));
+    return result || [];
+  }
+
+  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
+    const result = await this.db
+      .select()
+      .from(repricingRules)
+      .where(eq(repricingRules.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]> {
+    const result = await this.db
+      .select()
+      .from(repricingRules)
+      .where(
+        and(
+          eq(repricingRules.userId, userId),
+          eq(repricingRules.isActive, "true")
+        )
+      )
+      .orderBy(desc(repricingRules.createdAt));
+    
+    return result.filter(rule => 
+      (rule.listingId === null || rule.listingId === listingId) &&
+      (rule.platform === "all" || rule.platform === platform)
+    ).sort((a, b) => (a.listingId && !b.listingId) ? -1 : (!a.listingId && b.listingId) ? 1 : 0);
+  }
+
+  async updateRepricingRule(
+    id: string,
+    updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>
+  ): Promise<RepricingRule | undefined> {
+    const result = await this.db
+      .update(repricingRules)
+      .set({ ...updates, updatedAt: new Date() })
+      .where(eq(repricingRules.id, id))
+      .returning();
+    return result[0];
+  }
+
+  async deleteRepricingRule(id: string): Promise<boolean> {
+    const result = await this.db
+      .delete(repricingRules)
+      .where(eq(repricingRules.id, id))
+      .returning();
+    return result.length > 0;
+  }
+
+  async createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory> {
+    const result = await this.db
+      .insert(repricingHistory)
+      .values(history)
+      .returning();
+    return result[0];
+  }
+
+  async getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]> {
+    if (listingId) {
+      const result = await this.db
+        .select()
+        .from(repricingHistory)
+        .where(
+          and(
+            eq(repricingHistory.userId, userId),
+            eq(repricingHistory.listingId, listingId)
+          )
+        )
+        .orderBy(desc(repricingHistory.createdAt));
+      return result || [];
+    } else {
+      const result = await this.db
+        .select()
+        .from(repricingHistory)
+        .where(eq(repricingHistory.userId, userId))
+        .orderBy(desc(repricingHistory.createdAt));
+      return result || [];
+    }
   }
 }
