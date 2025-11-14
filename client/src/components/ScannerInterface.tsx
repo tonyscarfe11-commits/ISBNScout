@@ -288,7 +288,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
           </TabsTrigger>
           <TabsTrigger value="cover" data-testid="tab-cover-scan" disabled={isCameraActive}>
             <Image className="h-4 w-4 mr-2" />
-            Cover Photo
+            Cover/Spine AI
           </TabsTrigger>
         </TabsList>
 
@@ -417,10 +417,14 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
                 </Button>
               </>
             ) : (
-              <div className="text-center">
-                <Image className="h-16 w-16 text-muted-foreground mx-auto mb-2" />
+              <div className="text-center p-4">
+                <Image className="h-12 w-12 mb-3 mx-auto text-muted-foreground" />
+                <p className="font-semibold mb-1">✨ AI Cover & Spine Recognition</p>
                 <p className="text-sm text-muted-foreground">
-                  Capture book cover or spine
+                  Capture book cover OR spine photo
+                </p>
+                <p className="text-xs text-muted-foreground mt-2">
+                  Our AI reads vertical spine text - no barcode needed!
                 </p>
               </div>
             )}
@@ -455,9 +459,11 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             </Button>
           )}
 
-          <p className="text-xs text-muted-foreground text-center">
-            AI will identify the book from the cover image
-          </p>
+          <div className="text-xs text-muted-foreground text-center space-y-1">
+            <p className="font-medium">✨ Revolutionary AI Recognition</p>
+            <p>Works with cover photos AND spine photos (even vertical text!)</p>
+            <p className="text-[10px]">No competitor can do this - it's our secret weapon</p>
+          </div>
         </TabsContent>
       </Tabs>
     </div>
