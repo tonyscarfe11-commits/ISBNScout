@@ -156,14 +156,26 @@ export class RepricingService {
       case 'beat_by_percent':
         if (rule.strategyValue) {
           const percent = parseFloat(rule.strategyValue);
-          newPrice = competitorPrice * (1 - percent / 100);
+          if (!isNaN(percent)) {
+            newPrice = competitorPrice * (1 - percent / 100);
+          } else {
+            newPrice = competitorPrice;
+          }
+        } else {
+          newPrice = competitorPrice;
         }
         break;
 
       case 'beat_by_amount':
         if (rule.strategyValue) {
           const amount = parseFloat(rule.strategyValue);
-          newPrice = competitorPrice - amount;
+          if (!isNaN(amount)) {
+            newPrice = competitorPrice - amount;
+          } else {
+            newPrice = competitorPrice;
+          }
+        } else {
+          newPrice = competitorPrice;
         }
         break;
 

@@ -1204,15 +1204,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Platform, strategy, minPrice, and maxPrice are required" });
       }
 
+      const minPriceNum = typeof minPrice === 'number' ? minPrice : parseFloat(minPrice);
+      const maxPriceNum = typeof maxPrice === 'number' ? maxPrice : parseFloat(maxPrice);
+
+      if (isNaN(minPriceNum) || isNaN(maxPriceNum)) {
+        return res.status(400).json({ message: "Min and max prices must be valid numbers" });
+      }
+
+      if (minPriceNum < 0 || maxPriceNum < 0) {
+        return res.status(400).json({ message: "Prices cannot be negative" });
+      }
+
+      if (minPriceNum >= maxPriceNum) {
+        return res.status(400).json({ message: "Min price must be less than max price" });
+      }
+
+      // Validate strategyValue based on strategy
+      const requiresStrategyValue = strategy === 'beat_by_percent' || strategy === 'beat_by_amount';
+      
+      if (requiresStrategyValue && (strategyValue === undefined || strategyValue === null || strategyValue === '')) {
+        return res.status(400).json({ message: "Strategy value is required for this pricing strategy" });
+      }
+      
+      if (strategyValue != null && strategyValue !== '') {
+        const strategyValueNum = parseFloat(strategyValue);
+        if (isNaN(strategyValueNum) || strategyValueNum < 0) {
+          return res.status(400).json({ message: "Strategy value must be a positive number" });
+        }
+      }
+
       const rule = await storage.createRepricingRule({
         userId,
         listingId: listingId || null,
         platform,
         strategy,
-        strategyValue: strategyValue || null,
-        minPrice: minPrice.toString(),
-        maxPrice: maxPrice.toString(),
-        isActive: isActive !== undefined ? isActive.toString() : "true",
+        strategyValue: strategyValue != null && strategyValue !== '' ? String(strategyValue) : null,
+        minPrice: minPriceNum.toString(),
+        maxPrice: maxPriceNum.toString(),
+        isActive: isActive !== undefined ? String(isActive) : "true",
         runFrequency: runFrequency || "hourly",
       });
 
@@ -1276,14 +1305,62 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(404).json({ message: "Rule not found" });
       }
 
+      // Validate updated values
       const updates: any = {};
       if (req.body.listingId !== undefined) updates.listingId = req.body.listingId;
       if (req.body.platform !== undefined) updates.platform = req.body.platform;
+      
+      const strategy = req.body.strategy || existingRule.strategy;
       if (req.body.strategy !== undefined) updates.strategy = req.body.strategy;
-      if (req.body.strategyValue !== undefined) updates.strategyValue = req.body.strategyValue;
-      if (req.body.minPrice !== undefined) updates.minPrice = req.body.minPrice.toString();
-      if (req.body.maxPrice !== undefined) updates.maxPrice = req.body.maxPrice.toString();
-      if (req.body.isActive !== undefined) updates.isActive = req.body.isActive.toString();
+
+      // Validate minPrice and maxPrice
+      let minPriceNum: number;
+      let maxPriceNum: number;
+      
+      if (req.body.minPrice !== undefined) {
+        minPriceNum = typeof req.body.minPrice === 'number' ? req.body.minPrice : parseFloat(req.body.minPrice);
+        if (isNaN(minPriceNum) || minPriceNum < 0) {
+          return res.status(400).json({ message: "Min price must be a positive number" });
+        }
+        updates.minPrice = minPriceNum.toString();
+      } else {
+        minPriceNum = parseFloat(existingRule.minPrice);
+      }
+
+      if (req.body.maxPrice !== undefined) {
+        maxPriceNum = typeof req.body.maxPrice === 'number' ? req.body.maxPrice : parseFloat(req.body.maxPrice);
+        if (isNaN(maxPriceNum) || maxPriceNum < 0) {
+          return res.status(400).json({ message: "Max price must be a positive number" });
+        }
+        updates.maxPrice = maxPriceNum.toString();
+      } else {
+        maxPriceNum = parseFloat(existingRule.maxPrice);
+      }
+
+      if (minPriceNum >= maxPriceNum) {
+        return res.status(400).json({ message: "Min price must be less than max price" });
+      }
+
+      // Validate strategyValue based on strategy
+      if (req.body.strategyValue !== undefined) {
+        const requiresStrategyValue = strategy === 'beat_by_percent' || strategy === 'beat_by_amount';
+        const strategyValue = req.body.strategyValue;
+        
+        if (requiresStrategyValue && (strategyValue === undefined || strategyValue === null || strategyValue === '')) {
+          return res.status(400).json({ message: "Strategy value is required for this pricing strategy" });
+        }
+        
+        if (strategyValue != null && strategyValue !== '') {
+          const strategyValueNum = parseFloat(strategyValue);
+          if (isNaN(strategyValueNum) || strategyValueNum < 0) {
+            return res.status(400).json({ message: "Strategy value must be a positive number" });
+          }
+        }
+        
+        updates.strategyValue = strategyValue != null && strategyValue !== '' ? String(strategyValue) : null;
+      }
+      
+      if (req.body.isActive !== undefined) updates.isActive = String(req.body.isActive);
       if (req.body.runFrequency !== undefined) updates.runFrequency = req.body.runFrequency;
 
       const updatedRule = await storage.updateRepricingRule(id, updates);

@@ -13,6 +13,7 @@ import AnalyticsPage from "@/pages/AnalyticsPage";
 import AlertsPage from "@/pages/AlertsPage";
 import InventoryPage from "@/pages/InventoryPage";
 import ListingsPage from "@/pages/ListingsPage";
+import RepricingPage from "@/pages/RepricingPage";
 import ProfitReportsPage from "@/pages/ProfitReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
@@ -108,6 +109,11 @@ function Router() {
         <Route path="/app/listings/new">
           <AppLayout>
             <ListingsPage />
+          </AppLayout>
+        </Route>
+        <Route path="/app/repricing">
+          <AppLayout>
+            <RepricingPage />
           </AppLayout>
         </Route>
         <Route path="/app/reports">

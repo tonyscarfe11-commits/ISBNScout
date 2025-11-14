@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge } from "@/components/ui/badge";
-import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock } from "lucide-react";
+import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock, TrendingDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import {
@@ -282,6 +282,18 @@ export default function SettingsPage() {
           <Card className="p-4">
             <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
             <div className="space-y-2">
+              <Button
+                variant="ghost"
+                className="w-full justify-start"
+                onClick={() => setLocation('/app/repricing')}
+                data-testid="link-repricing"
+              >
+                <TrendingDown className="h-4 w-4 mr-3" />
+                <div className="flex-1 text-left">
+                  <p className="text-sm font-medium">Repricing</p>
+                  <p className="text-xs text-muted-foreground">Auto-adjust prices to stay competitive</p>
+                </div>
+              </Button>
               <Button
                 variant="ghost"
                 className="w-full justify-start"
