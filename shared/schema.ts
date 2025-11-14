@@ -151,3 +151,70 @@ export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit
 
 export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
 export type InventoryItem = typeof inventoryItems.$inferSelect;
+
+// Repricing Rules - Auto-adjust listing prices to stay competitive
+export const repricingRules = pgTable("repricing_rules", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listingId: varchar("listing_id").references(() => listings.id, { onDelete: "cascade" }), // null = applies to all listings
+  platform: text("platform").notNull(), // 'amazon', 'ebay', or 'all'
+  
+  // Repricing strategy
+  strategy: text("strategy").notNull(), // 'match_lowest', 'beat_by_percent', 'beat_by_amount', 'target_margin'
+  strategyValue: decimal("strategy_value", { precision: 10, scale: 2 }), // e.g., 5.00 for 5% or £5
+  
+  // Price bounds
+  minPrice: decimal("min_price", { precision: 10, scale: 2 }).notNull(), // Don't go below this
+  maxPrice: decimal("max_price", { precision: 10, scale: 2 }).notNull(), // Don't go above this
+  
+  // Rule control
+  isActive: text("is_active").notNull().default("true"),
+  runFrequency: text("run_frequency").notNull().default("hourly"), // 'hourly', 'daily', 'manual'
+  lastRun: timestamp("last_run"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index("repricing_rules_user_id_idx").on(table.userId),
+  listingIdIdx: index("repricing_rules_listing_id_idx").on(table.listingId),
+  platformIdx: index("repricing_rules_platform_idx").on(table.platform),
+  isActiveIdx: index("repricing_rules_is_active_idx").on(table.isActive),
+}));
+
+export const insertRepricingRuleSchema = createInsertSchema(repricingRules).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertRepricingRule = z.infer<typeof insertRepricingRuleSchema>;
+export type RepricingRule = typeof repricingRules.$inferSelect;
+
+// Repricing History - Track all price changes
+export const repricingHistory = pgTable("repricing_history", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  listingId: varchar("listing_id").notNull().references(() => listings.id, { onDelete: "cascade" }),
+  ruleId: varchar("rule_id").references(() => repricingRules.id, { onDelete: "set null" }),
+  
+  oldPrice: decimal("old_price", { precision: 10, scale: 2 }).notNull(),
+  newPrice: decimal("new_price", { precision: 10, scale: 2 }).notNull(),
+  competitorPrice: decimal("competitor_price", { precision: 10, scale: 2 }), // The price we're competing against
+  reason: text("reason").notNull(), // Why the price changed
+  success: text("success").notNull().default("true"), // Whether update succeeded
+  errorMessage: text("error_message"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index("repricing_history_user_id_idx").on(table.userId),
+  listingIdIdx: index("repricing_history_listing_id_idx").on(table.listingId),
+  createdAtIdx: index("repricing_history_created_at_idx").on(table.createdAt),
+}));
+
+export const insertRepricingHistorySchema = createInsertSchema(repricingHistory).omit({
+  id: true,
+  createdAt: true,
+});
+
+export type InsertRepricingHistory = z.infer<typeof insertRepricingHistorySchema>;
+export type RepricingHistory = typeof repricingHistory.$inferSelect;

@@ -7,6 +7,8 @@ import {
   books,
   listings,
   inventoryItems,
+  repricingRules,
+  repricingHistory,
   type User,
   type InsertUser,
   type ApiCredentials,
@@ -17,6 +19,10 @@ import {
   type InsertListing,
   type InventoryItem,
   type InsertInventoryItem,
+  type RepricingRule,
+  type InsertRepricingRule,
+  type RepricingHistory,
+  type InsertRepricingHistory,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 

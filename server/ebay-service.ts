@@ -146,4 +146,82 @@ export class EbayService {
       throw new Error('Failed to authenticate with eBay');
     }
   }
+
+  async searchByISBN(isbn: string): Promise<{ lowestPrice: number | null; averagePrice: number | null }> {
+    if (!this.api) {
+      throw new Error('eBay API not initialized');
+    }
+
+    try {
+      // Use Finding API to search for active listings by ISBN
+      const response = await (this.api as any).finding.findItemsByProduct({
+        productId: {
+          '@type': 'ISBN',
+          '#value': isbn,
+        },
+        itemFilter: [
+          {
+            name: 'ListingType',
+            value: 'FixedPrice',
+          },
+        ],
+        sortOrder: 'PricePlusShippingLowest',
+        paginationInput: {
+          entriesPerPage: 20,
+        },
+      });
+
+      if (response && response[0]?.searchResult?.[0]?.item) {
+        const items = response[0].searchResult[0].item;
+        const prices: number[] = [];
+
+        for (const item of items) {
+          const price = parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || '0');
+          if (price > 0) {
+            prices.push(price);
+          }
+        }
+
+        if (prices.length > 0) {
+          const lowestPrice = Math.min(...prices);
+          const averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+          return { lowestPrice, averagePrice };
+        }
+      }
+
+      return { lowestPrice: null, averagePrice: null };
+    } catch (error) {
+      console.error('[EbayService] Error searching by ISBN:', error);
+      return { lowestPrice: null, averagePrice: null };
+    }
+  }
+
+  async updateListingPrice(itemId: string, newPrice: number): Promise<boolean> {
+    if (!this.api) {
+      throw new Error('eBay API not initialized');
+    }
+
+    try {
+      const response = await this.api.trading.ReviseFixedPriceItem({
+        Item: {
+          ItemID: itemId,
+          StartPrice: {
+            value: newPrice,
+            currencyID: 'GBP',
+          },
+        },
+      });
+
+      if (response.Ack === 'Success' || response.Ack === 'Warning') {
+        console.log(`[EbayService] Successfully updated price for item ${itemId} to £${newPrice}`);
+        return true;
+      }
+
+      console.error('[EbayService] Failed to update listing price:', response);
+      return false;
+    } catch (error) {
+      console.error('[EbayService] Error updating listing price:', error);
+      return false;
+    }
+  }
 }

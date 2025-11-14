@@ -11,6 +11,10 @@ import {
   type InsertListing,
   type InventoryItem,
   type InsertInventoryItem,
+  type RepricingRule,
+  type InsertRepricingRule,
+  type RepricingHistory,
+  type InsertRepricingHistory,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 
@@ -156,6 +160,72 @@ export class SQLiteStorage implements IStorage {
     `);
     this.db.exec(`
       CREATE INDEX IF NOT EXISTS idx_inventory_items_listing_id ON inventory_items(listingId)
+    `);
+
+    // Repricing Rules table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS repricing_rules (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        listingId TEXT,
+        platform TEXT NOT NULL,
+        strategy TEXT NOT NULL,
+        strategyValue TEXT,
+        minPrice TEXT NOT NULL,
+        maxPrice TEXT NOT NULL,
+        isActive TEXT NOT NULL DEFAULT 'true',
+        runFrequency TEXT NOT NULL DEFAULT 'hourly',
+        lastRun TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create indices for repricing_rules
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_rules_user_id ON repricing_rules(userId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_rules_listing_id ON repricing_rules(listingId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_rules_platform ON repricing_rules(platform)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_rules_is_active ON repricing_rules(isActive)
+    `);
+
+    // Repricing History table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS repricing_history (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        listingId TEXT NOT NULL,
+        ruleId TEXT,
+        oldPrice TEXT NOT NULL,
+        newPrice TEXT NOT NULL,
+        competitorPrice TEXT,
+        reason TEXT NOT NULL,
+        success TEXT NOT NULL DEFAULT 'true',
+        errorMessage TEXT,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE CASCADE,
+        FOREIGN KEY (ruleId) REFERENCES repricing_rules(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Create indices for repricing_history
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_history_user_id ON repricing_history(userId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_history_listing_id ON repricing_history(listingId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_repricing_history_created_at ON repricing_history(createdAt)
     `);
 
     // API Usage tracking table

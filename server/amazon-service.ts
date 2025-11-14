@@ -209,4 +209,113 @@ export class AmazonService {
       throw new Error(error.message || 'Failed to create FBA shipment');
     }
   }
+
+  async getCompetitivePricing(isbn: string): Promise<{ lowestPrice: number | null; buyBoxPrice: number | null }> {
+    if (!this.api) {
+      throw new Error('Amazon SP-API not initialized');
+    }
+
+    try {
+      // First, lookup ASIN from ISBN
+      const asin = await this.lookupASIN(isbn);
+
+      // Use Product Pricing API to get competitive pricing
+      const response = await this.api.callAPI({
+        operation: 'getCompetitivePricing',
+        endpoint: 'productPricing',
+        query: {
+          MarketplaceId: 'A1F83G8C2ARO7P',
+          Asins: [asin],
+          ItemType: 'Asin',
+        },
+        options: {
+          version: 'v0',
+        },
+      });
+
+      if (response.payload && response.payload.length > 0) {
+        const pricing = response.payload[0];
+        const competitivePrices = pricing.Product?.CompetitivePricing?.CompetitivePrices || [];
+        
+        let lowestPrice: number | null = null;
+        let buyBoxPrice: number | null = null;
+
+        for (const price of competitivePrices) {
+          if (price.condition === 'New' || price.condition === 'Used') {
+            const amount = parseFloat(price.Price?.ListingPrice?.Amount || '0');
+            if (amount > 0 && (lowestPrice === null || amount < lowestPrice)) {
+              lowestPrice = amount;
+            }
+          }
+        }
+
+        // Get BuyBox price if available
+        if (pricing.Product?.Offers?.length > 0) {
+          const buyBox = pricing.Product.Offers[0].BuyingPrice?.ListingPrice?.Amount;
+          if (buyBox) {
+            buyBoxPrice = parseFloat(buyBox);
+          }
+        }
+
+        return { lowestPrice, buyBoxPrice };
+      }
+
+      return { lowestPrice: null, buyBoxPrice: null };
+    } catch (error) {
+      console.error('[AmazonService] Error fetching competitive pricing:', error);
+      return { lowestPrice: null, buyBoxPrice: null };
+    }
+  }
+
+  async updateListingPrice(sku: string, newPrice: number): Promise<boolean> {
+    if (!this.api) {
+      throw new Error('Amazon SP-API not initialized');
+    }
+
+    try {
+      const listingPayload = {
+        productType: 'BOOK',
+        patches: [{
+          op: 'replace',
+          path: '/attributes/purchasable_offer',
+          value: [{
+            currency: 'GBP',
+            our_price: [{
+              schedule: [{
+                value_with_tax: {
+                  amount: newPrice,
+                  currency_code: 'GBP',
+                },
+              }],
+            }],
+            marketplace_id: 'A1F83G8C2ARO7P',
+          }],
+        }],
+      };
+
+      const response = await this.api.callAPI({
+        operation: 'patchListingsItem',
+        endpoint: 'listingsItems',
+        path: {
+          sellerId: await this.getSellerId(),
+          sku,
+        },
+        body: listingPayload,
+        options: {
+          version: '2021-08-01',
+        },
+      });
+
+      if (response.status === 'ACCEPTED' || response.status === 'SUCCESS') {
+        console.log(`[AmazonService] Successfully updated price for SKU ${sku} to £${newPrice}`);
+        return true;
+      }
+
+      console.error('[AmazonService] Failed to update listing price:', response);
+      return false;
+    } catch (error) {
+      console.error('[AmazonService] Error updating listing price:', error);
+      return false;
+    }
+  }
 }

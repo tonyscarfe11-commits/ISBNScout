@@ -11,6 +11,10 @@ import type {
   InsertListing,
   InventoryItem,
   InsertInventoryItem,
+  RepricingRule,
+  InsertRepricingRule,
+  RepricingHistory,
+  InsertRepricingHistory,
 } from "@shared/schema";
 
 /**

@@ -9,6 +9,10 @@ import {
   type InsertListing,
   type InventoryItem,
   type InsertInventoryItem,
+  type RepricingRule,
+  type InsertRepricingRule,
+  type RepricingHistory,
+  type InsertRepricingHistory,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -39,6 +43,7 @@ export interface IStorage {
   getListings(userId: string): Promise<Listing[]>;
   getListingsByBook(userId: string, bookId: string): Promise<Listing[]>;
   updateListingStatus(id: string, status: string, errorMessage?: string): Promise<Listing | undefined>;
+  updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined>;
 
   // Inventory Items
   createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
@@ -47,6 +52,18 @@ export interface IStorage {
   getInventoryItemsByBook(userId: string, bookId: string): Promise<InventoryItem[]>;
   updateInventoryItem(id: string, updates: Partial<Omit<InventoryItem, 'id' | 'userId' | 'createdAt'>>): Promise<InventoryItem | undefined>;
   deleteInventoryItem(id: string): Promise<boolean>;
+
+  // Repricing Rules
+  createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule>;
+  getRepricingRules(userId: string): Promise<RepricingRule[]>;
+  getRepricingRuleById(id: string): Promise<RepricingRule | undefined>;
+  getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]>;
+  updateRepricingRule(id: string, updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>): Promise<RepricingRule | undefined>;
+  deleteRepricingRule(id: string): Promise<boolean>;
+
+  // Repricing History
+  createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory>;
+  getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -55,6 +72,8 @@ export class MemStorage implements IStorage {
   private books: Map<string, Book>;
   private listings: Map<string, Listing>;
   private inventoryItems: Map<string, InventoryItem>;
+  private repricingRules: Map<string, RepricingRule>;
+  private repricingHistory: Map<string, RepricingHistory>;
 
   constructor() {
     this.users = new Map();
@@ -62,6 +81,8 @@ export class MemStorage implements IStorage {
     this.books = new Map();
     this.listings = new Map();
     this.inventoryItems = new Map();
+    this.repricingRules = new Map();
+    this.repricingHistory = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -304,6 +325,115 @@ export class MemStorage implements IStorage {
 
   async deleteInventoryItem(id: string): Promise<boolean> {
     return this.inventoryItems.delete(id);
+  }
+
+  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
+    const listing = this.listings.get(id);
+    if (!listing) return undefined;
+
+    const updated: Listing = {
+      ...listing,
+      price: newPrice,
+      updatedAt: new Date(),
+    };
+    this.listings.set(id, updated);
+    return updated;
+  }
+
+  async createRepricingRule(insertRule: InsertRepricingRule): Promise<RepricingRule> {
+    const id = randomUUID();
+    const now = new Date();
+    const rule: RepricingRule = {
+      ...insertRule,
+      id,
+      listingId: insertRule.listingId || null,
+      strategyValue: insertRule.strategyValue || null,
+      lastRun: null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.repricingRules.set(id, rule);
+    return rule;
+  }
+
+  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
+    return Array.from(this.repricingRules.values())
+      .filter((rule) => rule.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
+    return this.repricingRules.get(id);
+  }
+
+  async getActiveRulesForListing(
+    userId: string,
+    listingId: string,
+    platform: string
+  ): Promise<RepricingRule[]> {
+    return Array.from(this.repricingRules.values())
+      .filter(
+        (rule) =>
+          rule.userId === userId &&
+          rule.isActive === "true" &&
+          (rule.listingId === null || rule.listingId === listingId) &&
+          (rule.platform === "all" || rule.platform === platform)
+      )
+      .sort((a, b) => {
+        if (a.listingId && !b.listingId) return -1;
+        if (!a.listingId && b.listingId) return 1;
+        return 0;
+      });
+  }
+
+  async updateRepricingRule(
+    id: string,
+    updates: Partial<Omit<RepricingRule, "id" | "userId" | "createdAt">>
+  ): Promise<RepricingRule | undefined> {
+    const rule = this.repricingRules.get(id);
+    if (!rule) return undefined;
+
+    const updated: RepricingRule = {
+      ...rule,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.repricingRules.set(id, updated);
+    return updated;
+  }
+
+  async deleteRepricingRule(id: string): Promise<boolean> {
+    return this.repricingRules.delete(id);
+  }
+
+  async createRepricingHistory(
+    insertHistory: InsertRepricingHistory
+  ): Promise<RepricingHistory> {
+    const id = randomUUID();
+    const now = new Date();
+    const history: RepricingHistory = {
+      ...insertHistory,
+      id,
+      ruleId: insertHistory.ruleId || null,
+      competitorPrice: insertHistory.competitorPrice || null,
+      errorMessage: insertHistory.errorMessage || null,
+      createdAt: now,
+    };
+    this.repricingHistory.set(id, history);
+    return history;
+  }
+
+  async getRepricingHistory(
+    userId: string,
+    listingId?: string
+  ): Promise<RepricingHistory[]> {
+    return Array.from(this.repricingHistory.values())
+      .filter(
+        (history) =>
+          history.userId === userId &&
+          (!listingId || history.listingId === listingId)
+      )
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
   }
 }
 
