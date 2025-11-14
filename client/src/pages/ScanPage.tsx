@@ -76,11 +76,15 @@ export default function ScanPage() {
     });
 
     try {
-      const response = await apiRequest("/api/ai/analyze-image", {
+      const response = await fetch("/api/ai/analyze-image", {
         method: "POST",
         body: JSON.stringify({ imageUrl: imageData }),
         headers: { "Content-Type": "application/json" },
       });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze image");
+      }
 
       const result = await response.json() as {
         title?: string;
