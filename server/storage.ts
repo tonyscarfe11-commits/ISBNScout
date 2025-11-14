@@ -310,13 +310,14 @@ export class MemStorage implements IStorage {
 // Import storage implementations
 import { SQLiteStorage } from "./sqlite-storage";
 import { PostgresStorage } from "./postgres-storage";
+import { HybridStorage } from "./hybrid-storage";
 
-// Use PostgreSQL in production, SQLite in development
-export const storage =
+// Use HybridStorage for offline-first with cloud sync
+export const storage = new HybridStorage(
+  "isbn-scout-offline.db",
   process.env.DATABASE_URL
-    ? new PostgresStorage(process.env.DATABASE_URL)
-    : new SQLiteStorage();
+);
 
 console.log(
-  `[Storage] Using ${process.env.DATABASE_URL ? "PostgreSQL (Neon)" : "SQLite"}`
+  `[Storage] Using HybridStorage - SQLite (offline) ${process.env.DATABASE_URL ? "+ PostgreSQL sync (cloud)" : "(local only)"}`
 );
