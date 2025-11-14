@@ -10,6 +10,8 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
+import { CapacitorBarcodeScanner } from "@capacitor/barcode-scanner";
+import { Capacitor } from "@capacitor/core";
 
 export interface ScannerInterfaceProps {
   onIsbnScan: (isbn: string) => void;
@@ -61,92 +63,130 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
     setError(null);
     setIsScanning(true);
 
-    try {
-      console.log("Requesting camera access...");
+    // Check if running on native mobile platform (iOS or Android)
+    const isNative = Capacitor.isNativePlatform();
 
-      // Detect if mobile device
-      const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
-      // Request camera permission
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: isMobile ? { facingMode: "environment" } : true
-      });
-
-      console.log("Camera stream obtained:", stream.getVideoTracks());
-      streamRef.current = stream;
-
-      if (!videoRef.current) {
-        throw new Error("Video element not found");
-      }
-
-      console.log("Setting video srcObject...");
-      const video = videoRef.current;
-      video.srcObject = stream;
-
-      // Immediately show camera UI
-      setIsCameraActive(true);
-      setIsScanning(false);
-      console.log("Camera UI now active");
-
-      // Try to play the video
+    if (isNative) {
+      // Use native Capacitor barcode scanner
       try {
-        await video.play();
-        console.log("Video playing!");
-      } catch (playErr) {
-        console.log("Initial play failed, will retry:", playErr);
-        // Some browsers need user interaction first, but this should still work
+        console.log("Using native Capacitor barcode scanner...");
+
+        const result = await CapacitorBarcodeScanner.scanBarcode({
+          hint: "ALL",
+          scanInstructions: "Position the barcode in the frame",
+          cameraDirection: "BACK",
+          scanOrientation: "ADAPTIVE",
+        });
+
+        setIsScanning(false);
+
+        if (result.barcode) {
+          console.log("Native barcode detected:", result.barcode);
+          const cleanedText = result.barcode.replace(/[-\s]/g, "");
+
+          // Validate ISBN format (10 or 13 digits)
+          if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
+            console.log("Valid ISBN found:", cleanedText);
+            onIsbnScan(cleanedText);
+          } else {
+            setError("Scanned code is not a valid ISBN. Please scan a book barcode.");
+          }
+        }
+      } catch (err: any) {
+        console.error("Native barcode scan error:", err);
+        setError(
+          err.message || "Failed to scan barcode. Please try again."
+        );
+        setIsScanning(false);
       }
+    } else {
+      // Use web-based ZXing scanner for browsers
+      try {
+        console.log("Using web-based ZXing scanner...");
 
-      // Start scanning after a brief delay
-      setTimeout(() => {
-        if (codeReaderRef.current && videoRef.current) {
-          console.log("Starting barcode detection...");
-          codeReaderRef.current.decodeFromVideoDevice(
-            undefined,
-            videoRef.current,
-            (result, err) => {
-              if (result && !isProcessingRef.current) {
-                const text = result.getText();
-                console.log("Barcode detected:", text);
-                const cleanedText = text.replace(/[-\s]/g, "");
-                if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
-                  console.log("Valid ISBN found:", cleanedText);
+        // Detect if mobile device
+        const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
-                  // IMMEDIATELY set processing flag and stop camera
-                  isProcessingRef.current = true;
+        // Request camera permission
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: isMobile ? { facingMode: "environment" } : true
+        });
 
-                  // Stop camera immediately to prevent re-scanning
-                  if (codeReaderRef.current) {
-                    try {
-                      codeReaderRef.current.reset();
-                    } catch (e) {
-                      // Ignore
+        console.log("Camera stream obtained:", stream.getVideoTracks());
+        streamRef.current = stream;
+
+        if (!videoRef.current) {
+          throw new Error("Video element not found");
+        }
+
+        console.log("Setting video srcObject...");
+        const video = videoRef.current;
+        video.srcObject = stream;
+
+        // Immediately show camera UI
+        setIsCameraActive(true);
+        setIsScanning(false);
+        console.log("Camera UI now active");
+
+        // Try to play the video
+        try {
+          await video.play();
+          console.log("Video playing!");
+        } catch (playErr) {
+          console.log("Initial play failed, will retry:", playErr);
+        }
+
+        // Start scanning after a brief delay
+        setTimeout(() => {
+          if (codeReaderRef.current && videoRef.current) {
+            console.log("Starting barcode detection...");
+            codeReaderRef.current.decodeFromVideoDevice(
+              undefined,
+              videoRef.current,
+              (result, err) => {
+                if (result && !isProcessingRef.current) {
+                  const text = result.getText();
+                  console.log("Barcode detected:", text);
+                  const cleanedText = text.replace(/[-\s]/g, "");
+                  if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
+                    console.log("Valid ISBN found:", cleanedText);
+
+                    // IMMEDIATELY set processing flag and stop camera
+                    isProcessingRef.current = true;
+
+                    // Stop camera immediately to prevent re-scanning
+                    if (codeReaderRef.current) {
+                      try {
+                        codeReaderRef.current.reset();
+                      } catch (e) {
+                        // Ignore
+                      }
                     }
+
+                    stopCamera();
+
+                    // Then notify parent with small delay to ensure camera is stopped
+                    setTimeout(() => {
+                      onIsbnScan(cleanedText);
+                    }, 100);
                   }
-
-                  stopCamera();
-
-                  // Then notify parent with small delay to ensure camera is stopped
-                  setTimeout(() => {
-                    onIsbnScan(cleanedText);
-                  }, 100);
+                }
+                if (err && !(err instanceof NotFoundException)) {
+                  console.error("Barcode scan error:", err);
                 }
               }
-              if (err && !(err instanceof NotFoundException)) {
-                console.error("Barcode scan error:", err);
-              }
-            }
-          );
-        }
-      }, 1000);
-    } catch (err: any) {
-      console.error("Camera error:", err);
-      setError(err.name === "NotAllowedError"
-        ? "Camera permission denied. Please allow camera access."
-        : `Failed to access camera: ${err.message}`
-      );
-      setIsScanning(false);
-      setIsCameraActive(false);
+            );
+          }
+        }, 1000);
+      } catch (err: any) {
+        console.error("Camera error:", err);
+        setError(err.name === "NotAllowedError"
+          ? "Camera permission denied. Please allow camera access."
+          : `Failed to access camera: ${err.message}`
+        );
+        setIsScanning(false);
+        setIsCameraActive(false);
+      }
     }
   };
 

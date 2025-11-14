@@ -45,5 +45,7 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>NSCameraUsageDescription</key>
+	<string>ISBNScout needs camera access to scan book barcodes and identify books</string>
 </dict>
 </plist>

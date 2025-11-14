@@ -31,7 +31,8 @@
       "Bash(printenv:*)",
       "WebSearch",
       "Bash(npx cap init:*)",
-      "Bash(npx cap:*)"
+      "Bash(npx cap:*)",
+      "WebFetch(domain:capacitorjs.com)"
     ],
     "deny": [],
     "ask": []
