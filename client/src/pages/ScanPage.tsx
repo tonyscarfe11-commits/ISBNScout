@@ -8,7 +8,10 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { UpgradeModal } from "@/components/UpgradeModal";
 import { useToast } from "@/hooks/use-toast";
 import { useTrialStatus } from "@/hooks/useTrialStatus";
+import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
 import { useLocation } from "wouter";
+import { Button } from "@/components/ui/button";
+import { Bluetooth, BluetoothOff } from "lucide-react";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
@@ -21,6 +24,32 @@ export default function ScanPage() {
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [recentScans, setRecentScans] = useState<BookDetails[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [bluetoothScannerEnabled, setBluetoothScannerEnabled] = useState(() => {
+    // Load from localStorage
+    const saved = localStorage.getItem("bluetoothScannerEnabled");
+    return saved ? JSON.parse(saved) : false;
+  });
+
+  // Bluetooth scanner hook
+  const { isListening: isBluetoothListening } = useBluetoothScanner({
+    enabled: bluetoothScannerEnabled,
+    onScan: handleIsbnScan,
+    validatePattern: /^\d{10,13}$/, // ISBN format
+  });
+
+  // Toggle Bluetooth scanner and save to localStorage
+  const toggleBluetoothScanner = () => {
+    const newValue = !bluetoothScannerEnabled;
+    setBluetoothScannerEnabled(newValue);
+    localStorage.setItem("bluetoothScannerEnabled", JSON.stringify(newValue));
+
+    toast({
+      title: newValue ? "Bluetooth Scanner Enabled" : "Bluetooth Scanner Disabled",
+      description: newValue
+        ? "Your Bluetooth barcode scanner is now active. Scan a book to test!"
+        : "Bluetooth scanner has been disabled.",
+    });
+  };
 
   // Load recent scans from database on mount
   useEffect(() => {
@@ -260,12 +289,47 @@ export default function ScanPage() {
       />
 
       <div className="max-w-2xl mx-auto p-4 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
-          <p className="text-sm text-muted-foreground">
-            Scan ISBN, capture book cover, or use AI photo recognition
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
+            <p className="text-sm text-muted-foreground">
+              Scan ISBN, capture book cover, or use AI photo recognition
+            </p>
+          </div>
+          <Button
+            variant={bluetoothScannerEnabled ? "default" : "outline"}
+            size="sm"
+            onClick={toggleBluetoothScanner}
+            className="shrink-0"
+          >
+            {bluetoothScannerEnabled ? (
+              <>
+                <Bluetooth className="h-4 w-4 mr-2" />
+                BT Active
+              </>
+            ) : (
+              <>
+                <BluetoothOff className="h-4 w-4 mr-2" />
+                BT Scanner
+              </>
+            )}
+          </Button>
         </div>
+
+        {/* Bluetooth Scanner Status Indicator */}
+        {isBluetoothListening && (
+          <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
+            <div className="flex items-center gap-2">
+              <Bluetooth className="h-4 w-4 text-blue-600 dark:text-blue-400 animate-pulse" />
+              <p className="text-sm text-blue-900 dark:text-blue-100">
+                <span className="font-medium">Bluetooth Scanner Active</span> - Ready to scan barcodes
+              </p>
+            </div>
+            <p className="text-xs text-blue-700 dark:text-blue-300 mt-1 ml-6">
+              Use your paired Bluetooth scanner to scan book barcodes. The barcode will be processed automatically.
+            </p>
+          </div>
+        )}
 
         <BookPhotoRecognition onRecognized={handleBookRecognized} />
 
