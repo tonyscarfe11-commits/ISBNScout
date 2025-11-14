@@ -9,6 +9,8 @@ import {
   type InsertBook,
   type Listing,
   type InsertListing,
+  type InventoryItem,
+  type InsertInventoryItem,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 
@@ -113,6 +115,47 @@ export class SQLiteStorage implements IStorage {
         FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
         FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE
       )
+    `);
+
+    // Inventory Items table
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS inventory_items (
+        id TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        bookId TEXT NOT NULL,
+        listingId TEXT,
+        sku TEXT,
+        purchaseDate TEXT NOT NULL,
+        purchaseCost TEXT NOT NULL,
+        purchaseSource TEXT,
+        condition TEXT NOT NULL,
+        location TEXT,
+        soldDate TEXT,
+        salePrice TEXT,
+        soldPlatform TEXT,
+        actualProfit TEXT,
+        status TEXT NOT NULL DEFAULT 'in_stock',
+        notes TEXT,
+        createdAt TEXT NOT NULL,
+        updatedAt TEXT NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
+        FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE,
+        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE SET NULL
+      )
+    `);
+
+    // Create indices for inventory_items
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_inventory_items_user_id ON inventory_items(userId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_inventory_items_book_id ON inventory_items(bookId)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_inventory_items_status ON inventory_items(status)
+    `);
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_inventory_items_listing_id ON inventory_items(listingId)
     `);
 
     // API Usage tracking table
@@ -579,6 +622,148 @@ export class SQLiteStorage implements IStorage {
       date: row.date,
       callCount: row.callCount
     }));
+  }
+
+  // Inventory Items methods
+  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
+    const id = randomUUID();
+    const now = new Date().toISOString();
+
+    const stmt = this.db.prepare(`
+      INSERT INTO inventory_items (
+        id, userId, bookId, listingId, sku, purchaseDate, purchaseCost,
+        purchaseSource, condition, location, soldDate, salePrice,
+        soldPlatform, actualProfit, status, notes, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `);
+
+    stmt.run(
+      id,
+      insertItem.userId,
+      insertItem.bookId,
+      insertItem.listingId || null,
+      insertItem.sku || null,
+      insertItem.purchaseDate.toISOString(),
+      insertItem.purchaseCost,
+      insertItem.purchaseSource || null,
+      insertItem.condition,
+      insertItem.location || null,
+      insertItem.soldDate?.toISOString() || null,
+      insertItem.salePrice || null,
+      insertItem.soldPlatform || null,
+      insertItem.actualProfit || null,
+      insertItem.status || "in_stock",
+      insertItem.notes || null,
+      now,
+      now
+    );
+
+    return {
+      id,
+      userId: insertItem.userId,
+      bookId: insertItem.bookId,
+      listingId: insertItem.listingId || null,
+      sku: insertItem.sku || null,
+      purchaseDate: insertItem.purchaseDate,
+      purchaseCost: insertItem.purchaseCost,
+      purchaseSource: insertItem.purchaseSource || null,
+      condition: insertItem.condition,
+      location: insertItem.location || null,
+      soldDate: insertItem.soldDate || null,
+      salePrice: insertItem.salePrice || null,
+      soldPlatform: insertItem.soldPlatform || null,
+      actualProfit: insertItem.actualProfit || null,
+      status: insertItem.status || "in_stock",
+      notes: insertItem.notes || null,
+      createdAt: new Date(now),
+      updatedAt: new Date(now),
+    };
+  }
+
+  async getInventoryItems(userId: string): Promise<InventoryItem[]> {
+    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE userId = ? ORDER BY createdAt DESC");
+    const rows = stmt.all(userId) as any[];
+    return rows.map(row => this.deserializeInventoryItem(row));
+  }
+
+  async getInventoryItemById(id: string): Promise<InventoryItem | undefined> {
+    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE id = ?");
+    const row = stmt.get(id) as any;
+    return row ? this.deserializeInventoryItem(row) : undefined;
+  }
+
+  async getInventoryItemsByBook(userId: string, bookId: string): Promise<InventoryItem[]> {
+    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE userId = ? AND bookId = ? ORDER BY createdAt DESC");
+    const rows = stmt.all(userId, bookId) as any[];
+    return rows.map(row => this.deserializeInventoryItem(row));
+  }
+
+  async updateInventoryItem(id: string, updates: Partial<Omit<InventoryItem, 'id' | 'userId' | 'createdAt'>>): Promise<InventoryItem | undefined> {
+    const item = await this.getInventoryItemById(id);
+    if (!item) return undefined;
+
+    const updatedItem = { ...item, ...updates };
+    const now = new Date().toISOString();
+
+    const stmt = this.db.prepare(`
+      UPDATE inventory_items SET
+        bookId = ?, listingId = ?, sku = ?, purchaseDate = ?, purchaseCost = ?,
+        purchaseSource = ?, condition = ?, location = ?, soldDate = ?,
+        salePrice = ?, soldPlatform = ?, actualProfit = ?, status = ?,
+        notes = ?, updatedAt = ?
+      WHERE id = ?
+    `);
+
+    stmt.run(
+      updatedItem.bookId,
+      updatedItem.listingId,
+      updatedItem.sku,
+      updatedItem.purchaseDate.toISOString(),
+      updatedItem.purchaseCost,
+      updatedItem.purchaseSource,
+      updatedItem.condition,
+      updatedItem.location,
+      updatedItem.soldDate?.toISOString() || null,
+      updatedItem.salePrice,
+      updatedItem.soldPlatform,
+      updatedItem.actualProfit,
+      updatedItem.status,
+      updatedItem.notes,
+      now,
+      id
+    );
+
+    updatedItem.updatedAt = new Date(now);
+    return updatedItem;
+  }
+
+  async deleteInventoryItem(id: string): Promise<boolean> {
+    const stmt = this.db.prepare("DELETE FROM inventory_items WHERE id = ?");
+    const result = stmt.run(id);
+    return result.changes > 0;
+  }
+
+  private deserializeInventoryItem(row: any): InventoryItem {
+    return {
+      id: row.id,
+      userId: row.userId,
+      bookId: row.bookId,
+      listingId: row.listingId,
+      sku: row.sku,
+      purchaseDate: new Date(row.purchaseDate),
+      purchaseCost: row.purchaseCost,
+      purchaseSource: row.purchaseSource,
+      condition: row.condition,
+      location: row.location,
+      soldDate: row.soldDate ? new Date(row.soldDate) : null,
+      salePrice: row.salePrice,
+      soldPlatform: row.soldPlatform,
+      actualProfit: row.actualProfit,
+      status: row.status,
+      notes: row.notes,
+      createdAt: new Date(row.createdAt),
+      updatedAt: new Date(row.updatedAt),
+    };
   }
 
   // Close database connection

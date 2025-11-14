@@ -1,10 +1,10 @@
-import { BarChart3, Camera, Clock, Package, Settings } from "lucide-react";
+import { BarChart3, Camera, Clock, Package, Settings, Archive } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
 const navItems = [
   { path: "/app/scan", icon: Camera, label: "Scan" },
   { path: "/app/history", icon: Clock, label: "History" },
-  { path: "/app/analytics", icon: BarChart3, label: "Analytics" },
+  { path: "/app/inventory", icon: Archive, label: "Inventory" },
   { path: "/app/listings", icon: Package, label: "Listings" },
   { path: "/app/settings", icon: Settings, label: "Settings" },
 ];

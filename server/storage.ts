@@ -7,6 +7,8 @@ import {
   type InsertBook,
   type Listing,
   type InsertListing,
+  type InventoryItem,
+  type InsertInventoryItem,
 } from "@shared/schema";
 import { randomUUID } from "crypto";
 
@@ -37,6 +39,14 @@ export interface IStorage {
   getListings(userId: string): Promise<Listing[]>;
   getListingsByBook(userId: string, bookId: string): Promise<Listing[]>;
   updateListingStatus(id: string, status: string, errorMessage?: string): Promise<Listing | undefined>;
+
+  // Inventory Items
+  createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem>;
+  getInventoryItems(userId: string): Promise<InventoryItem[]>;
+  getInventoryItemById(id: string): Promise<InventoryItem | undefined>;
+  getInventoryItemsByBook(userId: string, bookId: string): Promise<InventoryItem[]>;
+  updateInventoryItem(id: string, updates: Partial<Omit<InventoryItem, 'id' | 'userId' | 'createdAt'>>): Promise<InventoryItem | undefined>;
+  deleteInventoryItem(id: string): Promise<boolean>;
 }
 
 export class MemStorage implements IStorage {
@@ -44,12 +54,14 @@ export class MemStorage implements IStorage {
   private apiCredentials: Map<string, ApiCredentials>;
   private books: Map<string, Book>;
   private listings: Map<string, Listing>;
+  private inventoryItems: Map<string, InventoryItem>;
 
   constructor() {
     this.users = new Map();
     this.apiCredentials = new Map();
     this.books = new Map();
     this.listings = new Map();
+    this.inventoryItems = new Map();
   }
 
   async getUser(id: string): Promise<User | undefined> {
@@ -231,6 +243,67 @@ export class MemStorage implements IStorage {
       listing.updatedAt = new Date();
     }
     return listing;
+  }
+
+  // Inventory Items
+  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
+    const id = randomUUID();
+    const now = new Date();
+    const item: InventoryItem = {
+      id,
+      userId: insertItem.userId,
+      bookId: insertItem.bookId,
+      listingId: insertItem.listingId || null,
+      sku: insertItem.sku || null,
+      purchaseDate: insertItem.purchaseDate,
+      purchaseCost: insertItem.purchaseCost,
+      purchaseSource: insertItem.purchaseSource || null,
+      condition: insertItem.condition,
+      location: insertItem.location || null,
+      soldDate: insertItem.soldDate || null,
+      salePrice: insertItem.salePrice || null,
+      soldPlatform: insertItem.soldPlatform || null,
+      actualProfit: insertItem.actualProfit || null,
+      status: insertItem.status || "in_stock",
+      notes: insertItem.notes || null,
+      createdAt: now,
+      updatedAt: now,
+    };
+    this.inventoryItems.set(id, item);
+    return item;
+  }
+
+  async getInventoryItems(userId: string): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values())
+      .filter((item) => item.userId === userId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async getInventoryItemById(id: string): Promise<InventoryItem | undefined> {
+    return this.inventoryItems.get(id);
+  }
+
+  async getInventoryItemsByBook(userId: string, bookId: string): Promise<InventoryItem[]> {
+    return Array.from(this.inventoryItems.values())
+      .filter((item) => item.userId === userId && item.bookId === bookId)
+      .sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
+  }
+
+  async updateInventoryItem(id: string, updates: Partial<Omit<InventoryItem, 'id' | 'userId' | 'createdAt'>>): Promise<InventoryItem | undefined> {
+    const item = this.inventoryItems.get(id);
+    if (!item) return undefined;
+
+    const updatedItem: InventoryItem = {
+      ...item,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    this.inventoryItems.set(id, updatedItem);
+    return updatedItem;
+  }
+
+  async deleteInventoryItem(id: string): Promise<boolean> {
+    return this.inventoryItems.delete(id);
   }
 }
 

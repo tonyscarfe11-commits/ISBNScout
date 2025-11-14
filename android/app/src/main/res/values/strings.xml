@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">ISBNScout</string>
+    <string name="title_activity_main">ISBNScout</string>
+    <string name="package_name">com.isbnscout.app</string>
+    <string name="custom_url_scheme">com.isbnscout.app</string>
+</resources>

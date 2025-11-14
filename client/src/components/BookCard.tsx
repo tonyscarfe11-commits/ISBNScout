@@ -1,7 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { BookOpen, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { BookOpen, TrendingUp, TrendingDown, Minus, PackagePlus } from "lucide-react";
 
 export type BookStatus = "profitable" | "break-even" | "loss" | "pending";
 
@@ -19,6 +19,7 @@ export interface BookCardProps {
   isPending?: boolean;
   onViewDetails: () => void;
   onQuickList: () => void;
+  onAddToInventory?: () => void;
 }
 
 export function BookCard({
@@ -34,6 +35,7 @@ export function BookCard({
   isPending = false,
   onViewDetails,
   onQuickList,
+  onAddToInventory,
 }: BookCardProps) {
   const getStatusConfig = () => {
     switch (status) {
@@ -165,7 +167,22 @@ export function BookCard({
             >
               Details
             </Button>
-            {!isPending && (
+            {!isPending && onAddToInventory && (
+              <Button
+                size="sm"
+                variant="secondary"
+                className="flex-1"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onAddToInventory();
+                }}
+                data-testid={`button-add-inventory-${isbn}`}
+              >
+                <PackagePlus className="h-4 w-4 mr-1" />
+                Add to Inventory
+              </Button>
+            )}
+            {!isPending && !onAddToInventory && (
               <Button
                 size="sm"
                 className="flex-1"

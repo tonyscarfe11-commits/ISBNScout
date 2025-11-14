@@ -11,7 +11,9 @@ import ProfitCalculatorPage from "@/pages/ProfitCalculatorPage";
 import HistoryPage from "@/pages/HistoryPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import AlertsPage from "@/pages/AlertsPage";
+import InventoryPage from "@/pages/InventoryPage";
 import ListingsPage from "@/pages/ListingsPage";
+import ProfitReportsPage from "@/pages/ProfitReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
@@ -93,6 +95,11 @@ function Router() {
             <AlertsPage />
           </AppLayout>
         </Route>
+        <Route path="/app/inventory">
+          <AppLayout>
+            <InventoryPage />
+          </AppLayout>
+        </Route>
         <Route path="/app/listings">
           <AppLayout>
             <ListingsPage />
@@ -101,6 +108,11 @@ function Router() {
         <Route path="/app/listings/new">
           <AppLayout>
             <ListingsPage />
+          </AppLayout>
+        </Route>
+        <Route path="/app/reports">
+          <AppLayout>
+            <ProfitReportsPage />
           </AppLayout>
         </Route>
         <Route path="/app/settings">

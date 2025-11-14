@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
+import { AddPurchaseModal } from "@/components/AddPurchaseModal";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -20,7 +21,7 @@ import {
 } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Search, Filter, Loader2, Download } from "lucide-react";
+import { Search, Filter, Loader2, Download, PackagePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { exportBooks, type ExportableBook, type ExportOptions } from "@/lib/exportUtils";
 
@@ -38,6 +39,10 @@ export default function HistoryPage() {
   const [exportFormat, setExportFormat] = useState<'csv' | 'json'>('csv');
   const [exportProfitableOnly, setExportProfitableOnly] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+
+  // Add to inventory modal state
+  const [addToInventoryOpen, setAddToInventoryOpen] = useState(false);
+  const [selectedBookForInventory, setSelectedBookForInventory] = useState<string | null>(null);
 
   // Load books from database on mount
   useEffect(() => {
@@ -100,6 +105,20 @@ export default function HistoryPage() {
       title: "Quick List",
       description: `Opening listing form for ${book.title}`,
     });
+  };
+
+  const handleAddToInventory = (book: BookDetails) => {
+    setSelectedBookForInventory(book.id);
+    setAddToInventoryOpen(true);
+  };
+
+  const handleInventorySuccess = () => {
+    toast({
+      title: "Added to Inventory",
+      description: "Book has been added to your inventory",
+    });
+    setAddToInventoryOpen(false);
+    setSelectedBookForInventory(null);
   };
 
   const handleListFromModal = (platform: "amazon" | "ebay") => {
@@ -287,6 +306,7 @@ export default function HistoryPage() {
                 {...book}
                 onViewDetails={() => handleViewDetails(book)}
                 onQuickList={() => handleQuickList(book)}
+                onAddToInventory={() => handleAddToInventory(book)}
               />
             ))}
           </div>
@@ -298,6 +318,13 @@ export default function HistoryPage() {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onList={handleListFromModal}
+      />
+
+      <AddPurchaseModal
+        open={addToInventoryOpen}
+        onOpenChange={setAddToInventoryOpen}
+        preselectedBookId={selectedBookForInventory || undefined}
+        onSuccess={handleInventorySuccess}
       />
     </div>
   );

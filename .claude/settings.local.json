@@ -27,7 +27,11 @@
       "Bash(npm run build:*)",
       "Bash(env)",
       "Bash(git add:*)",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(printenv:*)",
+      "WebSearch",
+      "Bash(npx cap init:*)",
+      "Bash(npx cap:*)"
     ],
     "deny": [],
     "ask": []

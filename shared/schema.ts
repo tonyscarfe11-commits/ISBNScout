@@ -108,3 +108,46 @@ export const insertListingSchema = createInsertSchema(listings).omit({
 
 export type InsertListing = z.infer<typeof insertListingSchema>;
 export type Listing = typeof listings.$inferSelect;
+
+// Inventory Items - Track actual physical inventory lifecycle
+export const inventoryItems = pgTable("inventory_items", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  bookId: varchar("book_id").notNull().references(() => books.id, { onDelete: "cascade" }),
+  listingId: varchar("listing_id").references(() => listings.id, { onDelete: "set null" }), // Linked when listed
+
+  // Purchase info
+  sku: text("sku"), // Optional custom SKU/identifier
+  purchaseDate: timestamp("purchase_date").notNull(),
+  purchaseCost: decimal("purchase_cost", { precision: 10, scale: 2 }).notNull(),
+  purchaseSource: text("purchase_source"), // e.g., 'charity shop', 'car boot sale', 'online'
+  condition: text("condition").notNull(), // 'new', 'like_new', 'very_good', 'good', 'acceptable'
+  location: text("location"), // Storage location/bin
+
+  // Sale info (populated when sold)
+  soldDate: timestamp("sold_date"),
+  salePrice: decimal("sale_price", { precision: 10, scale: 2 }),
+  soldPlatform: text("sold_platform"), // 'ebay', 'amazon', 'other'
+  actualProfit: decimal("actual_profit", { precision: 10, scale: 2 }), // Calculated: salePrice - purchaseCost - fees
+
+  // Status tracking
+  status: text("status").notNull().default("in_stock"), // 'in_stock', 'listed', 'sold', 'returned', 'donated', 'damaged'
+  notes: text("notes"), // User notes about this item
+
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  userIdIdx: index("inventory_items_user_id_idx").on(table.userId),
+  bookIdIdx: index("inventory_items_book_id_idx").on(table.bookId),
+  statusIdx: index("inventory_items_status_idx").on(table.status),
+  listingIdIdx: index("inventory_items_listing_id_idx").on(table.listingId),
+}));
+
+export const insertInventoryItemSchema = createInsertSchema(inventoryItems).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertInventoryItem = z.infer<typeof insertInventoryItemSchema>;
+export type InventoryItem = typeof inventoryItems.$inferSelect;

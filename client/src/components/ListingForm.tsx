@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -13,7 +13,7 @@ import {
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
-import { Loader2, Sparkles, Wand2 } from "lucide-react";
+import { Loader2, Sparkles, Wand2, Package } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 
 export interface ListingFormProps {
@@ -55,6 +55,36 @@ export function ListingForm({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [keywords, setKeywords] = useState<string[]>([]);
   const [optimizedTitle, setOptimizedTitle] = useState("");
+
+  // Inventory linking
+  const [inventoryItems, setInventoryItems] = useState<any[]>([]);
+  const [selectedInventoryId, setSelectedInventoryId] = useState<string>("");
+  const [loadingInventory, setLoadingInventory] = useState(true);
+
+  useEffect(() => {
+    loadInventoryItems();
+  }, [bookId]);
+
+  const loadInventoryItems = async () => {
+    setLoadingInventory(true);
+    try {
+      const response = await fetch(`/api/inventory/book/${bookId}`);
+      if (response.ok) {
+        const items = await response.json();
+        // Only show items that are in_stock (not already listed or sold)
+        const availableItems = items.filter((item: any) => item.status === 'in_stock');
+        setInventoryItems(availableItems);
+        // Auto-select if there's only one item
+        if (availableItems.length === 1) {
+          setSelectedInventoryId(availableItems[0].id);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to load inventory items:", error);
+    } finally {
+      setLoadingInventory(false);
+    }
+  };
 
   const handleOptimizeWithAI = async () => {
     setIsOptimizing(true);
@@ -161,6 +191,7 @@ export function ListingForm({
           bookId,
           isbn,
           title: optimizedTitle || bookTitle,
+          inventoryItemId: selectedInventoryId || null,
           ...listingData,
         }),
       });
@@ -234,6 +265,34 @@ export function ListingForm({
             </div>
           )}
         </div>
+
+        {/* Inventory Link Selection */}
+        {!loadingInventory && inventoryItems.length > 0 && (
+          <div className="space-y-2 p-4 bg-muted rounded-lg">
+            <div className="flex items-center gap-2">
+              <Package className="h-4 w-4" />
+              <Label>Link to Inventory Item (Optional)</Label>
+            </div>
+            <Select value={selectedInventoryId} onValueChange={setSelectedInventoryId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Select an inventory item or create listing without linking" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">No inventory link</SelectItem>
+                {inventoryItems.map((item: any) => (
+                  <SelectItem key={item.id} value={item.id}>
+                    {item.sku ? `SKU: ${item.sku}` : `Purchased ${new Date(item.purchaseDate).toLocaleDateString()}`} -
+                    {item.condition.replace(/_/g, ' ')} - £{parseFloat(item.purchaseCost).toFixed(2)}
+                    {item.location && ` (${item.location})`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              Linking to inventory will automatically track this item as "listed" and help manage your stock
+            </p>
+          </div>
+        )}
 
         <Tabs value={platform} onValueChange={(v) => setPlatform(v as "amazon" | "ebay")}>
           <TabsList className="grid w-full grid-cols-2">
