@@ -307,7 +307,6 @@ export default function HistoryPage() {
                 {...book}
                 onViewDetails={() => handleViewDetails(book)}
                 onQuickList={() => handleQuickList(book)}
-                onAddToInventory={() => handleAddToInventory(book)}
               />
             ))}
           </div>
@@ -319,13 +318,6 @@ export default function HistoryPage() {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onList={handleListFromModal}
-      />
-
-      <AddPurchaseModal
-        open={addToInventoryOpen}
-        onOpenChange={setAddToInventoryOpen}
-        preselectedBookId={selectedBookForInventory || undefined}
-        onSuccess={handleInventorySuccess}
       />
     </div>
   );
