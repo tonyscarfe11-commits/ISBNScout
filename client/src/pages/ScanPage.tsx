@@ -76,7 +76,13 @@ export default function ScanPage() {
     });
 
     try {
-      const result = await apiRequest<{
+      const response = await apiRequest("/api/ai/analyze-image", {
+        method: "POST",
+        body: JSON.stringify({ imageUrl: imageData }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const result = await response.json() as {
         title?: string;
         author?: string;
         isbn?: string;
@@ -86,11 +92,7 @@ export default function ScanPage() {
         description?: string;
         keywords: string[];
         imageType?: 'cover' | 'spine' | 'unknown';
-      }>("/api/ai/analyze-image", {
-        method: "POST",
-        body: JSON.stringify({ imageUrl: imageData }),
-        headers: { "Content-Type": "application/json" },
-      });
+      };
 
       setRecognitionResult(result);
 
@@ -151,7 +153,7 @@ export default function ScanPage() {
           <div>
             <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
             <p className="text-sm text-muted-foreground">
-              Scan ISBN or capture book cover to get started
+              Scan ISBN or capture book cover/spine to get started
             </p>
           </div>
           <Button
