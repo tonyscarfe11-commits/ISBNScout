@@ -39,6 +39,7 @@ import { useToast } from "@/hooks/use-toast";
 import {
   type PriceAlert,
   type AlertType,
+  type AlertStatus,
   type NotificationMethod,
   ALERT_CONDITIONS,
   formatAlertDescription,
@@ -170,7 +171,7 @@ export default function AlertsPage() {
 
   const handleToggleAlert = (id: string, enabled: boolean) => {
     const updatedAlerts = alerts.map(a =>
-      a.id === id ? { ...a, status: enabled ? 'active' : 'paused' } : a
+      a.id === id ? { ...a, status: (enabled ? 'active' : 'paused') as AlertStatus } : a
     );
     saveAlerts(updatedAlerts);
   };

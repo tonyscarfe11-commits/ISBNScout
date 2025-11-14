@@ -10,7 +10,12 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { BrowserMultiFormatReader, NotFoundException } from "@zxing/library";
-import { CapacitorBarcodeScanner } from "@capacitor/barcode-scanner";
+import { 
+  CapacitorBarcodeScanner,
+  CapacitorBarcodeScannerTypeHintALLOption,
+  CapacitorBarcodeScannerCameraDirection,
+  CapacitorBarcodeScannerScanOrientation
+} from "@capacitor/barcode-scanner";
 import { Capacitor } from "@capacitor/core";
 
 export interface ScannerInterfaceProps {
@@ -72,17 +77,17 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
         console.log("Using native Capacitor barcode scanner...");
 
         const result = await CapacitorBarcodeScanner.scanBarcode({
-          hint: "ALL",
+          hint: CapacitorBarcodeScannerTypeHintALLOption.ALL,
           scanInstructions: "Position the barcode in the frame",
-          cameraDirection: "BACK",
-          scanOrientation: "ADAPTIVE",
+          cameraDirection: CapacitorBarcodeScannerCameraDirection.BACK,
+          scanOrientation: CapacitorBarcodeScannerScanOrientation.ADAPTIVE,
         });
 
         setIsScanning(false);
 
-        if (result.barcode) {
-          console.log("Native barcode detected:", result.barcode);
-          const cleanedText = result.barcode.replace(/[-\s]/g, "");
+        if (result.ScanResult) {
+          console.log("Native barcode detected:", result.ScanResult);
+          const cleanedText = result.ScanResult.replace(/[-\s]/g, "");
 
           // Validate ISBN format (10 or 13 digits)
           if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
@@ -141,7 +146,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
           if (codeReaderRef.current && videoRef.current) {
             console.log("Starting barcode detection...");
             codeReaderRef.current.decodeFromVideoDevice(
-              undefined,
+              null,
               videoRef.current,
               (result, err) => {
                 if (result && !isProcessingRef.current) {

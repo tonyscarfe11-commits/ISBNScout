@@ -403,9 +403,9 @@ export default function InventoryPage() {
 
   const getAgingItems = () => {
     const now = new Date();
-    const aging30 = [];
-    const aging60 = [];
-    const aging90 = [];
+    const aging30: Array<InventoryItem & { daysOld: number }> = [];
+    const aging60: Array<InventoryItem & { daysOld: number }> = [];
+    const aging90: Array<InventoryItem & { daysOld: number }> = [];
 
     items
       .filter((item) => item.status === "in_stock" || item.status === "listed")
