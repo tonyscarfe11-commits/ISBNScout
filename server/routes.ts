@@ -11,6 +11,7 @@ import { ebayPricingService } from "./ebay-pricing-service";
 import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
+import { RepricingScheduler } from "./repricing-scheduler";
 import { z } from "zod";
 import express from "express";
 import Stripe from "stripe";
@@ -35,7 +36,17 @@ const saveCredentialsSchema = z.object({
   credentials: z.record(z.any()),
 });
 
+// Singleton repricing scheduler
+const repricingService = new RepricingService();
+const repricingScheduler = new RepricingScheduler(storage, repricingService);
+
 export async function registerRoutes(app: Express): Promise<Server> {
+  // Start repricing scheduler and backfill existing active users
+  repricingScheduler.start();
+  
+  // Note: Backfill is manual for now - users auto-register when creating/updating rules
+  // Future enhancement: Add storage.getAllUsers() and backfill here
+  
   // Health check
   app.get("/api/health", (_req, res) => {
     res.json({ status: "ok" });
@@ -1245,6 +1256,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         runFrequency: runFrequency || "hourly",
       });
 
+      // Register user for automated repricing if rule is active
+      if (rule.isActive === "true") {
+        repricingScheduler.registerUser(userId);
+      }
+
       res.json(rule);
     } catch (error: any) {
       console.error("[Repricing] Create rule error:", error);
@@ -1325,6 +1341,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.minPrice = minPriceNum.toString();
       } else {
         minPriceNum = parseFloat(existingRule.minPrice);
+        if (isNaN(minPriceNum)) {
+          return res.status(400).json({ message: "Existing min price is invalid" });
+        }
       }
 
       if (req.body.maxPrice !== undefined) {
@@ -1335,6 +1354,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         updates.maxPrice = maxPriceNum.toString();
       } else {
         maxPriceNum = parseFloat(existingRule.maxPrice);
+        if (isNaN(maxPriceNum)) {
+          return res.status(400).json({ message: "Existing max price is invalid" });
+        }
       }
 
       if (minPriceNum >= maxPriceNum) {
@@ -1364,6 +1386,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.runFrequency !== undefined) updates.runFrequency = req.body.runFrequency;
 
       const updatedRule = await storage.updateRepricingRule(id, updates);
+      
+      // Register/unregister user for automated repricing based on isActive status
+      if (updatedRule.isActive === "true") {
+        repricingScheduler.registerUser(userId);
+      } else {
+        // Check if user has any other active rules before unregistering
+        const allRules = await storage.getRepricingRules(userId);
+        const hasOtherActiveRules = allRules.some(r => r.id !== id && r.isActive === "true");
+        if (!hasOtherActiveRules) {
+          repricingScheduler.unregisterUser(userId);
+        }
+      }
+      
       res.json(updatedRule);
     } catch (error: any) {
       console.error("[Repricing] Update rule error:", error);
@@ -1387,6 +1422,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       const deleted = await storage.deleteRepricingRule(id);
+      
+      // Unregister user if they have no more active rules
+      const allRules = await storage.getRepricingRules(userId);
+      const hasActiveRules = allRules.some(r => r.id !== id && r.isActive === "true");
+      if (!hasActiveRules) {
+        repricingScheduler.unregisterUser(userId);
+      }
+      
       res.json({ success: deleted });
     } catch (error: any) {
       console.error("[Repricing] Delete rule error:", error);
