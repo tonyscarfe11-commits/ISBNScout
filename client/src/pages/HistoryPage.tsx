@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
-import { AddPurchaseModal } from "@/components/AddPurchaseModal";
+import { AppHeader } from "@/components/AppHeader";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import {
@@ -187,6 +187,7 @@ export default function HistoryPage() {
 
   return (
     <div className="min-h-screen pb-20">
+      <AppHeader />
       <div className="max-w-2xl mx-auto p-4 space-y-6">
         <div className="flex items-center justify-between">
           <div>

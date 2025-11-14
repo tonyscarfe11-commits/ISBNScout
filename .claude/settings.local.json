@@ -32,7 +32,12 @@
       "WebSearch",
       "Bash(npx cap init:*)",
       "Bash(npx cap:*)",
-      "WebFetch(domain:capacitorjs.com)"
+      "WebFetch(domain:capacitorjs.com)",
+      "Bash(npm run db:push:*)",
+      "Bash(npx drizzle-kit push:*)",
+      "Bash(npx drizzle-kit generate)",
+      "Bash(node test-neon-connection.js:*)",
+      "Bash(node test-offline-pricing.js:*)"
     ],
     "deny": [],
     "ask": []

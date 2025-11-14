@@ -1,14 +1,24 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
+// Configuration for different environments
+const API_URLS = {
+  development: 'http://localhost:5000',
+  production: undefined, // Set this to your Railway/Fly.io URL when deploying
+  // production: 'https://isbnscout-production.up.railway.app',
+};
+
+// Detect environment
+const isDevelopment = process.env.NODE_ENV !== 'production';
+const apiUrl = isDevelopment ? API_URLS.development : API_URLS.production;
+
 const config: CapacitorConfig = {
   appId: 'com.isbnscout.app',
   appName: 'ISBNScout',
   webDir: 'dist/public',
   server: {
-    // Point to your backend API during development
-    // Change this to your production API URL when deploying
-    url: process.env.NODE_ENV === 'production' ? undefined : 'http://localhost:5000',
-    cleartext: true
+    // Uses localhost in development, production URL when building for release
+    url: apiUrl,
+    cleartext: true, // Required for localhost connections
   },
   plugins: {
     SplashScreen: {
@@ -16,8 +26,16 @@ const config: CapacitorConfig = {
       backgroundColor: "#ffffff",
       androidSplashResourceName: "splash",
       iosSplashResourceName: "Default"
+    },
+    BarcodeScanner: {
+      // Native barcode scanner configuration
+      cameraDirection: "back",
+      scanInstructions: "Position the barcode within the frame",
     }
   }
 };
+
+console.log(`[Capacitor] Environment: ${isDevelopment ? 'development' : 'production'}`);
+console.log(`[Capacitor] API URL: ${apiUrl || 'embedded (same-origin)'}`);
 
 export default config;

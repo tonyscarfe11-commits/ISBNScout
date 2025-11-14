@@ -4,6 +4,7 @@ import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
+import { AppHeader } from "@/components/AppHeader";
 import { Badge } from "@/components/ui/badge";
 import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
@@ -189,6 +190,7 @@ export default function SettingsPage() {
 
   return (
     <div className="min-h-screen pb-20">
+      <AppHeader />
       <div className="max-w-2xl mx-auto p-4 space-y-6">
         <div>
           <h1 className="text-2xl font-bold mb-1">Settings</h1>

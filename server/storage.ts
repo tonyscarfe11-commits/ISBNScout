@@ -307,8 +307,16 @@ export class MemStorage implements IStorage {
   }
 }
 
-// Import SQLiteStorage
+// Import storage implementations
 import { SQLiteStorage } from "./sqlite-storage";
+import { PostgresStorage } from "./postgres-storage";
 
-// Use SQLite for persistent storage
-export const storage = new SQLiteStorage();
+// Use PostgreSQL in production, SQLite in development
+export const storage =
+  process.env.DATABASE_URL
+    ? new PostgresStorage(process.env.DATABASE_URL)
+    : new SQLiteStorage();
+
+console.log(
+  `[Storage] Using ${process.env.DATABASE_URL ? "PostgreSQL (Neon)" : "SQLite"}`
+);

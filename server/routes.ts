@@ -8,6 +8,7 @@ import { authService } from "./auth-service";
 import { googleBooksService } from "./google-books-service";
 import { ebayPricingService } from "./ebay-pricing-service";
 import { stripeService } from "./stripe-service";
+import { getPriceCache } from "./price-cache";
 import { z } from "zod";
 import express from "express";
 import Stripe from "stripe";
@@ -350,19 +351,34 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get API usage statistics
   app.get("/api/usage", async (req, res) => {
     try {
-      const usage = (storage as any).getAllApiUsage();
       const today = new Date().toISOString().split('T')[0];
-      const ebayUsageToday = (storage as any).getApiUsage('ebay', today);
 
-      res.json({
-        all: usage,
-        today: {
-          ebay: ebayUsageToday || { service: 'ebay', date: today, callCount: 0 }
-        },
-        limits: {
-          ebay: { daily: 5000, remaining: 5000 - (ebayUsageToday?.callCount || 0) }
-        }
-      });
+      // Check if storage supports API usage tracking (only SQLite has these methods)
+      if (typeof (storage as any).getAllApiUsage === 'function') {
+        const usage = (storage as any).getAllApiUsage();
+        const ebayUsageToday = (storage as any).getApiUsage('ebay', today);
+
+        res.json({
+          all: usage,
+          today: {
+            ebay: ebayUsageToday || { service: 'ebay', date: today, callCount: 0 }
+          },
+          limits: {
+            ebay: { daily: 5000, remaining: 5000 - (ebayUsageToday?.callCount || 0) }
+          }
+        });
+      } else {
+        // Return empty usage data for PostgreSQL (not yet implemented)
+        res.json({
+          all: [],
+          today: {
+            ebay: { service: 'ebay', date: today, callCount: 0 }
+          },
+          limits: {
+            ebay: { daily: 5000, remaining: 5000 }
+          }
+        });
+      }
     } catch (error: any) {
       res.status(500).json({ message: error.message });
     }
@@ -894,6 +910,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
 
+        // Cache the pricing data for offline use
+        try {
+          const book = await storage.getBookByISBN(isbn);
+          const priceCache = getPriceCache();
+
+          priceCache.cachePrice({
+            isbn,
+            title: book?.title || null,
+            author: book?.author || null,
+            publisher: null, // TODO: Add publisher to book schema
+            ebayPrice: ebayPricing?.currentPrice || ebayPricing?.averagePrice || null,
+            amazonPrice,
+            source: "api",
+          });
+
+          console.log(`[PriceCache] Cached pricing for ISBN ${isbn}`);
+        } catch (cacheError: any) {
+          console.warn("[PriceCache] Failed to cache price:", cacheError.message);
+          // Don't fail the request if caching fails
+        }
+
         res.json({
           ebayPrice: ebayPricing?.currentPrice || ebayPricing?.averagePrice,
           ebayData: ebayPricing,
@@ -1062,6 +1099,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Image proxy error:', error);
       res.status(500).json({ message: "Failed to proxy image" });
+    }
+  });
+
+  // ======= OFFLINE PRICE LOOKUP ENDPOINTS =======
+
+  // Offline price lookup (works with cached data)
+  app.post("/api/offline/lookup", async (req, res) => {
+    try {
+      const { isbn, title, author, publisher } = req.body;
+
+      if (!isbn) {
+        return res.status(400).json({ error: "ISBN required" });
+      }
+
+      const priceCache = getPriceCache();
+      const result = await priceCache.lookupOffline(isbn, {
+        title,
+        author,
+        publisher,
+      });
+
+      res.json(result);
+    } catch (error: any) {
+      console.error("[OfflineLookup] Error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Get cache statistics
+  app.get("/api/offline/stats", (req, res) => {
+    try {
+      const priceCache = getPriceCache();
+      const stats = priceCache.getStats();
+      res.json(stats);
+    } catch (error: any) {
+      console.error("[OfflineLookup] Stats error:", error);
+      res.status(500).json({ error: error.message });
     }
   });
 
