@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ScannerInterface } from "@/components/ScannerInterface";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
@@ -6,6 +6,10 @@ import { OfflineBanner } from "@/components/OfflineBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
+import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Bluetooth, BluetoothOff } from "lucide-react";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
@@ -16,6 +20,22 @@ export default function ScanPage() {
   const [detailsOpen, setDetailsOpen] = useState(false);
   
   const [recentScans, setRecentScans] = useState<BookDetails[]>([]);
+  const [bluetoothEnabled, setBluetoothEnabled] = useState(() => {
+    const saved = localStorage.getItem("bluetoothScannerEnabled");
+    return saved === "true";
+  });
+
+  useEffect(() => {
+    localStorage.setItem("bluetoothScannerEnabled", bluetoothEnabled.toString());
+  }, [bluetoothEnabled]);
+
+  const { isListening, lastScan } = useBluetoothScanner({
+    enabled: bluetoothEnabled,
+    onScan: (isbn) => {
+      handleIsbnScan(isbn);
+    },
+    validatePattern: /^\d{10,13}$/,
+  });
 
   const handleIsbnScan = (isbn: string) => {
     console.log("Scanning ISBN:", isbn);
@@ -78,12 +98,45 @@ export default function ScanPage() {
       />
 
       <div className="max-w-2xl mx-auto p-4 space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
-          <p className="text-sm text-muted-foreground">
-            Scan ISBN or capture book cover to get started
-          </p>
+        <div className="flex items-start justify-between gap-4">
+          <div>
+            <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
+            <p className="text-sm text-muted-foreground">
+              Scan ISBN or capture book cover to get started
+            </p>
+          </div>
+          <Button
+            variant={bluetoothEnabled ? "default" : "outline"}
+            size="sm"
+            onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
+            className="gap-2"
+            data-testid="button-bluetooth-toggle"
+          >
+            {bluetoothEnabled ? (
+              <>
+                <Bluetooth className="h-4 w-4" />
+                <span className="hidden sm:inline">Bluetooth</span>
+              </>
+            ) : (
+              <>
+                <BluetoothOff className="h-4 w-4" />
+                <span className="hidden sm:inline">Bluetooth</span>
+              </>
+            )}
+          </Button>
         </div>
+
+        {bluetoothEnabled && (
+          <div className="flex items-center gap-2 p-3 rounded-md bg-primary/10 border border-primary/20">
+            <Bluetooth className="h-4 w-4 text-primary" />
+            <span className="text-sm font-medium">
+              Bluetooth Scanner Active
+            </span>
+            <Badge variant="outline" className="ml-auto">
+              {isListening ? "Listening" : "Standby"}
+            </Badge>
+          </div>
+        )}
 
         <ScannerInterface
           onIsbnScan={handleIsbnScan}
