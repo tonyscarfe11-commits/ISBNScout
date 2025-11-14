@@ -9,7 +9,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Printer, Download } from "lucide-react";
-import QRCode from "qrcode.react";
+import { QRCodeSVG } from "qrcode.react";
 
 interface Book {
   id: string;
@@ -152,7 +152,7 @@ export function LabelGeneratorModal({
                     className="border rounded-lg p-4 flex flex-col items-center justify-center space-y-2 bg-white print:break-inside-avoid"
                   >
                     {/* QR Code */}
-                    <QRCode
+                    <QRCodeSVG
                       value={labelData}
                       size={128}
                       level="M"

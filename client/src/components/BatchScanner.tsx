@@ -68,7 +68,7 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
     }
 
     // Remove duplicates
-    const uniqueISBNs = [...new Set(isbns)];
+    const uniqueISBNs = Array.from(new Set(isbns));
 
     // Add to queue
     const newItems: BatchScanResult[] = uniqueISBNs.map((isbn) => ({
@@ -168,7 +168,8 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
         const bookData = await response.json();
 
         // Fetch pricing
-        let ebayPrice, amazonPrice;
+        let ebayPrice: number | undefined = undefined;
+        let amazonPrice: number | undefined = undefined;
         try {
           const priceResponse = await fetch(`/api/books/${item.isbn}/prices`);
           if (priceResponse.ok) {

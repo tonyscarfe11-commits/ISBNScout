@@ -20,20 +20,13 @@ import {
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2, TrendingUp, TrendingDown } from "lucide-react";
+import type { InventoryItem } from "@shared/schema";
 
 interface RecordSaleModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   inventoryItemId: string | null;
   onSuccess?: () => void;
-}
-
-interface InventoryItem {
-  id: string;
-  bookId: string;
-  purchaseCost: string;
-  condition: string;
-  purchaseDate: string;
 }
 
 interface Book {
