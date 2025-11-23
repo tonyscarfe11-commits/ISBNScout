@@ -37,7 +37,14 @@
       "Bash(npx drizzle-kit push:*)",
       "Bash(npx drizzle-kit generate)",
       "Bash(node test-neon-connection.js:*)",
-      "Bash(node test-offline-pricing.js:*)"
+      "Bash(node test-offline-pricing.js:*)",
+      "Bash(git log:*)",
+      "Bash(if [ -f .env ])",
+      "Bash(then echo \"=== .env file exists ===\")",
+      "Bash(else echo \"No .env file found\")",
+      "Bash(fi)",
+      "Bash(npx tsx:*)",
+      "Bash(./test-ebay-keys.sh)"
     ],
     "deny": [],
     "ask": []

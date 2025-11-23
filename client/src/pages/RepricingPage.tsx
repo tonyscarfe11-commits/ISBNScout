@@ -88,19 +88,30 @@ export default function RepricingPage() {
       if (rulesRes.ok) {
         const rulesData = await rulesRes.json();
         setRules(rulesData);
+      } else {
+        console.warn("Rules fetch failed:", rulesRes.status, await rulesRes.text());
       }
 
       if (historyRes.ok) {
         const historyData = await historyRes.json();
         setHistory(historyData.slice(0, 20));
+      } else {
+        console.warn("History fetch failed:", historyRes.status);
       }
 
       if (listingsRes.ok) {
         const listingsData = await listingsRes.json();
         setListings(listingsData.filter((l: Listing) => l.status === "active"));
+      } else {
+        console.warn("Listings fetch failed:", listingsRes.status);
       }
     } catch (error) {
       console.error("Failed to fetch data:", error);
+      toast({
+        title: "Error loading data",
+        description: "Please try refreshing the page or logging in again",
+        variant: "destructive",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -327,8 +338,19 @@ export default function RepricingPage() {
           </div>
           <Button
             onClick={() => {
-              resetForm();
-              setShowNewRule(!showNewRule);
+              try {
+                console.log('[RepricingPage] New Rule button clicked, showNewRule:', showNewRule);
+                resetForm();
+                setShowNewRule(!showNewRule);
+                console.log('[RepricingPage] Form state updated successfully');
+              } catch (error) {
+                console.error('[RepricingPage] Error in New Rule button handler:', error);
+                toast({
+                  title: "Error",
+                  description: "Failed to open form. Please refresh the page.",
+                  variant: "destructive",
+                });
+              }
             }}
             data-testid="button-new-rule"
           >
@@ -358,7 +380,7 @@ export default function RepricingPage() {
                       <SelectItem value="">All listings</SelectItem>
                       {listings.map((listing) => (
                         <SelectItem key={listing.id} value={listing.id}>
-                          {listing.platform.toUpperCase()} - £{listing.price}
+                          {listing.platform?.toUpperCase() || 'Unknown'} - £{listing.price || '0.00'}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -407,7 +429,7 @@ export default function RepricingPage() {
                 {(formData.strategy === "beat_by_percent" ||
                   formData.strategy === "beat_by_amount" ||
                   formData.strategy === "target_margin") && (
-                  <div className="space-y-2">
+                  <div key="strategyValue" className="space-y-2">
                     <Label htmlFor="strategyValue">
                       {formData.strategy === "beat_by_amount"
                         ? "Amount (£)"
@@ -417,10 +439,11 @@ export default function RepricingPage() {
                       id="strategyValue"
                       type="number"
                       step="0.01"
-                      value={formData.strategyValue}
+                      value={formData.strategyValue || ""}
                       onChange={(e) =>
                         setFormData({ ...formData, strategyValue: e.target.value })
                       }
+                      placeholder={formData.strategy === "beat_by_amount" ? "1.00" : "5"}
                       data-testid="input-strategy-value"
                     />
                   </div>
@@ -595,9 +618,9 @@ export default function RepricingPage() {
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-1">
                         <Badge variant="secondary">
-                          {listing.platform.toUpperCase()}
+                          {listing.platform?.toUpperCase() || 'Unknown'}
                         </Badge>
-                        <span className="text-sm font-medium">£{listing.price}</span>
+                        <span className="text-sm font-medium">£{listing.price || '0.00'}</span>
                       </div>
                       <p className="text-xs text-muted-foreground">
                         Listing #{listing.id.slice(0, 8)}

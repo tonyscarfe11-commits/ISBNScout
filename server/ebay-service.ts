@@ -20,8 +20,14 @@ export interface EbayListingData {
 
 export class EbayService {
   private api: eBayApi | null = null;
+  private appId: string;
+  private sandbox: boolean;
 
   constructor(credentials: EbayCredentials) {
+    // Store credentials for direct API calls
+    this.appId = credentials.appId;
+    this.sandbox = credentials.sandbox || false;
+
     try {
       this.api = new eBayApi({
         appId: credentials.appId,
@@ -32,7 +38,8 @@ export class EbayService {
       });
     } catch (error) {
       console.error('Failed to initialize eBay API:', error);
-      throw new Error('Invalid eBay credentials');
+      // Don't throw - we can still use Finding API with just appId
+      console.warn('[EbayService] eBay API library failed to init, but Finding API will still work');
     }
   }
 
@@ -148,49 +155,79 @@ export class EbayService {
   }
 
   async searchByISBN(isbn: string): Promise<{ lowestPrice: number | null; averagePrice: number | null }> {
-    if (!this.api) {
-      throw new Error('eBay API not initialized');
-    }
-
     try {
-      // Use Finding API to search for active listings by ISBN
-      const response = await (this.api as any).finding.findItemsByProduct({
-        productId: {
-          '@type': 'ISBN',
-          '#value': isbn,
-        },
-        itemFilter: [
-          {
-            name: 'ListingType',
-            value: 'FixedPrice',
-          },
-        ],
-        sortOrder: 'PricePlusShippingLowest',
-        paginationInput: {
-          entriesPerPage: 20,
-        },
+      // Use Finding API directly with HTTP request (doesn't require OAuth!)
+      // This is simpler and more reliable than using the ebay-api library
+      const baseUrl = this.sandbox
+        ? 'https://svcs.sandbox.ebay.com/services/search/FindingService/v1'
+        : 'https://svcs.ebay.com/services/search/FindingService/v1';
+
+      const params = new URLSearchParams({
+        'OPERATION-NAME': 'findItemsByProduct',
+        'SERVICE-VERSION': '1.0.0',
+        'SECURITY-APPNAME': this.appId,
+        'RESPONSE-DATA-FORMAT': 'JSON',
+        'REST-PAYLOAD': '',
+        'paginationInput.entriesPerPage': '20',
+        'productId.@type': 'ISBN',
+        'productId': isbn,
+        'GLOBAL-ID': 'EBAY-GB', // UK marketplace
+        'itemFilter(0).name': 'ListingType',
+        'itemFilter(0).value': 'FixedPrice',
+        'sortOrder': 'PricePlusShippingLowest',
       });
 
-      if (response && response[0]?.searchResult?.[0]?.item) {
-        const items = response[0].searchResult[0].item;
-        const prices: number[] = [];
+      const url = `${baseUrl}?${params.toString()}`;
+      console.log(`[EbayService] Fetching prices for ISBN ${isbn}...`);
 
-        for (const item of items) {
-          const price = parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || '0');
-          if (price > 0) {
-            prices.push(price);
-          }
+      const response = await fetch(url);
+      const data = await response.json() as any;
+
+      // Check for errors
+      if (data.errorMessage) {
+        const error = data.errorMessage[0]?.error?.[0];
+        const errorId = error?.errorId?.[0];
+        const errorMsg = error?.message?.[0];
+
+        console.error(`[EbayService] eBay API error ${errorId}: ${errorMsg}`);
+
+        // Handle rate limiting gracefully
+        if (errorId === '10001') {
+          console.warn('[EbayService] Rate limit reached - returning null');
+          return { lowestPrice: null, averagePrice: null };
         }
 
-        if (prices.length > 0) {
-          const lowestPrice = Math.min(...prices);
-          const averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
-          return { lowestPrice, averagePrice };
+        return { lowestPrice: null, averagePrice: null };
+      }
+
+      // Parse search results
+      const searchResult = data.findItemsByProductResponse?.[0]?.searchResult?.[0];
+      if (!searchResult || searchResult['@count'] === '0') {
+        console.log(`[EbayService] No listings found for ISBN ${isbn}`);
+        return { lowestPrice: null, averagePrice: null };
+      }
+
+      const items = searchResult.item || [];
+      const prices: number[] = [];
+
+      for (const item of items) {
+        const price = parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || '0');
+        if (price > 0) {
+          prices.push(price);
         }
       }
 
+      if (prices.length > 0) {
+        const lowestPrice = Math.min(...prices);
+        const averagePrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+
+        console.log(`[EbayService] Found ${prices.length} prices for ISBN ${isbn}: lowest £${lowestPrice.toFixed(2)}`);
+        return { lowestPrice, averagePrice };
+      }
+
+      console.log(`[EbayService] No valid prices found for ISBN ${isbn}`);
       return { lowestPrice: null, averagePrice: null };
-    } catch (error) {
+    } catch (error: any) {
       console.error('[EbayService] Error searching by ISBN:', error);
       return { lowestPrice: null, averagePrice: null };
     }
