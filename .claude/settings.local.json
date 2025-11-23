@@ -44,7 +44,9 @@
       "Bash(else echo \"No .env file found\")",
       "Bash(fi)",
       "Bash(npx tsx:*)",
-      "Bash(./test-ebay-keys.sh)"
+      "Bash(./test-ebay-keys.sh)",
+      "Bash(npx http-server:*)",
+      "Bash(tree:*)"
     ],
     "deny": [],
     "ask": []
