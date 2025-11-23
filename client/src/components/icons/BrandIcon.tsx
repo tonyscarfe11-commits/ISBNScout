@@ -33,11 +33,13 @@ export const BrandIcon: React.FC<BrandIconProps> = ({
   const variantClass = variantMap[variant];
 
   return (
-    <img
-      src="/isbnscout-icon.png"
-      alt="ISBNScout"
-      className={`${sizeClass} ${className} rounded-md object-contain`}
-    />
+    <div className="bg-card rounded-md p-1 flex items-center justify-center">
+      <img
+        src="/isbnscout-icon.png"
+        alt="ISBNScout"
+        className={`${sizeClass} ${className} rounded object-contain`}
+      />
+    </div>
   );
 };
 
