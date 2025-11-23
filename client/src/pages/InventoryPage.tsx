@@ -836,28 +836,27 @@ export default function InventoryPage() {
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Modals */}
-      <AddPurchaseModal
-        open={addPurchaseOpen}
-        onOpenChange={setAddPurchaseOpen}
-        onSuccess={loadInventory}
-      />
-      <EditInventoryModal
-        open={editModalOpen}
-        onOpenChange={setEditModalOpen}
-        inventoryItemId={selectedItemId}
-        onSuccess={loadInventory}
-      />
-      <RecordSaleModal
-        open={recordSaleOpen}
-        onOpenChange={setRecordSaleOpen}
-        inventoryItemId={selectedItemId}
-        onSuccess={loadInventory}
-      />
-        </div>
+        {/* Modals */}
+        <AddPurchaseModal
+          open={addPurchaseOpen}
+          onOpenChange={setAddPurchaseOpen}
+          onSuccess={loadInventory}
+        />
+        <EditInventoryModal
+          open={editModalOpen}
+          onOpenChange={setEditModalOpen}
+          inventoryItemId={selectedItemId}
+          onSuccess={loadInventory}
+        />
+        <RecordSaleModal
+          open={recordSaleOpen}
+          onOpenChange={setRecordSaleOpen}
+          inventoryItemId={selectedItemId}
+          onSuccess={loadInventory}
+        />
       </div>
+    </div>
     </>
   );
 }
