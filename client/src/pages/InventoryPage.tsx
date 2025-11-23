@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { AppHeader } from "@/components/AppHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -433,8 +434,10 @@ export default function InventoryPage() {
     agingItems.aging90.length > 0;
 
   return (
-    <div className="min-h-screen bg-background pb-20 px-4 py-6">
-      <div className="max-w-7xl mx-auto space-y-6">
+    <>
+      <AppHeader />
+      <div className="min-h-screen bg-background pb-20 px-4 py-6">
+        <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
@@ -853,6 +856,8 @@ export default function InventoryPage() {
         inventoryItemId={selectedItemId}
         onSuccess={loadInventory}
       />
-    </div>
+        </div>
+      </div>
+    </>
   );
 }
