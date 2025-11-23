@@ -62,7 +62,7 @@ export const BrandLogo: React.FC<{ className?: string }> = ({ className = "" }) 
 export const BrandText: React.FC<{ className?: string }> = ({ className = "" }) => {
   return (
     <div className={`flex items-center gap-2 ${className}`}>
-      <BrandIcon size="sm" />
+      <BrandIcon size="lg" />
       <span className="font-bold text-lg tracking-wide">ISBNScout</span>
     </div>
   );
