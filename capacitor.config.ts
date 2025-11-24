@@ -22,10 +22,13 @@ const config: CapacitorConfig = {
   },
   plugins: {
     SplashScreen: {
-      launchShowDuration: 2000,
-      backgroundColor: "#ffffff",
+      launchShowDuration: 800,
+      backgroundColor: "#f8fafc",
       androidSplashResourceName: "splash",
-      iosSplashResourceName: "Default"
+      iosSplashResourceName: "Default",
+      showSpinner: false,
+      androidSpinnerStyle: "large",
+      iosSpinnerStyle: "small"
     },
     BarcodeScanner: {
       // Native barcode scanner configuration
