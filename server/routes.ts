@@ -765,7 +765,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Lookup book pricing by ISBN (real-time API calls + caching)
-  app.post("/api/books/lookup-pricing", requireAuth, async (req, res) => {
+  // Note: No auth required - this is public pricing data lookup
+  app.post("/api/books/lookup-pricing", async (req, res) => {
     try {
       const { isbn } = req.body;
 
@@ -826,9 +827,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // 3. Try Amazon SP-API for pricing (if configured)
       try {
-        // Check if Amazon credentials exist
-        const userId = getUserId(req);
-        const amazonCreds = await storage.getApiCredentials(userId, 'amazon');
+        // Check if Amazon credentials exist (requires user to be logged in)
+        const userId = req.session.userId;
+        let amazonCreds = null;
+
+        if (userId) {
+          amazonCreds = await storage.getApiCredentials(userId, 'amazon');
+        }
 
         if (amazonCreds) {
           console.log(`[PricingLookup] Fetching Amazon pricing...`);
