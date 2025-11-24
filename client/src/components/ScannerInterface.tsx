@@ -129,7 +129,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
         video.srcObject = stream;
 
         // Wait for video to be ready before showing UI
-        video.onloadedmetadata = async () => {
+        const handleLoadedMetadata = async () => {
           try {
             await video.play();
             console.log("Video playing!");
@@ -186,6 +186,8 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             stopCamera();
           }
         };
+
+        video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
       } catch (err: any) {
         console.error("Camera error:", err);
         setError(err.name === "NotAllowedError"
@@ -251,19 +253,23 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
       streamRef.current = stream;
 
       if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+        const video = videoRef.current;
+        video.srcObject = stream;
 
         // Wait for video to be ready before setting active
-        videoRef.current.onloadedmetadata = async () => {
+        const handleLoadedMetadata = async () => {
           try {
-            await videoRef.current?.play();
+            await video.play();
             setIsCameraActive(true);
+            setIsScanning(false);
           } catch (err) {
             console.error("Video play error:", err);
             setError("Failed to start video playback");
             setIsScanning(false);
           }
         };
+
+        video.addEventListener('loadedmetadata', handleLoadedMetadata, { once: true });
       }
     } catch (err: any) {
       console.error("Camera error:", err);
@@ -283,7 +289,6 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
       {/* Video element - always rendered but hidden unless camera active */}
       <video
         ref={videoRef}
-        autoPlay
         playsInline
         muted
         className={isCameraActive ? "fixed inset-0 z-50 w-full h-full object-cover" : "hidden"}
