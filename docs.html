@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Documentation – ISBNScout</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Learn how to use ISBNScout - guides, tutorials, and documentation for book scouting." />
+  <link rel="icon" type="image/png" href="isbnscout-icon.png" />
+  <link rel="apple-touch-icon" href="isbnscout-icon.png" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg-light: #baf2ef;
+      --bg-dark: #07182b;
+      --accent: #12b3a6;
+      --accent-soft: #e5fcfa;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --border-soft: #e2e8f0;
+      --font-main: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-main);
+      color: var(--text-main);
+      background: #f8fafc;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .page {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      backdrop-filter: blur(12px);
+      background: rgba(7, 24, 43, 0.92);
+      color: #fff;
+      border-bottom: 1px solid rgba(148, 163, 184, 0.35);
+    }
+
+    .nav {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0.85rem 1.25rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .nav-left {
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo-image {
+      height: 32px;
+      width: auto;
+      border-radius: 8px;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      font-size: 0.95rem;
+      color: #fff;
+    }
+
+    main {
+      flex: 1;
+      padding: 2.5rem 1.25rem;
+    }
+
+    .content-inner {
+      max-width: 800px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 2.5rem 2rem;
+      border: 1px solid var(--border-soft);
+      box-shadow: 0 8px 20px rgba(15, 23, 42, 0.03);
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    h2 {
+      font-size: 1.5rem;
+      margin-top: 2rem;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+    }
+
+    h3 {
+      font-size: 1.2rem;
+      margin-top: 1.5rem;
+      margin-bottom: 0.5rem;
+      color: var(--text-main);
+    }
+
+    p {
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+      color: var(--text-muted);
+    }
+
+    ul, ol {
+      margin-bottom: 1rem;
+      margin-left: 1.5rem;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    li {
+      margin-bottom: 0.5rem;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+      font-size: 0.9rem;
+      color: var(--accent);
+    }
+
+    footer {
+      border-top: 1px solid var(--border-soft);
+      background: #0b1120;
+      color: #9ca3af;
+      padding: 1.5rem 1.25rem;
+      text-align: center;
+      font-size: 0.8rem;
+    }
+  </style>
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="nav">
+      <a href="/" class="nav-left">
+        <img src="isbnscout-icon.png" alt="ISBNScout icon" class="logo-image" />
+        <div class="logo-text">ISBNScout</div>
+      </a>
+    </div>
+  </header>
+
+  <main>
+    <div class="content-inner">
+      <a href="/" class="back-link">
+        <i class="fas fa-arrow-left"></i> Back to Home
+      </a>
+
+      <h1>Documentation</h1>
+      <p>Welcome to the ISBNScout documentation. Learn how to get the most out of your book scouting app.</p>
+
+      <h2>Getting Started</h2>
+
+      <h3>1. Create Your Account</h3>
+      <p>Sign up for a free account to start scanning up to 20 books per month. No credit card required.</p>
+
+      <h3>2. Download the App</h3>
+      <p>ISBNScout is available as a progressive web app (PWA). Access it from your mobile browser and add it to your home screen for the best experience.</p>
+
+      <h3>3. Start Scanning</h3>
+      <p>Choose your scanning method:</p>
+      <ul>
+        <li><strong>Barcode Scanner:</strong> Point your camera at the ISBN barcode for instant lookup</li>
+        <li><strong>Cover Recognition:</strong> Take a photo of the front cover when barcodes are missing or damaged</li>
+        <li><strong>Spine Recognition:</strong> Photograph book spines on a shelf to scan multiple books at once</li>
+      </ul>
+
+      <h2>Scanning Methods</h2>
+
+      <h3>Barcode Scanning</h3>
+      <p>The fastest way to identify books. Simply point your camera at the ISBN barcode (usually on the back cover). ISBNScout will automatically detect and look up the book.</p>
+
+      <h3>Cover Recognition (AI)</h3>
+      <p>Perfect for older books or when barcodes are damaged. Take a clear photo of the front cover, and AI will extract the title, author, and edition information.</p>
+
+      <h3>Spine Recognition (AI)</h3>
+      <p>Unique to ISBNScout. Photograph book spines while they're still on the shelf. The AI reads multiple titles at once, helping you quickly identify which books are worth pulling out for detailed scanning.</p>
+
+      <h2>Understanding Results</h2>
+
+      <h3>Profit Calculator</h3>
+      <p>Each scan shows:</p>
+      <ul>
+        <li><strong>Amazon Used Price:</strong> Current FBA and MFN prices</li>
+        <li><strong>eBay Sold Average:</strong> Recent sold prices from eBay UK</li>
+        <li><strong>Net Profit:</strong> Estimated profit after fees and postage</li>
+        <li><strong>Sales Velocity:</strong> How many units sold in the last 30 days</li>
+        <li><strong>Decision Badge:</strong> Strong buy, consider, or skip recommendation</li>
+      </ul>
+
+      <h3>Buy/Skip Decision</h3>
+      <p>ISBNScout analyzes multiple factors to recommend whether a book is worth buying:</p>
+      <ul>
+        <li>Current selling price vs. your purchase cost</li>
+        <li>Sales velocity (demand)</li>
+        <li>Competition (number of sellers)</li>
+        <li>Profit margin after all fees</li>
+      </ul>
+
+      <h2>Offline Mode</h2>
+
+      <h3>How It Works</h3>
+      <p>ISBNScout stores scans locally on your device when you're offline. When your connection returns, all data automatically syncs to the cloud.</p>
+
+      <h3>What Works Offline</h3>
+      <ul>
+        <li>All three scanning methods (barcode, cover, spine)</li>
+        <li>Viewing previously scanned books</li>
+        <li>Adding notes to scans</li>
+        <li>Profit calculations using cached pricing data</li>
+      </ul>
+
+      <h3>What Requires Internet</h3>
+      <ul>
+        <li>Looking up new books (first-time scans)</li>
+        <li>Real-time pricing updates</li>
+        <li>Creating listings on Amazon or eBay</li>
+        <li>Syncing data to cloud</li>
+      </ul>
+
+      <h2>Listing Books</h2>
+
+      <h3>Amazon Integration</h3>
+      <p>Connect your Amazon Seller account to list books directly from ISBNScout. Supports both FBA (Fulfillment by Amazon) and MFN (Merchant Fulfilled Network).</p>
+
+      <h3>eBay Integration</h3>
+      <p>Link your eBay UK account to create listings with pre-filled titles, descriptions, and prices based on scan data.</p>
+
+      <h2>Repricing (Pro)</h2>
+
+      <h3>Automated Repricing</h3>
+      <p>Set rules to automatically adjust your prices:</p>
+      <ul>
+        <li><strong>Match Lowest:</strong> Match the lowest competitive price</li>
+        <li><strong>Beat by %:</strong> Undercut competition by a percentage</li>
+        <li><strong>Beat by £:</strong> Undercut by a fixed amount</li>
+        <li><strong>Target Margin:</strong> Maintain minimum profit margins</li>
+      </ul>
+
+      <h3>Min/Max Limits</h3>
+      <p>Set minimum and maximum prices to protect your margins. ISBNScout will never reprice below your minimum or above your maximum.</p>
+
+      <h2>Need More Help?</h2>
+      <p>Contact our support team at <a href="mailto:support@isbnscout.com">support@isbnscout.com</a></p>
+    </div>
+  </main>
+
+  <footer>
+    <div>© <span id="year"></span> ISBNScout. All rights reserved.</div>
+  </footer>
+</div>
+
+<script>
+  document.getElementById("year").textContent = new Date().getFullYear();
+</script>
+</body>
+</html>
