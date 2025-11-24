@@ -220,6 +220,17 @@ export class HybridStorage implements IStorage {
     return this.local.getUserByEmail(email);
   }
 
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
+    if (this.isOnline && this.remote) {
+      try {
+        return await this.remote.getUserByStripeCustomerId(stripeCustomerId);
+      } catch (error) {
+        console.warn("[HybridStorage] Remote getUserByStripeCustomerId failed, using local");
+      }
+    }
+    return this.local.getUserByStripeCustomerId(stripeCustomerId);
+  }
+
   async createUser(user: InsertUser): Promise<User> {
     const created = await this.local.createUser(user);
     await this.queueSync("create", "user", user);

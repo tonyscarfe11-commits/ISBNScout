@@ -313,6 +313,12 @@ export class SQLiteStorage implements IStorage {
     return row ? this.deserializeUser(row) : undefined;
   }
 
+  async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
+    const stmt = this.db.prepare("SELECT * FROM users WHERE stripe_customer_id = ?");
+    const row = stmt.get(stripeCustomerId) as any;
+    return row ? this.deserializeUser(row) : undefined;
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const now = new Date();

@@ -15,6 +15,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import { getSubscriptionLimits } from "@shared/subscription-limits";
 
 interface DashboardStats {
   scansThisMonth: number;
@@ -118,9 +119,13 @@ export default function DashboardPage() {
 
         const avgProfit = soldThisMonth > 0 ? totalProfit / soldThisMonth : 0;
 
+        // Get subscription limits based on user plan
+        const limits = getSubscriptionLimits(userPlan);
+        const scansLimit = limits.scansPerMonth === -1 ? Infinity : limits.scansPerMonth;
+
         setStats({
           scansThisMonth,
-          scansLimit: 100, // TODO: Get from user subscription
+          scansLimit,
           totalInventory: books.length,
           listedBooks,
           soldThisMonth,

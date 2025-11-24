@@ -12,6 +12,7 @@ import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
 import { RepricingScheduler } from "./repricing-scheduler";
+import { requireAuth, getUserId } from "./middleware/auth";
 import { z } from "zod";
 import express from "express";
 import Stripe from "stripe";
@@ -121,9 +122,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Subscription checkout
-  app.post("/api/subscription/checkout", async (req, res) => {
+  app.post("/api/subscription/checkout", requireAuth, async (req, res) => {
     try {
-      const userId = req.session.userId || "default-user";
+      const userId = getUserId(req);
       const { planId } = req.body;
 
       if (!planId) {
@@ -242,36 +243,112 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Get current user info
-  app.get("/api/user/me", async (req, res) => {
+  // Stripe webhook endpoint
+  app.post("/api/webhooks/stripe", express.raw({ type: 'application/json' }), async (req, res) => {
     try {
-      let userId = req.session.userId || "default-user";
+      const signature = req.headers['stripe-signature'];
 
-      // Get or create default user with fixed ID
-      let user = await authService.getUserById(userId);
+      if (!signature) {
+        return res.status(400).json({ message: "Missing stripe signature" });
+      }
 
-      if (!user) {
-        // Get user by username if ID doesn't work
-        const defaultUser = await storage.getUserByUsername("default");
+      if (!stripeService.isConfigured()) {
+        return res.status(503).json({ message: "Stripe not configured" });
+      }
 
-        if (defaultUser) {
-          // Found existing default user, update session
-          req.session.userId = defaultUser.id;
-          user = defaultUser;
-        } else {
-          // Create new default user with fixed ID
-          const newUser = await storage.createUser({
-            username: "default",
-            email: "default@isbnscout.com",
-            password: "unused",
-          });
-          // Set the user ID to the fixed ID in storage
-          req.session.userId = newUser.id;
-          userId = newUser.id;
-          user = { ...newUser };
-          delete (user as any).password;
+      // Verify and parse webhook event
+      const event = stripeService.constructWebhookEvent(
+        req.body,
+        signature as string
+      );
+
+      // Handle the webhook event
+      const result = await stripeService.handleWebhookEvent(event);
+
+      console.log(`[Stripe Webhook] Event: ${result.type}`, result.data);
+
+      // Update user subscription based on event type
+      switch (result.type) {
+        case 'subscription_created': {
+          const { customerId, subscriptionId, planId } = result.data;
+
+          // Find user by Stripe customer ID
+          const user = await storage.getUserByStripeCustomerId(customerId);
+
+          if (user) {
+            await storage.updateUser(user.id, {
+              subscriptionTier: planId || 'basic',
+              subscriptionStatus: 'active',
+              stripeSubscriptionId: subscriptionId,
+              stripeCustomerId: customerId,
+            });
+            console.log(`[Stripe Webhook] Updated user ${user.id} subscription to ${planId}`);
+          }
+          break;
+        }
+
+        case 'subscription_updated': {
+          const { customerId, status, currentPeriodEnd } = result.data;
+
+          const user = await storage.getUserByStripeCustomerId(customerId);
+
+          if (user) {
+            await storage.updateUser(user.id, {
+              subscriptionStatus: status,
+              subscriptionExpiresAt: currentPeriodEnd,
+            });
+            console.log(`[Stripe Webhook] Updated user ${user.id} subscription status to ${status}`);
+          }
+          break;
+        }
+
+        case 'subscription_cancelled': {
+          const { customerId } = result.data;
+
+          const user = await storage.getUserByStripeCustomerId(customerId);
+
+          if (user) {
+            await storage.updateUser(user.id, {
+              subscriptionStatus: 'cancelled',
+              subscriptionTier: 'trial',
+            });
+            console.log(`[Stripe Webhook] Cancelled user ${user.id} subscription`);
+          }
+          break;
+        }
+
+        case 'payment_failed': {
+          const { customerId } = result.data;
+
+          const user = await storage.getUserByStripeCustomerId(customerId);
+
+          if (user) {
+            await storage.updateUser(user.id, {
+              subscriptionStatus: 'past_due',
+            });
+            console.log(`[Stripe Webhook] Marked user ${user.id} as past_due`);
+          }
+          break;
         }
       }
+
+      res.json({ received: true });
+    } catch (error: any) {
+      console.error("Webhook error:", error);
+      res.status(400).json({ message: error.message || "Webhook processing failed" });
+    }
+  });
+
+  // Get current user info (with optional auth for backwards compatibility)
+  app.get("/api/user/me", async (req, res) => {
+    try {
+      const userId = req.session.userId;
+
+      if (!userId) {
+        return res.status(401).json({ message: "Not authenticated" });
+      }
+
+      const user = await authService.getUserById(userId);
 
       if (!user) {
         return res.status(404).json({ message: "User not found" });
@@ -293,9 +370,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get trial status
-  app.get("/api/user/trial-status", async (req, res) => {
+  app.get("/api/user/trial-status", requireAuth, async (req, res) => {
     try {
-      let userId = req.session.userId || "default-user";
+      const userId = getUserId(req);
       const user = await authService.getUserById(userId);
 
       if (!user) {
@@ -326,10 +403,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get API credentials for a platform
-  app.get("/api/credentials/:platform", async (req, res) => {
+  app.get("/api/credentials/:platform", requireAuth, async (req, res) => {
     try {
       const { platform } = req.params;
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
 
       const credentials = await storage.getApiCredentials(userId, platform);
 
@@ -349,10 +426,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Save API credentials
-  app.post("/api/credentials", async (req, res) => {
+  app.post("/api/credentials", requireAuth, async (req, res) => {
     try {
       const { platform, credentials } = saveCredentialsSchema.parse(req.body);
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
 
       await storage.saveApiCredentials(userId, platform, credentials);
       res.json({ success: true, message: "Credentials saved successfully" });
@@ -401,10 +478,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create a listing on eBay or Amazon
-  app.post("/api/listings", async (req, res) => {
+  app.post("/api/listings", requireAuth, async (req, res) => {
     try {
       const listingData = createListingSchema.parse(req.body);
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
 
       // Get credentials for the platform
       const credentials = await storage.getApiCredentials(userId, listingData.platform);
@@ -491,7 +568,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Save failed listing attempt
       try {
         const listingData = req.body;
-        const userId = "default-user";
+        const userId = getUserId(req);
         await storage.createListing({
           userId,
           bookId: listingData.bookId,
@@ -513,9 +590,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all listings
-  app.get("/api/listings", async (req, res) => {
+  app.get("/api/listings", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const listings = await storage.getListings(userId);
       res.json(listings);
     } catch (error: any) {
@@ -524,10 +601,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get listings for a specific book
-  app.get("/api/listings/book/:bookId", async (req, res) => {
+  app.get("/api/listings/book/:bookId", requireAuth, async (req, res) => {
     try {
       const { bookId } = req.params;
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const listings = await storage.getListingsByBook(userId, bookId);
       res.json(listings);
     } catch (error: any) {
@@ -536,9 +613,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Inventory Items routes
-  app.post("/api/inventory", async (req, res) => {
+  app.post("/api/inventory", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const data = req.body;
 
       if (!data.bookId || !data.purchaseDate || !data.purchaseCost || !data.condition) {
@@ -572,9 +649,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/inventory", async (req, res) => {
+  app.get("/api/inventory", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const items = await storage.getInventoryItems(userId);
       res.json(items);
     } catch (error: any) {
@@ -599,10 +676,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.get("/api/inventory/book/:bookId", async (req, res) => {
+  app.get("/api/inventory/book/:bookId", requireAuth, async (req, res) => {
     try {
       const { bookId } = req.params;
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const items = await storage.getInventoryItemsByBook(userId, bookId);
       res.json(items);
     } catch (error: any) {
@@ -611,7 +688,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.patch("/api/inventory/:id", async (req, res) => {
+  app.patch("/api/inventory/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const updates = req.body;
@@ -648,7 +725,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  app.delete("/api/inventory/:id", async (req, res) => {
+  app.delete("/api/inventory/:id", requireAuth, async (req, res) => {
     try {
       const { id } = req.params;
       const success = await storage.deleteInventoryItem(id);
@@ -665,9 +742,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create or update a book scan
-  app.post("/api/books", async (req, res) => {
+  app.post("/api/books", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const { isbn, title, author, ...otherData } = req.body;
 
       if (!isbn) {
@@ -762,9 +839,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get all books
-  app.get("/api/books", async (req, res) => {
+  app.get("/api/books", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const books = await storage.getBooks(userId);
       res.json(books);
     } catch (error: any) {
@@ -773,9 +850,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Export books data
-  app.get("/api/books/export", async (req, res) => {
+  app.get("/api/books/export", requireAuth, async (req, res) => {
     try {
-      const userId = "default-user"; // TODO: Get from session
+      const userId = getUserId(req);
       const books = await storage.getBooks(userId);
 
       // Convert to exportable format
@@ -1386,7 +1463,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (req.body.runFrequency !== undefined) updates.runFrequency = req.body.runFrequency;
 
       const updatedRule = await storage.updateRepricingRule(id, updates);
-      
+
+      if (!updatedRule) {
+        return res.status(404).json({ message: "Repricing rule not found" });
+      }
+
       // Register/unregister user for automated repricing based on isActive status
       if (updatedRule.isActive === "true") {
         repricingScheduler.registerUser(userId);

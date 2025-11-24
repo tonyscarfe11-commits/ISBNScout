@@ -58,7 +58,7 @@ export class StripeService {
 
     if (secretKey) {
       this.stripe = new Stripe(secretKey, {
-        apiVersion: '2024-11-20.acacia',
+        apiVersion: '2025-10-29.clover',
       });
     }
   }
@@ -249,7 +249,7 @@ export class StripeService {
       }
 
       case 'customer.subscription.updated': {
-        const subscription = event.data.object as Stripe.Subscription;
+        const subscription = event.data.object as any;
         return {
           type: 'subscription_updated',
           data: {
@@ -273,7 +273,7 @@ export class StripeService {
       }
 
       case 'invoice.payment_succeeded': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         return {
           type: 'payment_succeeded',
           data: {
@@ -286,7 +286,7 @@ export class StripeService {
       }
 
       case 'invoice.payment_failed': {
-        const invoice = event.data.object as Stripe.Invoice;
+        const invoice = event.data.object as any;
         return {
           type: 'payment_failed',
           data: {
