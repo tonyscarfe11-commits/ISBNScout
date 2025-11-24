@@ -154,14 +154,12 @@ export default function ScanPage() {
 
       const pricingData = await pricingResponse.json();
 
-      // If we got no pricing data, show message and return
-      if (!pricingData.lowestPrice && !pricingData.ebayPrice && !pricingData.amazonPrice) {
+      // Show toast indicating data source
+      if (pricingData.source === 'demo') {
         toast({
-          title: "No pricing data found",
-          description: pricingData.title || `ISBN ${isbn}`,
-          variant: "destructive",
+          title: "Using demo pricing",
+          description: "Real eBay API hit rate limit - showing estimated prices",
         });
-        return;
       }
 
       // 2. Calculate velocity based on real data

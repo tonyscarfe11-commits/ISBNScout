@@ -60,7 +60,9 @@
       "Bash(nslookup:*)",
       "Bash(dig:*)",
       "Bash(then grep -i \"OPENAI\" .env)",
-      "Bash(else echo \".env file not found\")"
+      "Bash(else echo \".env file not found\")",
+      "Bash(then grep \"EBAY_APP_ID\" .env)",
+      "Bash(node test-ebay-api.js:*)"
     ],
     "deny": [],
     "ask": []

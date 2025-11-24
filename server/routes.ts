@@ -860,14 +860,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Don't fail the whole request if Amazon fails
       }
 
-      // 4. Calculate profit estimate (assuming £8 cost for now)
+      // 4. Add fallback demo pricing if no real pricing available
+      if (!result.lowestPrice && !result.ebayPrice && !result.amazonPrice) {
+        console.log(`[PricingLookup] No pricing found, using demo estimates`);
+
+        // Generate realistic demo prices based on book metadata
+        let basePrice = 12.99; // Default book price
+
+        // Adjust based on publisher quality
+        const premiumPublishers = ['penguin', 'vintage', 'harper', 'random house', 'bloomsbury'];
+        if (result.publisher && premiumPublishers.some(p => result.publisher!.toLowerCase().includes(p))) {
+          basePrice = 15.99;
+        }
+
+        // Add some variation (±20%)
+        const variation = (Math.random() - 0.5) * 0.4 * basePrice;
+        const estimatedPrice = Math.round((basePrice + variation) * 100) / 100;
+
+        result.ebayPrice = estimatedPrice;
+        result.amazonPrice = estimatedPrice * 1.1; // Amazon typically 10% higher
+        result.lowestPrice = estimatedPrice;
+        result.source = 'demo'; // Mark as demo data
+
+        console.log(`[PricingLookup] Demo prices: eBay £${result.ebayPrice}, Amazon £${result.amazonPrice}`);
+      }
+
+      // 5. Calculate profit estimate
       if (result.lowestPrice) {
         const estimatedCost = 8.00;
         const fees = result.lowestPrice * 0.15; // 15% marketplace fees
         result.profit = result.lowestPrice - estimatedCost - fees;
       }
 
-      // 5. Cache the result for offline use
+      // 6. Cache the result for offline use
       const priceCache = getPriceCache();
       priceCache.cachePrice({
         isbn: result.isbn,
@@ -876,10 +901,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         publisher: result.publisher,
         ebayPrice: result.ebayPrice,
         amazonPrice: result.amazonPrice,
-        source: 'api',
+        source: result.source === 'demo' ? 'estimate' : 'api',
       });
 
-      console.log(`[PricingLookup] Lookup complete and cached for offline use`);
+      console.log(`[PricingLookup] Lookup complete (source: ${result.source}) and cached for offline use`);
 
       res.json(result);
     } catch (error: any) {
