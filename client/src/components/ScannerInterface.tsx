@@ -128,61 +128,64 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
         const video = videoRef.current;
         video.srcObject = stream;
 
-        // Immediately show camera UI
-        setIsCameraActive(true);
-        setIsScanning(false);
-        console.log("Camera UI now active");
+        // Wait for video to be ready before showing UI
+        video.onloadedmetadata = async () => {
+          try {
+            await video.play();
+            console.log("Video playing!");
+            setIsCameraActive(true);
+            setIsScanning(false);
+            console.log("Camera UI now active");
 
-        // Try to play the video
-        try {
-          await video.play();
-          console.log("Video playing!");
-        } catch (playErr) {
-          console.log("Initial play failed, will retry:", playErr);
-        }
+            // Start barcode detection after video is playing
+            setTimeout(() => {
+              if (codeReaderRef.current && videoRef.current) {
+                console.log("Starting barcode detection...");
+                codeReaderRef.current.decodeFromVideoDevice(
+                  null,
+                  videoRef.current,
+                  (result, err) => {
+                    if (result && !isProcessingRef.current) {
+                      const text = result.getText();
+                      console.log("Barcode detected:", text);
+                      const cleanedText = text.replace(/[-\s]/g, "");
+                      if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
+                        console.log("Valid ISBN found:", cleanedText);
 
-        // Start scanning after a brief delay
-        setTimeout(() => {
-          if (codeReaderRef.current && videoRef.current) {
-            console.log("Starting barcode detection...");
-            codeReaderRef.current.decodeFromVideoDevice(
-              null,
-              videoRef.current,
-              (result, err) => {
-                if (result && !isProcessingRef.current) {
-                  const text = result.getText();
-                  console.log("Barcode detected:", text);
-                  const cleanedText = text.replace(/[-\s]/g, "");
-                  if (/^\d{10}(\d{3})?$/.test(cleanedText)) {
-                    console.log("Valid ISBN found:", cleanedText);
+                        // IMMEDIATELY set processing flag and stop camera
+                        isProcessingRef.current = true;
 
-                    // IMMEDIATELY set processing flag and stop camera
-                    isProcessingRef.current = true;
+                        // Stop camera immediately to prevent re-scanning
+                        if (codeReaderRef.current) {
+                          try {
+                            codeReaderRef.current.reset();
+                          } catch (e) {
+                            // Ignore
+                          }
+                        }
 
-                    // Stop camera immediately to prevent re-scanning
-                    if (codeReaderRef.current) {
-                      try {
-                        codeReaderRef.current.reset();
-                      } catch (e) {
-                        // Ignore
+                        stopCamera();
+
+                        // Then notify parent with small delay to ensure camera is stopped
+                        setTimeout(() => {
+                          onIsbnScan(cleanedText);
+                        }, 100);
                       }
                     }
-
-                    stopCamera();
-
-                    // Then notify parent with small delay to ensure camera is stopped
-                    setTimeout(() => {
-                      onIsbnScan(cleanedText);
-                    }, 100);
+                    if (err && !(err instanceof NotFoundException)) {
+                      console.error("Barcode scan error:", err);
+                    }
                   }
-                }
-                if (err && !(err instanceof NotFoundException)) {
-                  console.error("Barcode scan error:", err);
-                }
+                );
               }
-            );
+            }, 500);
+          } catch (playErr) {
+            console.error("Video play failed:", playErr);
+            setError("Failed to start video playback");
+            setIsScanning(false);
+            stopCamera();
           }
-        }, 1000);
+        };
       } catch (err: any) {
         console.error("Camera error:", err);
         setError(err.name === "NotAllowedError"
@@ -277,21 +280,21 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
       {/* Hidden canvas for photo capture */}
       <canvas ref={canvasRef} className="hidden" />
 
-      {/* Full-screen camera overlay */}
-      {isCameraActive && (
-        <div className="fixed inset-0 z-50 bg-black">
-          {/* Video element - full screen */}
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="w-full h-full object-cover"
-          />
+      {/* Video element - always rendered but hidden unless camera active */}
+      <video
+        ref={videoRef}
+        autoPlay
+        playsInline
+        muted
+        className={isCameraActive ? "fixed inset-0 z-50 w-full h-full object-cover" : "hidden"}
+      />
 
+      {/* Full-screen camera overlay UI */}
+      {isCameraActive && (
+        <div className="fixed inset-0 z-50 pointer-events-none">
           {/* Scanner overlay for ISBN mode */}
           {scanMode === "isbn" && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
               {/* Scanning frame */}
               <div className="w-[85%] max-w-md aspect-[3/4] border-4 border-primary rounded-2xl relative">
                 <div className="absolute -top-1 -left-1 w-12 h-12 border-t-[6px] border-l-[6px] border-primary rounded-tl-2xl"></div>
@@ -313,7 +316,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
               <Button
                 size="icon"
                 variant="ghost"
-                className="text-white hover:bg-white/20"
+                className="text-white hover:bg-white/20 pointer-events-auto"
                 onClick={stopCamera}
               >
                 <X className="h-6 w-6" />
@@ -322,7 +325,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
           </div>
 
           {/* Bottom controls */}
-          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent">
             <div className="text-center space-y-4">
               <p className="text-white text-sm">
                 {scanMode === "isbn"
