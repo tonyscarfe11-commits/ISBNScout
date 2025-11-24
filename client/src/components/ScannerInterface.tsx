@@ -277,6 +277,75 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
       {/* Hidden canvas for photo capture */}
       <canvas ref={canvasRef} className="hidden" />
 
+      {/* Full-screen camera overlay */}
+      {isCameraActive && (
+        <div className="fixed inset-0 z-50 bg-black">
+          {/* Video element - full screen */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
+
+          {/* Scanner overlay for ISBN mode */}
+          {scanMode === "isbn" && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+              {/* Scanning frame */}
+              <div className="w-[85%] max-w-md aspect-[3/4] border-4 border-primary rounded-2xl relative">
+                <div className="absolute -top-1 -left-1 w-12 h-12 border-t-[6px] border-l-[6px] border-primary rounded-tl-2xl"></div>
+                <div className="absolute -top-1 -right-1 w-12 h-12 border-t-[6px] border-r-[6px] border-primary rounded-tr-2xl"></div>
+                <div className="absolute -bottom-1 -left-1 w-12 h-12 border-b-[6px] border-l-[6px] border-primary rounded-bl-2xl"></div>
+                <div className="absolute -bottom-1 -right-1 w-12 h-12 border-b-[6px] border-r-[6px] border-primary rounded-br-2xl"></div>
+              </div>
+            </div>
+          )}
+
+          {/* Top controls */}
+          <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent">
+            <div className="flex items-center justify-between">
+              <div className="text-white">
+                <p className="text-sm font-medium">
+                  {scanMode === "isbn" ? "Scanning Barcode" : "Capture Photo"}
+                </p>
+              </div>
+              <Button
+                size="icon"
+                variant="ghost"
+                className="text-white hover:bg-white/20"
+                onClick={stopCamera}
+              >
+                <X className="h-6 w-6" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Bottom controls */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/70 to-transparent pointer-events-none">
+            <div className="text-center space-y-4">
+              <p className="text-white text-sm">
+                {scanMode === "isbn"
+                  ? "Position barcode within the frame"
+                  : "Frame the book cover or spine"}
+              </p>
+
+              {/* Capture button for cover mode */}
+              {scanMode === "cover" && (
+                <Button
+                  size="lg"
+                  className="pointer-events-auto w-20 h-20 rounded-full bg-white hover:bg-gray-200 shadow-xl"
+                  onClick={capturePhoto}
+                  data-testid="button-capture-photo"
+                >
+                  <Camera className="h-8 w-8 text-black" />
+                </Button>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       <Tabs value={scanMode} onValueChange={(v) => {
         setScanMode(v as "isbn" | "cover");
         if (isCameraActive) stopCamera();
@@ -294,40 +363,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
 
         <TabsContent value="isbn" className="space-y-4">
           <Card className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
-            {/* Always render video element, but hide when not active */}
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className={`w-full h-full object-cover ${!isCameraActive ? 'hidden' : ''}`}
-            />
-
-            {isCameraActive ? (
-              <>
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                  <div className="w-[90%] h-3/4 border-2 border-primary rounded-lg relative">
-                    <div className="absolute top-0 left-0 w-8 h-8 border-t-4 border-l-4 border-primary rounded-tl-lg"></div>
-                    <div className="absolute top-0 right-0 w-8 h-8 border-t-4 border-r-4 border-primary rounded-tr-lg"></div>
-                    <div className="absolute bottom-0 left-0 w-8 h-8 border-b-4 border-l-4 border-primary rounded-bl-lg"></div>
-                    <div className="absolute bottom-0 right-0 w-8 h-8 border-b-4 border-r-4 border-primary rounded-br-lg"></div>
-                  </div>
-                </div>
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className="absolute top-2 right-2"
-                  onClick={stopCamera}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-                <div className="absolute bottom-4 left-0 right-0 text-center">
-                  <p className="text-sm text-white bg-black/50 px-4 py-2 rounded-full inline-block">
-                    Scanning for barcode...
-                  </p>
-                </div>
-              </>
-            ) : (
+            {!isCameraActive && (
               <>
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="w-[90%] h-3/4 border-2 border-primary rounded-lg relative">
@@ -396,27 +432,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
 
         <TabsContent value="cover" className="space-y-4">
           <Card className="aspect-video bg-muted flex items-center justify-center relative overflow-hidden">
-            {/* Always render video element, but hide when not active */}
-            <video
-              ref={videoRef}
-              autoPlay
-              playsInline
-              muted
-              className={`w-full h-full object-cover ${!isCameraActive ? 'hidden' : ''}`}
-            />
-
-            {isCameraActive ? (
-              <>
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className="absolute top-2 right-2"
-                  onClick={stopCamera}
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </>
-            ) : (
+            {!isCameraActive && (
               <div className="text-center p-4">
                 <Image className="h-12 w-12 mb-3 mx-auto text-muted-foreground" />
                 <p className="font-semibold mb-1">AI Cover & Spine Recognition</p>
@@ -436,17 +452,7 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
             </div>
           )}
 
-          {isCameraActive ? (
-            <Button
-              size="lg"
-              className="w-full"
-              onClick={capturePhoto}
-              data-testid="button-capture-photo"
-            >
-              <Camera className="h-5 w-5 mr-2" />
-              Capture Photo
-            </Button>
-          ) : (
+          {!isCameraActive && (
             <Button
               size="lg"
               className="w-full"
