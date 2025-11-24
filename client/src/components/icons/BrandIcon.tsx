@@ -22,7 +22,7 @@ const variantMap = {
 /**
  * ISBNScout Brand Icon Component
  * Displays the app logo/icon with customizable size and variant
- * Uses the isbnscout-icon.png asset
+ * Uses the transparent icon for clean display on any background
  */
 export const BrandIcon: React.FC<BrandIconProps> = ({
   className = "",
@@ -35,7 +35,7 @@ export const BrandIcon: React.FC<BrandIconProps> = ({
   return (
     <div className="bg-background rounded-md p-1 flex items-center justify-center">
       <img
-        src="/isbnscout-icon.png"
+        src="/isbnscout-icon-transparent.png"
         alt="ISBNScout"
         className={`${sizeClass} ${className} rounded object-contain`}
       />
