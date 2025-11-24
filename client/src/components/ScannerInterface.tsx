@@ -225,8 +225,17 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
   const handleManualSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (manualIsbn.trim()) {
-      onIsbnScan(manualIsbn.trim());
-      setManualIsbn("");
+      // Clean ISBN: remove spaces, hyphens, and other non-digits
+      const cleanedIsbn = manualIsbn.replace(/[-\s]/g, "");
+
+      // Validate it's 10 or 13 digits
+      if (/^\d{10}$/.test(cleanedIsbn) || /^\d{13}$/.test(cleanedIsbn)) {
+        onIsbnScan(cleanedIsbn);
+        setManualIsbn("");
+        setError(null);
+      } else {
+        setError("Please enter a valid 10 or 13 digit ISBN");
+      }
     }
   };
 
@@ -424,10 +433,9 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
               <form onSubmit={handleManualSubmit} className="flex gap-2">
                 <Input
                   type="text"
-                  placeholder="Enter ISBN (10 or 13 digits)"
+                  placeholder="Enter ISBN (e.g., 978-0-123-45678-9)"
                   value={manualIsbn}
                   onChange={(e) => setManualIsbn(e.target.value)}
-                  pattern="[0-9]{10,13}"
                   data-testid="input-manual-isbn"
                 />
                 <Button type="submit" data-testid="button-submit-isbn">
