@@ -4,13 +4,15 @@ import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AppHeader } from "@/components/AppHeader";
+import { UpgradeModal } from "@/components/UpgradeModal";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function ScanPage() {
@@ -20,7 +22,7 @@ export default function ScanPage() {
   const [pendingCount] = useState(0);
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-  
+
   const [recentScans, setRecentScans] = useState<BookDetails[]>([]);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [recognitionResult, setRecognitionResult] = useState<any>(null);
@@ -29,9 +31,98 @@ export default function ScanPage() {
     return saved === "true";
   });
 
+  // Scan limit state
+  const [scanLimits, setScanLimits] = useState({
+    scansUsed: 0,
+    scansLimit: 10,
+    scansRemaining: 10,
+    percentUsed: 0,
+    isUnlimited: false,
+  });
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  const [currentTier, setCurrentTier] = useState("trial");
+
   useEffect(() => {
     localStorage.setItem("bluetoothScannerEnabled", bluetoothEnabled.toString());
   }, [bluetoothEnabled]);
+
+  // Fetch scan limits on mount
+  useEffect(() => {
+    const fetchScanLimits = async () => {
+      try {
+        const [limitsResponse, userResponse] = await Promise.all([
+          fetch("/api/user/scan-limits"),
+          fetch("/api/user/me"),
+        ]);
+
+        if (limitsResponse.ok) {
+          const limits = await limitsResponse.json();
+          setScanLimits(limits);
+        }
+
+        if (userResponse.ok) {
+          const user = await userResponse.json();
+          setCurrentTier(user.subscriptionTier || "trial");
+        }
+      } catch (error) {
+        console.error("Failed to fetch scan limits:", error);
+      }
+    };
+
+    fetchScanLimits();
+  }, []);
+
+  // Helper to refresh scan limits
+  const refreshScanLimits = async () => {
+    try {
+      const response = await fetch("/api/user/scan-limits");
+      if (response.ok) {
+        const limits = await response.json();
+        setScanLimits(limits);
+      }
+    } catch (error) {
+      console.error("Failed to refresh scan limits:", error);
+    }
+  };
+
+  // Helper to save scan and handle limit errors
+  const saveScan = async (isbn: string, bookData: any) => {
+    try {
+      const response = await fetch("/api/books", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ isbn, ...bookData }),
+      });
+
+      if (response.status === 403) {
+        // Scan limit reached
+        const error = await response.json();
+        setUpgradeModalOpen(true);
+        toast({
+          title: "Scan Limit Reached",
+          description: error.message || "Upgrade to continue scanning",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to save scan");
+      }
+
+      // Refresh scan limits after successful scan
+      await refreshScanLimits();
+      return true;
+    } catch (error: any) {
+      console.error("Save scan error:", error);
+      toast({
+        title: "Save Failed",
+        description: error.message || "Could not save scan",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
 
   const { isListening, lastScan } = useBluetoothScanner({
     enabled: bluetoothEnabled,
@@ -96,6 +187,17 @@ export default function ScanPage() {
         buyRecommendation: velocityData.buyRecommendation.recommendation,
         buyRecommendationReason: velocityData.buyRecommendation.reason,
       };
+
+      // Save scan and check limits
+      const saved = await saveScan(isbn, {
+        title: mockBook.title,
+        author: mockBook.author,
+      });
+
+      if (!saved) {
+        // Scan limit reached, modal will be shown
+        return;
+      }
 
       setRecentScans([mockBook, ...recentScans.slice(0, 2)]);
       
@@ -240,6 +342,27 @@ export default function ScanPage() {
           </div>
         )}
 
+        {/* Scan Limit Progress */}
+        {!scanLimits.isUnlimited && (
+          <Card className={`p-4 ${scanLimits.percentUsed >= 90 ? 'border-orange-500 bg-orange-50' : ''}`}>
+            <div className="flex items-center justify-between mb-2">
+              <div className="flex items-center gap-2">
+                <Zap className={`h-4 w-4 ${scanLimits.percentUsed >= 90 ? 'text-orange-600' : 'text-primary'}`} />
+                <span className="text-sm font-medium">Scans This Month</span>
+              </div>
+              <span className="text-sm font-bold">
+                {scanLimits.scansUsed} / {scanLimits.scansLimit}
+              </span>
+            </div>
+            <Progress value={scanLimits.percentUsed} className="h-2" />
+            {scanLimits.percentUsed >= 80 && (
+              <p className="text-xs text-muted-foreground mt-2">
+                {scanLimits.scansRemaining} scans remaining. <button onClick={() => setLocation("/subscription")} className="text-primary underline">Upgrade for more</button>
+              </p>
+            )}
+          </Card>
+        )}
+
         <ScannerInterface
           onIsbnScan={handleIsbnScan}
           onCoverScan={handleCoverScan}
@@ -382,6 +505,14 @@ export default function ScanPage() {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onList={handleListFromModal}
+      />
+
+      <UpgradeModal
+        open={upgradeModalOpen}
+        onOpenChange={setUpgradeModalOpen}
+        scansUsed={scanLimits.scansUsed}
+        scansLimit={scanLimits.scansLimit}
+        currentTier={currentTier}
       />
     </div>
   );

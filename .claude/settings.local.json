@@ -58,7 +58,9 @@
       "WebFetch(domain:tonyscarfe11-commits.github.io)",
       "Bash(gh run:*)",
       "Bash(nslookup:*)",
-      "Bash(dig:*)"
+      "Bash(dig:*)",
+      "Bash(then grep -i \"OPENAI\" .env)",
+      "Bash(else echo \".env file not found\")"
     ],
     "deny": [],
     "ask": []
