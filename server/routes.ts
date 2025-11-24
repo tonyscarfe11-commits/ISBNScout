@@ -13,6 +13,7 @@ import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
 import { RepricingScheduler } from "./repricing-scheduler";
 import { requireAuth, getUserId } from "./middleware/auth";
+import { scanLimitService } from "./services/scan-limit-service";
 import { z } from "zod";
 import express from "express";
 import Stripe from "stripe";
@@ -402,6 +403,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get scan limit info
+  app.get("/api/user/scan-limits", requireAuth, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const user = await authService.getUserById(userId);
+
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const limitService = scanLimitService(storage);
+      const limitInfo = await limitService.getScanLimitInfo(user);
+
+      res.json(limitInfo);
+    } catch (error: any) {
+      console.error("Get scan limits error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to get scan limits",
+      });
+    }
+  });
+
   // Get API credentials for a platform
   app.get("/api/credentials/:platform", requireAuth, async (req, res) => {
     try {
@@ -749,6 +772,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       if (!isbn) {
         return res.status(400).json({ message: "ISBN is required" });
+      }
+
+      // Check scan limits
+      const user = await authService.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      const limitService = scanLimitService(storage);
+      const canScan = await limitService.canScan(user);
+
+      if (!canScan.allowed) {
+        return res.status(403).json({
+          error: "scan_limit_reached",
+          message: canScan.message,
+          scansUsed: canScan.scansUsed,
+          scansLimit: canScan.scansLimit,
+        });
       }
 
       // Try to fetch book data from Google Books if we don't have title
