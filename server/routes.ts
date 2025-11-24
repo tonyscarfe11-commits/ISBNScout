@@ -764,6 +764,125 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Lookup book pricing by ISBN (real-time API calls + caching)
+  app.post("/api/books/lookup-pricing", requireAuth, async (req, res) => {
+    try {
+      const { isbn } = req.body;
+
+      if (!isbn) {
+        return res.status(400).json({ message: "ISBN is required" });
+      }
+
+      console.log(`[PricingLookup] Looking up ISBN ${isbn}...`);
+
+      // Initialize response object
+      const result: any = {
+        isbn,
+        title: null,
+        author: null,
+        publisher: null,
+        thumbnail: null,
+        amazonPrice: null,
+        ebayPrice: null,
+        lowestPrice: null,
+        profit: null,
+        salesRank: null,
+        source: 'api',
+      };
+
+      // 1. Try Google Books for metadata
+      try {
+        console.log(`[PricingLookup] Fetching metadata from Google Books...`);
+        const googleBookData = await googleBooksService.lookupByISBN(isbn);
+
+        if (googleBookData) {
+          result.title = googleBookData.title;
+          result.author = googleBookData.author;
+          result.publisher = googleBookData.publisher;
+          result.thumbnail = googleBookData.thumbnail;
+          console.log(`[PricingLookup] Found book: ${googleBookData.title} by ${googleBookData.author}`);
+        } else {
+          console.log(`[PricingLookup] No Google Books data found`);
+        }
+      } catch (googleError: any) {
+        console.error('[PricingLookup] Google Books error:', googleError.message);
+      }
+
+      // 2. Try eBay for pricing
+      try {
+        console.log(`[PricingLookup] Fetching eBay pricing...`);
+        const ebayData = await ebayPricingService.getPriceByISBN(isbn);
+
+        if (ebayData && ebayData.averagePrice) {
+          result.ebayPrice = ebayData.averagePrice;
+          result.lowestPrice = ebayData.minPrice || ebayData.averagePrice;
+          console.log(`[PricingLookup] eBay average: £${ebayData.averagePrice.toFixed(2)}, lowest: £${result.lowestPrice.toFixed(2)}`);
+        } else {
+          console.log(`[PricingLookup] No eBay pricing found`);
+        }
+      } catch (ebayError: any) {
+        console.error('[PricingLookup] eBay error:', ebayError.message);
+      }
+
+      // 3. Try Amazon SP-API for pricing (if configured)
+      try {
+        // Check if Amazon credentials exist
+        const userId = getUserId(req);
+        const amazonCreds = await storage.getApiCredentials(userId, 'amazon');
+
+        if (amazonCreds) {
+          console.log(`[PricingLookup] Fetching Amazon pricing...`);
+          const amazonService = new AmazonService(amazonCreds as any);
+          const amazonPricing = await amazonService.getCompetitivePricing(isbn);
+
+          if (amazonPricing.lowestPrice) {
+            result.amazonPrice = amazonPricing.lowestPrice;
+
+            // Update lowest price if Amazon is lower
+            if (!result.lowestPrice || amazonPricing.lowestPrice < result.lowestPrice) {
+              result.lowestPrice = amazonPricing.lowestPrice;
+            }
+
+            console.log(`[PricingLookup] Amazon lowest: £${amazonPricing.lowestPrice.toFixed(2)}`);
+          } else {
+            console.log(`[PricingLookup] No Amazon pricing found`);
+          }
+        } else {
+          console.log(`[PricingLookup] Amazon credentials not configured, skipping`);
+        }
+      } catch (amazonError: any) {
+        console.error('[PricingLookup] Amazon error:', amazonError.message);
+        // Don't fail the whole request if Amazon fails
+      }
+
+      // 4. Calculate profit estimate (assuming £8 cost for now)
+      if (result.lowestPrice) {
+        const estimatedCost = 8.00;
+        const fees = result.lowestPrice * 0.15; // 15% marketplace fees
+        result.profit = result.lowestPrice - estimatedCost - fees;
+      }
+
+      // 5. Cache the result for offline use
+      const priceCache = getPriceCache();
+      priceCache.cachePrice({
+        isbn: result.isbn,
+        title: result.title,
+        author: result.author,
+        publisher: result.publisher,
+        ebayPrice: result.ebayPrice,
+        amazonPrice: result.amazonPrice,
+        source: 'api',
+      });
+
+      console.log(`[PricingLookup] Lookup complete and cached for offline use`);
+
+      res.json(result);
+    } catch (error: any) {
+      console.error('[PricingLookup] Error:', error);
+      res.status(500).json({ message: error.message || 'Failed to lookup pricing' });
+    }
+  });
+
   // Create or update a book scan
   app.post("/api/books", requireAuth, async (req, res) => {
     try {

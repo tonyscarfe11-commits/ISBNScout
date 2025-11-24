@@ -134,21 +134,49 @@ export default function ScanPage() {
 
   const handleIsbnScan = async (isbn: string) => {
     console.log("Scanning ISBN:", isbn);
-    
-    // Mock data - in production this would come from Amazon API
-    const salesRank = 15000; // Example: Fast-selling rank
-    const profit = 16.99;
-    const profitMargin = 70;
-    const yourCost = 8.00;
-    
-    // Call backend service to calculate velocity
-    // For now, we'll call the API which uses the SalesVelocityService
+
     try {
-      const response = await fetch("/api/books/calculate-velocity", {
+      // 1. Fetch real pricing data from API
+      toast({
+        title: "Looking up book...",
+        description: "Fetching pricing from Amazon and eBay",
+      });
+
+      const pricingResponse = await fetch("/api/books/lookup-pricing", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ 
-          salesRank, 
+        body: JSON.stringify({ isbn }),
+      });
+
+      if (!pricingResponse.ok) {
+        throw new Error("Failed to fetch pricing data");
+      }
+
+      const pricingData = await pricingResponse.json();
+
+      // If we got no pricing data, show message and return
+      if (!pricingData.lowestPrice && !pricingData.ebayPrice && !pricingData.amazonPrice) {
+        toast({
+          title: "No pricing data found",
+          description: pricingData.title || `ISBN ${isbn}`,
+          variant: "destructive",
+        });
+        return;
+      }
+
+      // 2. Calculate velocity based on real data
+      const yourCost = 8.00;
+      const lowestPrice = pricingData.lowestPrice || pricingData.ebayPrice || pricingData.amazonPrice || 0;
+      const fees = lowestPrice * 0.15; // 15% marketplace fees
+      const profit = lowestPrice - yourCost - fees;
+      const profitMargin = lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0;
+      const salesRank = 15000; // Default for now - could come from Amazon API
+
+      const velocityResponse = await fetch("/api/books/calculate-velocity", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          salesRank,
           profit,
           profitMargin,
           yourCost,
@@ -157,10 +185,9 @@ export default function ScanPage() {
       });
 
       let velocityData;
-      if (response.ok) {
-        velocityData = await response.json();
+      if (velocityResponse.ok) {
+        velocityData = await velocityResponse.json();
       } else {
-        // Fallback to default if API fails
         velocityData = {
           velocity: { rating: 'medium', description: 'Steady seller', estimatedSalesPerMonth: '3-10' },
           timeToSell: '2-4 weeks',
@@ -168,17 +195,18 @@ export default function ScanPage() {
         };
       }
 
-      const mockBook: BookDetails = {
+      // 3. Build book object with REAL data
+      const book: BookDetails = {
         id: Date.now().toString(),
         isbn,
-        title: "Harry Potter and the Deathly Hallows",
-        author: "J.K. Rowling",
-        amazonPrice: 24.99,
-        ebayPrice: 22.50,
-        yourCost: 8.00,
-        profit: 16.99,
-        status: "profitable",
-        description: "The seventh and final adventure in the Harry Potter series.",
+        title: pricingData.title || `Book with ISBN ${isbn}`,
+        author: pricingData.author || "Unknown Author",
+        amazonPrice: pricingData.amazonPrice || null,
+        ebayPrice: pricingData.ebayPrice || null,
+        yourCost,
+        profit,
+        status: profit > 5 ? "profitable" : profit > 0 ? "break-even" : "loss",
+        description: pricingData.publisher ? `Published by ${pricingData.publisher}` : undefined,
         salesRank,
         velocity: velocityData.velocity.rating,
         velocityDescription: velocityData.velocity.description,
@@ -188,10 +216,10 @@ export default function ScanPage() {
         buyRecommendationReason: velocityData.buyRecommendation.reason,
       };
 
-      // Save scan and check limits
+      // 4. Save scan and check limits
       const saved = await saveScan(isbn, {
-        title: mockBook.title,
-        author: mockBook.author,
+        title: book.title,
+        author: book.author,
       });
 
       if (!saved) {
@@ -199,17 +227,19 @@ export default function ScanPage() {
         return;
       }
 
-      setRecentScans([mockBook, ...recentScans.slice(0, 2)]);
-      
+      // 5. Update UI
+      setRecentScans([book, ...recentScans.slice(0, 2)]);
+
       toast({
         title: "Book scanned successfully",
-        description: `${mockBook.title} - ${velocityData.velocity.description}`,
+        description: `${book.title} - ${velocityData.velocity.description}`,
       });
-    } catch (error) {
-      console.error("Velocity calculation failed:", error);
+    } catch (error: any) {
+      console.error("Book scan failed:", error);
       toast({
-        title: "Book scanned",
-        description: "Harry Potter and the Deathly Hallows",
+        title: "Scan failed",
+        description: error.message || "Could not fetch book pricing",
+        variant: "destructive",
       });
     }
   };
