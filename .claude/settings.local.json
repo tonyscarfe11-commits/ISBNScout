@@ -62,7 +62,22 @@
       "Bash(then grep -i \"OPENAI\" .env)",
       "Bash(else echo \".env file not found\")",
       "Bash(then grep \"EBAY_APP_ID\" .env)",
-      "Bash(node test-ebay-api.js:*)"
+      "Bash(node test-ebay-api.js:*)",
+      "Bash(NODE_ENV=production node:*)",
+      "Bash(then echo \"=== API Keys Status ===\")",
+      "Bash(node:*)",
+      "WebFetch(domain:developer.ebay.com)",
+      "Bash(then grep -i \"EBAY\" .env)",
+      "Bash(ls:*)",
+      "Bash(else echo \"No .env file\")",
+      "Bash(else echo \"❌ No .env file found\")",
+      "Bash(sed:*)",
+      "Bash(if [ -f \"test-shelf-scanning.ts\" ])",
+      "Bash(then)",
+      "Bash(else)",
+      "Bash(if [ -n \"$OPENAI_API_KEY\" ])",
+      "Bash(then echo \"✅ OPENAI_API_KEY is set (length: $#PENAI_API_KEY chars)\" curl -s https://api.openai.com/v1/models -H \"Authorization: Bearer $OPENAI_API_KEY\")",
+      "Bash(sqlite3:*)"
     ],
     "deny": [],
     "ask": []

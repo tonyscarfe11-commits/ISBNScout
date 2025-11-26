@@ -20,31 +20,31 @@ export interface SubscriptionPlan {
 export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
   free: {
     id: 'free',
-    name: 'Starter',
+    name: 'Trial',
     price: 0,
     interval: 'month',
-    features: ['10 scans/month', 'Basic price comparison'],
+    features: ['10 free scans', 'ISBN scanning only', 'Live pricing data'],
   },
   basic: {
     id: 'basic',
     name: 'Basic',
     price: 9.99,
     interval: 'month',
-    features: ['100 scans/month', 'Full price comparison', 'Manual listing'],
+    features: ['100 scans/month', 'ISBN scanning only', 'Live pricing data', 'Book library'],
   },
   pro: {
     id: 'pro',
     name: 'Pro',
     price: 24.99,
     interval: 'month',
-    features: ['Unlimited scans', 'AI features', 'Auto-listing', 'Priority support'],
+    features: ['Unlimited scans', 'AI shelf scanning', 'AI cover/spine recognition', 'Automated repricing', 'Priority support'],
   },
   enterprise: {
     id: 'enterprise',
     name: 'Enterprise',
     price: 99.99,
     interval: 'month',
-    features: ['Everything in Pro', 'White label', 'API access', 'Dedicated support'],
+    features: ['Truly unlimited scans (no daily caps)', 'All Pro features', 'Bulk operations', 'Advanced reporting', 'Custom integrations support', 'Dedicated account manager', 'Priority support (4-hour response)'],
   },
 };
 

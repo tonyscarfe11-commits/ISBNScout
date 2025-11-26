@@ -10,6 +10,15 @@ export interface BookRecognitionResult {
   description?: string;
   keywords: string[];
   imageType?: 'cover' | 'spine' | 'unknown';
+  confidence?: 'high' | 'medium' | 'low'; // How confident the AI is about this result
+  position?: number; // Position in shelf (left to right)
+}
+
+export interface MultiBookRecognitionResult {
+  books: BookRecognitionResult[];
+  totalBooksDetected: number;
+  imageType: 'single' | 'shelf' | 'stack';
+  processingTime?: number;
 }
 
 export interface KeywordOptimizationResult {
@@ -131,6 +140,115 @@ If any field is not clearly visible, omit it from the response. Do not guess.`,
     } catch (error: any) {
       console.error('Book image analysis failed:', error);
       throw new Error(error.message || 'Failed to analyze book image');
+    }
+  }
+
+  /**
+   * Analyze multiple books from a single image (SHELF SCANNING)
+   * This is the killer feature - scan entire bookshelves at once
+   *
+   * Handles:
+   * - Books arranged spine-out on a shelf
+   * - Stack of books
+   * - Multiple books in one photo
+   */
+  async analyzeMultipleBooks(imageUrl: string): Promise<MultiBookRecognitionResult> {
+    const openai = this.getClient();
+    const startTime = Date.now();
+
+    try {
+      const response = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `You are analyzing an image that contains MULTIPLE BOOKS. This could be:
+- A bookshelf with books arranged spine-out (most common)
+- A stack or pile of books
+- Multiple books laid out on a surface
+
+YOUR TASK: Detect and analyze EVERY BOOK visible in this image.
+
+CRITICAL INSTRUCTIONS FOR SPINE RECOGNITION:
+1. Spines often have text running VERTICALLY (top-to-bottom or bottom-to-top)
+2. Text on spines is often abbreviated or shortened
+3. Look for: Title | Author | Publisher Logo pattern
+4. Books are typically arranged LEFT TO RIGHT on shelves
+5. Some text may be rotated 90 degrees - read carefully
+6. ISBN barcodes sometimes visible on spines
+
+FOR EACH BOOK YOU DETECT:
+1. Extract the book title (even if abbreviated on spine)
+2. Extract the author name (might be initials or last name only)
+3. Look for ISBN if visible (barcode on spine/cover)
+4. Note the position (1st book from left, 2nd, 3rd, etc.)
+5. Assess your confidence level:
+   - HIGH: Clear text, full title/author visible
+   - MEDIUM: Partial text, can infer the book
+   - LOW: Barely visible or very unclear
+6. Skip books that are completely illegible
+
+Return a JSON object with this EXACT structure:
+{
+  "books": [
+    {
+      "title": "Full or partial title",
+      "author": "Author name or initials",
+      "isbn": "digits only if visible",
+      "publisher": "if visible from logo",
+      "condition": "New|Like New|Very Good|Good|Acceptable",
+      "keywords": ["genre", "category"],
+      "imageType": "spine|cover|unknown",
+      "confidence": "high|medium|low",
+      "position": 1
+    }
+  ],
+  "totalBooksDetected": 5,
+  "imageType": "shelf|stack|single"
+}
+
+IMPORTANT:
+- Include ALL books you can detect, even partially
+- Order books by position (left to right for shelves)
+- If you detect 0 books, return empty books array
+- Be aggressive in detection - even partial spines count
+- Don't make up books - only return what you actually see`,
+              },
+              {
+                type: "image_url",
+                image_url: {
+                  url: imageUrl,
+                },
+              },
+            ],
+          },
+        ],
+        max_tokens: 2000, // More tokens for multiple books
+      });
+
+      const content = response.choices[0]?.message?.content;
+      if (!content) {
+        throw new Error('No response from AI');
+      }
+
+      // Extract JSON from the response
+      const jsonMatch = content.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+        throw new Error('Could not parse AI response');
+      }
+
+      const result = JSON.parse(jsonMatch[0]) as MultiBookRecognitionResult;
+      result.processingTime = Date.now() - startTime;
+
+      console.log(`[AI] Multi-book scan: Detected ${result.totalBooksDetected} books in ${result.processingTime}ms`);
+
+      return result;
+    } catch (error: any) {
+      console.error('Multi-book image analysis failed:', error);
+      throw new Error(error.message || 'Failed to analyze multiple books');
     }
   }
 

@@ -425,6 +425,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get trial status (works for both anonymous and authenticated)
+  app.get("/api/trial/status", async (req, res) => {
+    try {
+      const { getUserIdentifier } = await import("./fingerprint");
+      const { getTrialService } = await import("./trial-service");
+
+      const { userId, fingerprint } = getUserIdentifier(req);
+      const trialService = getTrialService((storage as any).local || storage);
+
+      // If authenticated, get subscription info
+      if (userId) {
+        const user = await authService.getUserById(userId);
+        const isPaid = user && user.subscriptionTier && user.subscriptionTier !== 'trial';
+
+        return res.json({
+          isAuthenticated: true,
+          isPaidSubscriber: isPaid,
+          subscriptionTier: user?.subscriptionTier || 'trial',
+          // Paid users don't have trial limits
+          ...(!isPaid && {
+            ...trialService.getTrialStatus(fingerprint)
+          })
+        });
+      }
+
+      // Anonymous user - return trial status
+      const trialStatus = trialService.getTrialStatus(fingerprint);
+      res.json({
+        isAuthenticated: false,
+        isPaidSubscriber: false,
+        ...trialStatus,
+      });
+    } catch (error: any) {
+      console.error("Get trial status error:", error);
+      res.status(500).json({ message: error.message || "Failed to get trial status" });
+    }
+  });
   // Get API credentials for a platform
   app.get("/api/credentials/:platform", requireAuth, async (req, res) => {
     try {
@@ -774,7 +811,72 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "ISBN is required" });
       }
 
+      // Check trial/scan limits BEFORE processing
+      const { getUserIdentifier } = await import("./fingerprint");
+      const { getTrialService } = await import("./trial-service");
+
+      const { userId, fingerprint } = getUserIdentifier(req);
+      const trialService = getTrialService((storage as any).local || storage);
+
+      // Check if user can scan
+      const canScan = await trialService.canScan(userId, fingerprint);
+
+      if (!canScan) {
+        const trialStatus = trialService.getTrialStatus(fingerprint);
+        return res.status(403).json({
+          message: "Trial limit reached",
+          trialExpired: true,
+          scansUsed: trialStatus.scansUsed,
+          scansLimit: trialStatus.scansLimit,
+        });
+      }
+
+      // Record the scan (for anonymous users)
+      if (!userId) {
+        trialService.recordTrialScan(fingerprint);
+      }
+
       console.log(`[PricingLookup] Looking up ISBN ${isbn}...`);
+
+      // 0. CHECK CACHE FIRST (saves API calls!)
+      const priceCache = getPriceCache();
+      const cached = priceCache.getCachedPrice(isbn);
+
+      // If cached and less than 24 hours old, return cached data
+      if (cached) {
+        const cacheAge = Date.now() - cached.cachedAt.getTime();
+        const cacheAgeHours = cacheAge / (1000 * 60 * 60);
+
+        if (cacheAgeHours < 24) {
+          console.log(`[PricingLookup] ✅ Cache HIT (${cacheAgeHours.toFixed(1)}h old) - saved eBay API call!`);
+
+          const lowestPrice = Math.min(
+            ...[cached.ebayPrice, cached.amazonPrice].filter(p => p !== null) as number[]
+          );
+
+          const estimatedCost = 8.00;
+          const fees = lowestPrice ? lowestPrice * 0.15 : 0;
+
+          return res.json({
+            isbn: cached.isbn,
+            title: cached.title,
+            author: cached.author,
+            publisher: cached.publisher,
+            thumbnail: null,
+            amazonPrice: cached.amazonPrice,
+            ebayPrice: cached.ebayPrice,
+            lowestPrice: lowestPrice || null,
+            profit: lowestPrice ? lowestPrice - estimatedCost - fees : null,
+            salesRank: null,
+            source: 'cache',
+            cacheAge: cacheAgeHours,
+          });
+        } else {
+          console.log(`[PricingLookup] Cache expired (${cacheAgeHours.toFixed(1)}h old), refreshing...`);
+        }
+      } else {
+        console.log(`[PricingLookup] Cache MISS - fetching from APIs`);
+      }
 
       // Initialize response object
       const result: any = {
@@ -892,8 +994,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         result.profit = result.lowestPrice - estimatedCost - fees;
       }
 
-      // 6. Cache the result for offline use
-      const priceCache = getPriceCache();
+      // 6. Cache the result for offline use (24 hour TTL)
       priceCache.cachePrice({
         isbn: result.isbn,
         title: result.title,
@@ -904,7 +1005,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         source: result.source === 'demo' ? 'estimate' : 'api',
       });
 
-      console.log(`[PricingLookup] Lookup complete (source: ${result.source}) and cached for offline use`);
+      console.log(`[PricingLookup] ✅ Cached for 24h (source: ${result.source})`);
 
       res.json(result);
     } catch (error: any) {
@@ -1294,6 +1395,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error('Image analysis error:', error);
       res.status(500).json({ message: error.message || "Failed to analyze image" });
+    }
+  });
+
+  // Multi-book scanning (SHELF SCANNING - killer feature!)
+  app.post("/api/ai/analyze-shelf", async (req, res) => {
+    try {
+      const { imageUrl } = req.body;
+
+      if (!imageUrl) {
+        return res.status(400).json({ message: "Image URL is required" });
+      }
+
+      console.log('[Shelf Scan] Starting multi-book analysis...');
+      const result = await aiService.analyzeMultipleBooks(imageUrl);
+
+      console.log(`[Shelf Scan] Success! Detected ${result.totalBooksDetected} books`);
+      res.json(result);
+    } catch (error: any) {
+      console.error('[Shelf Scan] Error:', error);
+      res.status(500).json({ message: error.message || "Failed to analyze shelf" });
     }
   });
 

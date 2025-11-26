@@ -12,7 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap } from "lucide-react";
+import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap, Library, Camera } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 
 export default function ScanPage() {
@@ -30,6 +30,11 @@ export default function ScanPage() {
     const saved = localStorage.getItem("bluetoothScannerEnabled");
     return saved === "true";
   });
+
+  // Shelf scanning mode state
+  const [scanMode, setScanMode] = useState<"single" | "shelf">("single");
+  const [shelfResults, setShelfResults] = useState<any[]>([]);
+  const [selectedBooks, setSelectedBooks] = useState<Set<number>>(new Set());
 
   // Scan limit state
   const [scanLimits, setScanLimits] = useState({
@@ -51,8 +56,8 @@ export default function ScanPage() {
     const fetchScanLimits = async () => {
       try {
         const [limitsResponse, userResponse] = await Promise.all([
-          fetch("/api/user/scan-limits"),
-          fetch("/api/user/me"),
+          fetch("/api/user/scan-limits", { credentials: 'include' }),
+          fetch("/api/user/me", { credentials: 'include' }),
         ]);
 
         if (limitsResponse.ok) {
@@ -75,7 +80,7 @@ export default function ScanPage() {
   // Helper to refresh scan limits
   const refreshScanLimits = async () => {
     try {
-      const response = await fetch("/api/user/scan-limits");
+      const response = await fetch("/api/user/scan-limits", { credentials: 'include' });
       if (response.ok) {
         const limits = await response.json();
         setScanLimits(limits);
@@ -92,6 +97,7 @@ export default function ScanPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isbn, ...bookData }),
+        credentials: 'include', // Send cookies with request
       });
 
       if (response.status === 403) {
@@ -199,6 +205,7 @@ export default function ScanPage() {
         isbn,
         title: pricingData.title || `Book with ISBN ${isbn}`,
         author: pricingData.author || "Unknown Author",
+        thumbnail: pricingData.thumbnail || undefined,
         amazonPrice: pricingData.amazonPrice || null,
         ebayPrice: pricingData.ebayPrice || null,
         yourCost,
@@ -243,6 +250,11 @@ export default function ScanPage() {
   };
 
   const handleCoverScan = async (imageData: string) => {
+    // Route to shelf scanning if in shelf mode
+    if (scanMode === "shelf") {
+      return handleShelfScan(imageData);
+    }
+
     console.log("Scanning cover/spine photo");
     setIsProcessingImage(true);
     setRecognitionResult(null);
@@ -277,7 +289,7 @@ export default function ScanPage() {
 
       setRecognitionResult(result);
 
-      const imageTypeLabel = result.imageType === 'spine' ? '📚 Spine' : 
+      const imageTypeLabel = result.imageType === 'spine' ? '📚 Spine' :
                             result.imageType === 'cover' ? '📖 Cover' : '📄 Book';
 
       toast({
@@ -285,9 +297,43 @@ export default function ScanPage() {
         description: result.title || "Book details extracted",
       });
 
-      // If we got an ISBN, also scan it
+      // If we got an ISBN, fetch full pricing data
       if (result.isbn) {
         handleIsbnScan(result.isbn);
+      } else if (result.title) {
+        // No ISBN but we have title/author - save it anyway
+        console.log("No ISBN found, saving book with AI-extracted data only");
+
+        const book: BookDetails = {
+          id: Date.now().toString(),
+          isbn: "AI-" + Date.now(), // Fake ISBN for books without barcode
+          scannedAt: new Date().toISOString(),
+          title: result.title,
+          author: result.author || "Unknown Author",
+          amazonPrice: null,
+          ebayPrice: null,
+          yourCost: null,
+          profit: null,
+          status: "unknown",
+          description: result.description,
+          condition: result.condition,
+        };
+
+        // Save to database
+        const saved = await saveScan(book.isbn, {
+          title: book.title,
+          author: book.author,
+        });
+
+        if (saved) {
+          // Add to recent scans
+          setRecentScans([book, ...recentScans.slice(0, 2)]);
+
+          toast({
+            title: "Book Saved",
+            description: "Recognition saved to history (no pricing data without ISBN)",
+          });
+        }
       }
     } catch (error: any) {
       console.error("AI recognition failed:", error);
@@ -299,6 +345,128 @@ export default function ScanPage() {
     } finally {
       setIsProcessingImage(false);
     }
+  };
+
+  const handleShelfScan = async (imageData: string) => {
+    console.log("Scanning shelf with multiple books");
+    setIsProcessingImage(true);
+    setShelfResults([]);
+    setSelectedBooks(new Set());
+
+    toast({
+      title: "📚 Shelf Scanning Started",
+      description: "Detecting multiple books from your photo...",
+    });
+
+    try {
+      const response = await fetch("/api/ai/analyze-shelf", {
+        method: "POST",
+        body: JSON.stringify({ imageUrl: imageData }),
+        headers: { "Content-Type": "application/json" },
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to analyze shelf");
+      }
+
+      const result = await response.json();
+      const books = result.books || [];
+
+      setShelfResults(books);
+
+      // Auto-select high confidence books
+      const highConfidenceIndices = new Set(
+        books
+          .map((book: any, idx: number) => ({ book, idx }))
+          .filter(({ book }: any) => book.confidence === "high")
+          .map(({ idx }: any) => idx)
+      );
+      setSelectedBooks(highConfidenceIndices);
+
+      toast({
+        title: `✨ Found ${books.length} Books!`,
+        description: `Detected ${books.length} book${books.length !== 1 ? 's' : ''} from your shelf photo`,
+      });
+    } catch (error: any) {
+      console.error("Shelf scanning failed:", error);
+      toast({
+        title: "Shelf Scan Failed",
+        description: error.message || "Could not detect books from the image. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsProcessingImage(false);
+    }
+  };
+
+  const handleSaveSelectedBooks = async () => {
+    const booksToSave = shelfResults.filter((_, idx) => selectedBooks.has(idx));
+
+    if (booksToSave.length === 0) {
+      toast({
+        title: "No Books Selected",
+        description: "Please select at least one book to save",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    toast({
+      title: "Saving Books...",
+      description: `Saving ${booksToSave.length} book${booksToSave.length !== 1 ? 's' : ''}...`,
+    });
+
+    let savedCount = 0;
+    for (const book of booksToSave) {
+      const bookData: BookDetails = {
+        id: Date.now().toString() + Math.random(),
+        isbn: book.isbn || "AI-" + Date.now() + Math.random(),
+        scannedAt: new Date().toISOString(),
+        title: book.title,
+        author: book.author || "Unknown Author",
+        amazonPrice: null,
+        ebayPrice: null,
+        yourCost: null,
+        profit: null,
+        status: "unknown",
+        description: book.publisher ? `Published by ${book.publisher}` : undefined,
+        condition: book.condition,
+      };
+
+      const saved = await saveScan(bookData.isbn, {
+        title: bookData.title,
+        author: bookData.author,
+      });
+
+      if (saved) {
+        savedCount++;
+        setRecentScans(prev => [bookData, ...prev.slice(0, 2)]);
+      } else {
+        // Scan limit reached
+        break;
+      }
+    }
+
+    if (savedCount > 0) {
+      toast({
+        title: "Books Saved!",
+        description: `Successfully saved ${savedCount} book${savedCount !== 1 ? 's' : ''} to your library`,
+      });
+
+      // Clear shelf results
+      setShelfResults([]);
+      setSelectedBooks(new Set());
+    }
+  };
+
+  const toggleBookSelection = (index: number) => {
+    const newSelected = new Set(selectedBooks);
+    if (newSelected.has(index)) {
+      newSelected.delete(index);
+    } else {
+      newSelected.add(index);
+    }
+    setSelectedBooks(newSelected);
   };
 
   const handleViewDetails = (book: BookDetails) => {
@@ -334,28 +502,55 @@ export default function ScanPage() {
           <div>
             <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
             <p className="text-sm text-muted-foreground">
-              Scan ISBN or capture book cover/spine to get started
+              {scanMode === "single"
+                ? "Scan ISBN or capture book cover/spine to get started"
+                : "Capture multiple books from your shelf at once"}
             </p>
           </div>
-          <Button
-            variant={bluetoothEnabled ? "default" : "outline"}
-            size="sm"
-            onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
-            className="gap-2"
-            data-testid="button-bluetooth-toggle"
-          >
-            {bluetoothEnabled ? (
-              <>
-                <Bluetooth className="h-4 w-4" />
-                <span className="hidden sm:inline">Bluetooth</span>
-              </>
-            ) : (
-              <>
-                <BluetoothOff className="h-4 w-4" />
-                <span className="hidden sm:inline">Bluetooth</span>
-              </>
-            )}
-          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant={scanMode === "shelf" ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setScanMode(scanMode === "single" ? "shelf" : "single");
+                setShelfResults([]);
+                setRecognitionResult(null);
+              }}
+              className="gap-2"
+              data-testid="button-mode-toggle"
+            >
+              {scanMode === "shelf" ? (
+                <>
+                  <Library className="h-4 w-4" />
+                  <span className="hidden sm:inline">Shelf</span>
+                </>
+              ) : (
+                <>
+                  <Camera className="h-4 w-4" />
+                  <span className="hidden sm:inline">Single</span>
+                </>
+              )}
+            </Button>
+            <Button
+              variant={bluetoothEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
+              className="gap-2"
+              data-testid="button-bluetooth-toggle"
+            >
+              {bluetoothEnabled ? (
+                <>
+                  <Bluetooth className="h-4 w-4" />
+                  <span className="hidden sm:inline">Bluetooth</span>
+                </>
+              ) : (
+                <>
+                  <BluetoothOff className="h-4 w-4" />
+                  <span className="hidden sm:inline">Bluetooth</span>
+                </>
+              )}
+            </Button>
+          </div>
         </div>
 
         {bluetoothEnabled && (
@@ -370,24 +565,94 @@ export default function ScanPage() {
           </div>
         )}
 
-        {/* Scan Limit Progress */}
-        {!scanLimits.isUnlimited && (
-          <Card className={`p-4 ${scanLimits.percentUsed >= 90 ? 'border-orange-500 bg-orange-50' : ''}`}>
-            <div className="flex items-center justify-between mb-2">
-              <div className="flex items-center gap-2">
-                <Zap className={`h-4 w-4 ${scanLimits.percentUsed >= 90 ? 'text-orange-600' : 'text-primary'}`} />
-                <span className="text-sm font-medium">Scans This Month</span>
+        {/* Scan Counter Banner */}
+        {!scanLimits.isUnlimited && currentTier !== "pro" && currentTier !== "enterprise" && (
+          <Card
+            className={`p-4 transition-colors ${
+              scanLimits.percentUsed >= 90
+                ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50'
+                : scanLimits.percentUsed >= 70
+                ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
+                : 'border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50'
+            }`}
+          >
+            <div className="flex items-center justify-between gap-4">
+              <div className="flex items-center gap-3 flex-1">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
+                  scanLimits.percentUsed >= 90
+                    ? 'bg-red-100'
+                    : scanLimits.percentUsed >= 70
+                    ? 'bg-orange-100'
+                    : 'bg-primary/10'
+                }`}>
+                  <Zap className={`h-5 w-5 ${
+                    scanLimits.percentUsed >= 90
+                      ? 'text-red-600'
+                      : scanLimits.percentUsed >= 70
+                      ? 'text-orange-600'
+                      : 'text-primary'
+                  }`} />
+                </div>
+                <div className="flex-1">
+                  <div className="flex items-baseline gap-2 mb-1">
+                    <span className="text-lg font-bold">
+                      {scanLimits.scansRemaining}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {currentTier === "trial" || currentTier === "free"
+                        ? "free scans remaining"
+                        : currentTier === "basic"
+                        ? "scans remaining (ISBN only)"
+                        : "scans remaining this month"}
+                    </span>
+                  </div>
+                  <Progress
+                    value={scanLimits.percentUsed}
+                    className={`h-2 ${
+                      scanLimits.percentUsed >= 90 ? 'bg-red-200' :
+                      scanLimits.percentUsed >= 70 ? 'bg-orange-200' : ''
+                    }`}
+                  />
+                  <p className="text-xs text-muted-foreground mt-1.5">
+                    {scanLimits.scansUsed} of {scanLimits.scansLimit} scans used
+                    {(currentTier === "trial" || currentTier === "free") && scanLimits.percentUsed >= 50 && (
+                      <span className="ml-1">
+                        • <button
+                          onClick={() => setLocation("/subscription")}
+                          className="text-primary font-medium underline hover:text-primary/80"
+                        >
+                          Upgrade to Pro for unlimited scans + AI
+                        </button>
+                      </span>
+                    )}
+                    {currentTier === "basic" && scanLimits.percentUsed >= 70 && (
+                      <span className="ml-1">
+                        • <button
+                          onClick={() => setLocation("/subscription")}
+                          className="text-primary font-medium underline hover:text-primary/80"
+                        >
+                          Upgrade to Pro for unlimited scans + AI
+                        </button>
+                      </span>
+                    )}
+                  </p>
+                </div>
               </div>
-              <span className="text-sm font-bold">
-                {scanLimits.scansUsed} / {scanLimits.scansLimit}
-              </span>
+              {(scanLimits.percentUsed >= 70 || currentTier === "trial" || currentTier === "free" || currentTier === "basic") && (
+                <Button
+                  onClick={() => setLocation("/subscription")}
+                  size="sm"
+                  variant={scanLimits.percentUsed >= 90 ? "destructive" : "default"}
+                  className={scanLimits.percentUsed < 90 ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" : ""}
+                >
+                  {currentTier === "trial" || currentTier === "free"
+                    ? "Upgrade"
+                    : currentTier === "basic"
+                    ? "Upgrade to Pro"
+                    : "Get More"}
+                </Button>
+              )}
             </div>
-            <Progress value={scanLimits.percentUsed} className="h-2" />
-            {scanLimits.percentUsed >= 80 && (
-              <p className="text-xs text-muted-foreground mt-2">
-                {scanLimits.scansRemaining} scans remaining. <button onClick={() => setLocation("/subscription")} className="text-primary underline">Upgrade for more</button>
-              </p>
-            )}
           </Card>
         )}
 
@@ -418,8 +683,8 @@ export default function ScanPage() {
               <div className="flex items-center gap-2">
                 <CheckCircle2 className="h-5 w-5 text-green-600" />
                 <h3 className="font-semibold">
-                  {recognitionResult.imageType === 'spine' ? '📚 Spine Recognized' : 
-                   recognitionResult.imageType === 'cover' ? '📖 Cover Recognized' : 
+                  {recognitionResult.imageType === 'spine' ? '📚 Spine Recognized' :
+                   recognitionResult.imageType === 'cover' ? '📖 Cover Recognized' :
                    '✨ Book Recognized'}
                 </h3>
               </div>
@@ -500,15 +765,122 @@ export default function ScanPage() {
                 )}
               </div>
 
-              <Button 
-                onClick={() => setRecognitionResult(null)} 
-                variant="outline" 
+              <Button
+                onClick={() => setRecognitionResult(null)}
+                variant="outline"
                 size="sm"
                 className="w-full"
                 data-testid="button-clear-result"
               >
                 Scan Another
               </Button>
+            </div>
+          </Card>
+        )}
+
+        {/* Shelf Scanning Results */}
+        {shelfResults.length > 0 && !isProcessingImage && (
+          <Card className="p-6 bg-blue-500/5 border-blue-500/20" data-testid="card-shelf-results">
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Library className="h-5 w-5 text-blue-600" />
+                  <h3 className="font-semibold">
+                    Detected {shelfResults.length} Book{shelfResults.length !== 1 ? 's' : ''}
+                  </h3>
+                </div>
+                <Badge variant="secondary">
+                  {selectedBooks.size} selected
+                </Badge>
+              </div>
+
+              <p className="text-sm text-muted-foreground">
+                Select the books you want to save. High confidence books are pre-selected.
+              </p>
+
+              <div className="space-y-2 max-h-[400px] overflow-y-auto">
+                {shelfResults.map((book: any, index: number) => (
+                  <div
+                    key={index}
+                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
+                      selectedBooks.has(index)
+                        ? 'bg-primary/5 border-primary'
+                        : 'bg-background border-border hover:bg-muted/50'
+                    }`}
+                    onClick={() => toggleBookSelection(index)}
+                    data-testid={`shelf-book-${index}`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <input
+                        type="checkbox"
+                        checked={selectedBooks.has(index)}
+                        onChange={() => toggleBookSelection(index)}
+                        className="mt-1"
+                        onClick={(e) => e.stopPropagation()}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="flex-1 min-w-0">
+                            <p className="font-medium truncate" data-testid={`shelf-book-title-${index}`}>
+                              {book.title || "Unknown Title"}
+                            </p>
+                            {book.author && (
+                              <p className="text-sm text-muted-foreground truncate">
+                                {book.author}
+                              </p>
+                            )}
+                          </div>
+                          <div className="flex flex-col items-end gap-1">
+                            <Badge
+                              variant={
+                                book.confidence === "high"
+                                  ? "default"
+                                  : book.confidence === "medium"
+                                  ? "secondary"
+                                  : "outline"
+                              }
+                              className="text-xs"
+                            >
+                              {book.confidence || "low"}
+                            </Badge>
+                            {book.position && (
+                              <span className="text-xs text-muted-foreground">
+                                Pos #{book.position}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        {book.isbn && (
+                          <p className="text-xs text-muted-foreground font-mono mt-1">
+                            ISBN: {book.isbn}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="flex gap-2">
+                <Button
+                  onClick={handleSaveSelectedBooks}
+                  disabled={selectedBooks.size === 0}
+                  className="flex-1"
+                  data-testid="button-save-selected"
+                >
+                  Save {selectedBooks.size} Book{selectedBooks.size !== 1 ? 's' : ''}
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShelfResults([]);
+                    setSelectedBooks(new Set());
+                  }}
+                  variant="outline"
+                  data-testid="button-scan-another-shelf"
+                >
+                  Scan Again
+                </Button>
+              </div>
             </div>
           </Card>
         )}

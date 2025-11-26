@@ -11,22 +11,21 @@ const plans = [
     name: "Basic",
     price: "£9.99",
     period: "per month",
-    trialDays: 14,
     icon: Sparkles,
-    description: "Perfect for part-time sellers (10-50 books/week)",
+    description: "Perfect for beginners starting out",
     features: [
-      "14-day free trial - no card required",
-      "100 scans per month (~25/week)",
-      "AI photo recognition",
-      "AI keyword optimization",
-      "Auto-listing to 1 platform (choose Amazon FBA, FBM, or eBay)",
-      "30-day price history & trends",
-      "Email support (48hr response)",
-      "Advanced profit calculator",
+      "100 scans per month",
+      "ISBN barcode scanning only",
+      "Live pricing from Amazon & eBay",
+      "Book library & history",
       "Offline scanning mode",
+      "Email support",
     ],
-    limitations: [],
-    buttonText: "Start 14-Day Free Trial",
+    limitations: [
+      "No AI recognition",
+      "No shelf scanning",
+    ],
+    buttonText: "Subscribe to Basic",
     highlighted: false,
   },
   {
@@ -34,49 +33,39 @@ const plans = [
     name: "Pro",
     price: "£24.99",
     period: "per month",
-    trialDays: 14,
     icon: Zap,
-    description: "For serious sellers making £2K+/month",
+    description: "Best for full-time sellers",
     features: [
-      "14-day free trial - no card required",
-      "Unlimited scans (scan as much as you want)",
-      "Full AI suite (photo, keywords, descriptions)",
-      "AI-generated product descriptions",
-      "Auto-list to Amazon (FBA & FBM) + eBay simultaneously",
-      "Priority email & chat support (4hr response)",
-      "Advanced analytics & reporting dashboard",
-      "Bulk upload & operations (up to 100 books)",
-      "90-day price history with forecasting",
-      "Custom automation rules",
-      "Competitor price tracking",
-      "Tax report export",
+      "Unlimited scans - scan as much as you want",
+      "AI shelf scanning - scan entire shelves at once (unique!)",
+      "AI cover/spine recognition - works without barcodes",
+      "Automated repricing",
+      "Book library & history",
+      "Offline scanning mode",
+      "Priority email support",
     ],
     limitations: [],
-    buttonText: "Start 14-Day Free Trial",
+    buttonText: "Subscribe to Pro",
     highlighted: true,
-    badge: "Most Popular - Best Value",
+    badge: "Most Popular",
   },
   {
     id: "enterprise",
     name: "Enterprise",
     price: "£99.99",
     period: "per month",
-    trialDays: 14,
     icon: Crown,
-    description: "For established businesses & teams",
+    description: "For businesses & teams",
     features: [
-      "14-day free trial with onboarding call",
       "Everything in Pro, plus:",
-      "Up to 5 team user accounts",
-      "Full API access for custom integrations",
-      "White-label mobile app option",
+      "Truly unlimited scans (no daily limits)",
+      "Bulk operations & batch processing",
+      "Advanced reporting & analytics",
+      "Custom integrations support",
       "Dedicated account manager",
-      "Custom platform integrations",
-      "99.9% uptime SLA guarantee",
-      "Onboarding & training session",
-      "Quarterly business reviews",
-      "Early access to new features",
-      "Custom reporting & data exports",
+      "Priority support (4-hour response)",
+      "Custom feature development",
+      "SLA & uptime guarantees",
     ],
     limitations: [],
     buttonText: "Contact Sales",
@@ -163,13 +152,13 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-4">
-            14-Day Free Trial
+            10 Free Scans - No Card Required
           </Badge>
           <h1 className="text-4xl font-bold">
-            Try ISBNScout Free for 14 Days
+            Choose Your Plan
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            No credit card required. Get full access to all features. Cancel anytime during your trial.
+            Start with 10 free scans. Upgrade anytime to unlock unlimited scans and AI features.
           </p>
         </div>
 
@@ -275,7 +264,8 @@ export default function SubscriptionPage() {
         </div>
 
         <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>All prices in GBP. 14-day free trial, no credit card required. Cancel anytime.</p>
+          <p>All prices in GBP. 10 free scans to start, no credit card required. Cancel anytime.</p>
+          <p className="mt-2">30-day money-back guarantee on all paid plans.</p>
         </div>
       </div>
     </div>

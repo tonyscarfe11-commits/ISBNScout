@@ -39,6 +39,7 @@ export default function AuthPage() {
           email: loginEmail,
           password: loginPassword,
         }),
+        credentials: 'include', // Send/receive cookies
       });
 
       if (!response.ok) {
@@ -97,6 +98,7 @@ export default function AuthPage() {
           email: signupEmail,
           password: signupPassword,
         }),
+        credentials: 'include', // Send/receive cookies
       });
 
       if (!response.ok) {

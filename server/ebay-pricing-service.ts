@@ -1,11 +1,14 @@
 /**
- * eBay Finding API Service
+ * eBay Browse API Service
  *
- * Provides pricing data using eBay Finding API
- * API Key required from: https://developer.ebay.com/
+ * Provides pricing data using eBay Browse API (RESTful)
+ * Migrated from deprecated Finding API (decommissioned Feb 2025)
  *
- * Free tier: 5,000 requests per day
- * This service is READ-ONLY - no authentication needed for searching
+ * Uses OAuth 2.0 Client Credentials flow
+ * API Keys required from: https://developer.ebay.com/
+ *
+ * This service is READ-ONLY - searches active listings only
+ * Note: Sold/completed listings no longer available via public API
  */
 
 export interface EbayPriceData {
@@ -14,7 +17,7 @@ export interface EbayPriceData {
   averagePrice?: number;
   minPrice?: number;
   maxPrice?: number;
-  soldCount?: number;
+  soldCount?: number; // Always 0 - kept for backwards compatibility
   activeListings?: number;
   currency: string;
   lastUpdated: Date;
@@ -31,27 +34,101 @@ export interface EbayListing {
   shipping?: number;
 }
 
+interface OAuthToken {
+  access_token: string;
+  expires_in: number;
+  token_type: string;
+  expires_at: number; // Timestamp when token expires
+}
+
 import type { SQLiteStorage } from "./sqlite-storage";
 
 export class EbayPricingService {
-  private appId: string;
-  private baseUrl = "https://svcs.ebay.com/services/search/FindingService/v1";
+  private clientId: string;
+  private clientSecret: string;
+  private isSandbox: boolean;
   private storage?: SQLiteStorage;
 
-  constructor(appId?: string, storage?: SQLiteStorage) {
-    this.appId = appId || process.env.EBAY_APP_ID || "";
+  // OAuth token cache
+  private cachedToken: OAuthToken | null = null;
+
+  // API endpoints
+  private oauthUrl: string;
+  private browseUrl: string;
+
+  constructor(clientId?: string, clientSecret?: string, storage?: SQLiteStorage) {
+    this.clientId = clientId || process.env.EBAY_APP_ID || "";
+    this.clientSecret = clientSecret || process.env.EBAY_CERT_ID || "";
+    this.isSandbox = process.env.EBAY_SANDBOX === "true";
     this.storage = storage;
-    console.log("[eBay] Initialized with App ID:", this.appId ? this.appId.substring(0, 15) + "..." : "MISSING");
+
+    // Set endpoints based on environment
+    if (this.isSandbox) {
+      this.oauthUrl = "https://api.sandbox.ebay.com/identity/v1/oauth2/token";
+      this.browseUrl = "https://api.sandbox.ebay.com/buy/browse/v1";
+    } else {
+      this.oauthUrl = "https://api.ebay.com/identity/v1/oauth2/token";
+      this.browseUrl = "https://api.ebay.com/buy/browse/v1";
+    }
+
+    console.log("[eBay] Initialized Browse API with Client ID:", this.clientId ? this.clientId.substring(0, 15) + "..." : "MISSING");
+  }
+
+  /**
+   * Get OAuth 2.0 access token using client credentials flow
+   * Tokens are cached for 2 hours (expires_in: 7200 seconds)
+   */
+  private async getAccessToken(): Promise<string> {
+    // Return cached token if still valid (with 5 minute buffer)
+    if (this.cachedToken && Date.now() < this.cachedToken.expires_at - 300000) {
+      return this.cachedToken.access_token;
+    }
+
+    try {
+      // Create Basic auth header: Base64(clientId:clientSecret)
+      const credentials = Buffer.from(`${this.clientId}:${this.clientSecret}`).toString('base64');
+
+      const response = await fetch(this.oauthUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Authorization': `Basic ${credentials}`,
+        },
+        body: 'grant_type=client_credentials&scope=https://api.ebay.com/oauth/api_scope',
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`OAuth failed: ${response.status} - ${errorText}`);
+      }
+
+      const data = await response.json();
+
+      // Cache the token with expiration timestamp
+      this.cachedToken = {
+        access_token: data.access_token,
+        expires_in: data.expires_in,
+        token_type: data.token_type,
+        expires_at: Date.now() + (data.expires_in * 1000),
+      };
+
+      console.log("[eBay] OAuth token acquired, expires in", data.expires_in, "seconds");
+
+      return this.cachedToken.access_token;
+    } catch (error: any) {
+      console.error("[eBay] OAuth error:", error);
+      throw new Error(`Failed to get eBay OAuth token: ${error.message}`);
+    }
   }
 
   /**
    * Get pricing data for a book by ISBN
-   * Searches both active and sold listings
+   * Searches active listings only (sold data no longer available)
    */
   async getPriceByISBN(isbn: string): Promise<EbayPriceData | null> {
-    if (!this.appId) {
+    if (!this.clientId || !this.clientSecret) {
       throw new Error(
-        "eBay App ID not configured. Set EBAY_APP_ID environment variable."
+        "eBay credentials not configured. Set EBAY_APP_ID and EBAY_CERT_ID environment variables."
       );
     }
 
@@ -59,50 +136,41 @@ export class EbayPricingService {
       // Clean ISBN
       const cleanIsbn = isbn.replace(/[-\s]/g, "");
 
-      // Search active listings and sold listings in parallel
-      const [activeResults, soldResults] = await Promise.all([
-        this.searchActiveListings(cleanIsbn),
-        this.searchSoldListings(cleanIsbn),
-      ]);
+      // Get access token
+      const accessToken = await this.getAccessToken();
 
-      // Combine results
+      // Search active listings using Browse API
+      const searchResults = await this.searchActiveListings(cleanIsbn, accessToken);
+
+      if (!searchResults || searchResults.length === 0) {
+        return null;
+      }
+
+      // Process results
       const allPrices: number[] = [];
       const activeListings: EbayListing[] = [];
 
-      // Process active listings
-      if (activeResults.length > 0) {
-        activeResults.forEach((item) => {
-          const price = parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || "0");
-          if (price > 0) {
-            allPrices.push(price);
-            activeListings.push({
-              title: item.title?.[0] || "",
-              price,
-              condition: item.condition?.[0]?.conditionDisplayName?.[0] || "Unknown",
-              listingUrl: item.viewItemURL?.[0] || "",
-              seller: item.sellerInfo?.[0]?.sellerUserName?.[0] || "",
-              location: item.location?.[0] || "",
-              shipping: parseFloat(item.shippingInfo?.[0]?.shippingServiceCost?.[0]?.__value__ || "0"),
-            });
-          }
-        });
-      }
-
-      // Process sold listings for average price
-      if (soldResults.length > 0) {
-        soldResults.forEach((item) => {
-          const price = parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || "0");
-          if (price > 0) {
-            allPrices.push(price);
-          }
-        });
-      }
+      searchResults.forEach((item: any) => {
+        const price = parseFloat(item.price?.value || "0");
+        if (price > 0) {
+          allPrices.push(price);
+          activeListings.push({
+            title: item.title || "",
+            price,
+            condition: item.condition || "Unknown",
+            listingUrl: item.itemWebUrl || "",
+            seller: item.seller?.username || "",
+            location: item.itemLocation?.country || "",
+            shipping: parseFloat(item.shippingOptions?.[0]?.shippingCost?.value || "0"),
+          });
+        }
+      });
 
       if (allPrices.length === 0) {
         return null;
       }
 
-      // Calculate statistics
+      // Calculate statistics from active listings
       const sortedPrices = allPrices.sort((a, b) => a - b);
       const averagePrice = allPrices.reduce((sum, price) => sum + price, 0) / allPrices.length;
 
@@ -112,8 +180,8 @@ export class EbayPricingService {
         averagePrice,
         minPrice: sortedPrices[0],
         maxPrice: sortedPrices[sortedPrices.length - 1],
-        soldCount: soldResults.length,
-        activeListings: activeResults.length,
+        soldCount: 0, // No longer available in Browse API
+        activeListings: searchResults.length,
         currency: "GBP",
         lastUpdated: new Date(),
         listings: activeListings.slice(0, 5), // Return top 5 listings
@@ -125,23 +193,29 @@ export class EbayPricingService {
   }
 
   /**
-   * Search active listings on eBay UK
+   * Search active listings on eBay UK using Browse API
    */
-  private async searchActiveListings(isbn: string): Promise<any[]> {
+  private async searchActiveListings(isbn: string, accessToken: string): Promise<any[]> {
     try {
-      const url = this.buildSearchUrl({
-        keywords: isbn,
-        itemFilter: [
-          { name: "ListingType", value: "FixedPrice" },
-          { name: "Condition", value: ["Used", "New"] },
-        ],
-        sortOrder: "PricePlusShippingLowest",
-        paginationInput: { entriesPerPage: 20 },
+      // Build Browse API search URL
+      const url = new URL(`${this.browseUrl}/item_summary/search`);
+      url.searchParams.append('q', isbn);
+      url.searchParams.append('category_ids', '267'); // Books category
+      url.searchParams.append('limit', '50'); // Max results per page
+      url.searchParams.append('sort', 'price'); // Sort by lowest price
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB', // UK marketplace
+          'Content-Type': 'application/json',
+        },
       });
 
-      const response = await fetch(url);
       if (!response.ok) {
-        throw new Error(`eBay API error: ${response.status}`);
+        const errorText = await response.text();
+        throw new Error(`eBay Browse API error: ${response.status} - ${errorText}`);
       }
 
       // Track API usage
@@ -149,178 +223,64 @@ export class EbayPricingService {
         this.storage.incrementApiCall('ebay');
       }
 
-      const text = await response.text();
-      const data = this.parseXmlResponse(text);
+      const data = await response.json();
 
-      // Check for eBay API errors (they return 200 with error in JSON)
-      if (data.errorMessage) {
-        const error = data.errorMessage[0]?.error?.[0];
-        const errorId = error?.errorId?.[0];
-        const message = error?.message?.[0];
-
-        if (errorId === "10001") {
-          console.log("⚠️  eBay API rate limit exceeded (5,000/day). Using fallback data.");
-          return [];
-        }
-
-        throw new Error(`eBay API error ${errorId}: ${message}`);
+      // Check for errors
+      if (data.errors) {
+        const error = data.errors[0];
+        console.error(`⚠️  eBay API error: ${error.errorId} - ${error.message}`);
+        return [];
       }
 
-      return data.findItemsAdvancedResponse?.[0]?.searchResult?.[0]?.item || [];
+      return data.itemSummaries || [];
     } catch (error) {
       console.error("eBay active listings search failed:", error);
       return [];
     }
   }
 
-  /**
-   * Search sold listings on eBay UK (completed auctions)
-   */
-  private async searchSoldListings(isbn: string): Promise<any[]> {
-    try {
-      const url = this.buildSearchUrl({
-        operation: "findCompletedItems",
-        keywords: isbn,
-        itemFilter: [
-          { name: "SoldItemsOnly", value: "true" },
-          { name: "Condition", value: ["Used", "New"] },
-        ],
-        sortOrder: "EndTimeSoonest",
-        paginationInput: { entriesPerPage: 20 },
-      });
-
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error(`eBay API error: ${response.status}`);
-      }
-
-      // Track API usage
-      if (this.storage) {
-        this.storage.incrementApiCall('ebay');
-      }
-
-      const text = await response.text();
-      const data = this.parseXmlResponse(text);
-
-      // Check for eBay API errors (they return 200 with error in JSON)
-      if (data.errorMessage) {
-        const error = data.errorMessage[0]?.error?.[0];
-        const errorId = error?.errorId?.[0];
-        const message = error?.message?.[0];
-
-        if (errorId === "10001") {
-          console.log("⚠️  eBay API rate limit exceeded (5,000/day). Using fallback data.");
-          return [];
-        }
-
-        throw new Error(`eBay API error ${errorId}: ${message}`);
-      }
-
-      return data.findCompletedItemsResponse?.[0]?.searchResult?.[0]?.item || [];
-    } catch (error) {
-      console.error("eBay sold listings search failed:", error);
-      return [];
-    }
-  }
-
-  /**
-   * Build eBay Finding API URL with parameters
-   */
-  private buildSearchUrl(params: {
-    operation?: string;
-    keywords: string;
-    itemFilter?: Array<{ name: string; value: string | string[] }>;
-    sortOrder?: string;
-    paginationInput?: { entriesPerPage: number };
-  }): string {
-    const url = new URL(this.baseUrl);
-
-    // Base parameters
-    url.searchParams.append("OPERATION-NAME", params.operation || "findItemsAdvanced");
-    url.searchParams.append("SERVICE-VERSION", "1.0.0");
-    url.searchParams.append("SECURITY-APPNAME", this.appId);
-    url.searchParams.append("RESPONSE-DATA-FORMAT", "JSON");
-    url.searchParams.append("GLOBAL-ID", "EBAY-GB"); // UK site
-    url.searchParams.append("keywords", params.keywords);
-
-    // Category - Books (267)
-    url.searchParams.append("categoryId", "267");
-
-    // Sort order
-    if (params.sortOrder) {
-      url.searchParams.append("sortOrder", params.sortOrder);
-    }
-
-    // Pagination
-    if (params.paginationInput) {
-      url.searchParams.append(
-        "paginationInput.entriesPerPage",
-        params.paginationInput.entriesPerPage.toString()
-      );
-    }
-
-    // Item filters
-    if (params.itemFilter) {
-      params.itemFilter.forEach((filter, index) => {
-        url.searchParams.append(`itemFilter(${index}).name`, filter.name);
-        if (Array.isArray(filter.value)) {
-          filter.value.forEach((val, valIndex) => {
-            url.searchParams.append(`itemFilter(${index}).value(${valIndex})`, val);
-          });
-        } else {
-          url.searchParams.append(`itemFilter(${index}).value`, filter.value);
-        }
-      });
-    }
-
-    return url.toString();
-  }
-
-  /**
-   * Parse XML response from eBay (they return JSON despite the name)
-   */
-  private parseXmlResponse(text: string): any {
-    try {
-      return JSON.parse(text);
-    } catch (error) {
-      console.error("Failed to parse eBay response:", error);
-      throw new Error("Invalid response from eBay API");
-    }
-  }
 
   /**
    * Check if the service is properly configured
    */
   isConfigured(): boolean {
-    return this.appId.length > 0;
+    return this.clientId.length > 0 && this.clientSecret.length > 0;
   }
 
   /**
    * Get rate limit information
    */
   getRateLimitInfo(): string {
-    return "5,000 requests per day (eBay Finding API - FREE)";
+    return "5,000 requests per day (eBay Browse API - FREE)";
   }
 
   /**
    * Search for books by title (for future use)
    */
   async searchByTitle(title: string, limit: number = 10): Promise<EbayListing[]> {
-    if (!this.appId) {
-      throw new Error("eBay App ID not configured");
+    if (!this.clientId || !this.clientSecret) {
+      throw new Error("eBay credentials not configured");
     }
 
     try {
-      const url = this.buildSearchUrl({
-        keywords: title,
-        itemFilter: [
-          { name: "ListingType", value: "FixedPrice" },
-        ],
-        sortOrder: "BestMatch",
-        paginationInput: { entriesPerPage: limit },
+      // Get access token
+      const accessToken = await this.getAccessToken();
+
+      // Build Browse API search URL
+      const url = new URL(`${this.browseUrl}/item_summary/search`);
+      url.searchParams.append('q', title);
+      url.searchParams.append('category_ids', '267'); // Books category
+      url.searchParams.append('limit', limit.toString());
+
+      const response = await fetch(url.toString(), {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${accessToken}`,
+          'X-EBAY-C-MARKETPLACE-ID': 'EBAY_GB',
+          'Content-Type': 'application/json',
+        },
       });
 
-      const response = await fetch(url);
       if (!response.ok) {
         throw new Error(`eBay API error: ${response.status}`);
       }
@@ -330,19 +290,17 @@ export class EbayPricingService {
         this.storage.incrementApiCall('ebay');
       }
 
-      const text = await response.text();
-      const data = this.parseXmlResponse(text);
-
-      const items = data.findItemsAdvancedResponse?.[0]?.searchResult?.[0]?.item || [];
+      const data = await response.json();
+      const items = data.itemSummaries || [];
 
       return items.map((item: any) => ({
-        title: item.title?.[0] || "",
-        price: parseFloat(item.sellingStatus?.[0]?.currentPrice?.[0]?.__value__ || "0"),
-        condition: item.condition?.[0]?.conditionDisplayName?.[0] || "Unknown",
-        listingUrl: item.viewItemURL?.[0] || "",
-        seller: item.sellerInfo?.[0]?.sellerUserName?.[0] || "",
-        location: item.location?.[0] || "",
-        shipping: parseFloat(item.shippingInfo?.[0]?.shippingServiceCost?.[0]?.__value__ || "0"),
+        title: item.title || "",
+        price: parseFloat(item.price?.value || "0"),
+        condition: item.condition || "Unknown",
+        listingUrl: item.itemWebUrl || "",
+        seller: item.seller?.username || "",
+        location: item.itemLocation?.country || "",
+        shipping: parseFloat(item.shippingOptions?.[0]?.shippingCost?.value || "0"),
       }));
     } catch (error: any) {
       console.error("eBay title search failed:", error);
@@ -355,4 +313,4 @@ export class EbayPricingService {
 import { storage } from "./storage";
 
 // Export singleton instance
-export const ebayPricingService = new EbayPricingService(undefined, storage as any);
+export const ebayPricingService = new EbayPricingService(undefined, undefined, storage as any);
