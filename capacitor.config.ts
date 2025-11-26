@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 // Configuration for different environments
 const API_URLS = {
-  development: 'https://isbn-scout-offline.replit.app', // Use your Replit URL for mobile testing
+  development: 'https://70247a06-ebd1-4d47-b5e6-831ef7fb6443-00-25qnnfdl6zsb9.janeway.replit.dev',
   production: undefined, // Set this to your Railway/Fly.io URL when deploying
   // production: 'https://isbnscout-production.up.railway.app',
 };

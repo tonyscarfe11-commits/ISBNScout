@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import cors from "cors";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 
@@ -10,6 +11,13 @@ const app = express();
 // Enable trust proxy for Replit
 app.set('trust proxy', 1);
 
+// CORS configuration for mobile app - allow all origins in development
+app.use(cors({
+  origin: true, // Allow all origins
+  credentials: true, // Allow cookies to be sent
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
@@ -17,6 +25,8 @@ app.use(express.urlencoded({ extended: false }));
 const MemoryStoreSession = MemoryStore(session);
 const isDevelopment = process.env.NODE_ENV === 'development';
 
+// Check if request is from mobile app or browser
+// We'll set this dynamically per-request, but default to auto (lets browser decide)
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
@@ -27,10 +37,10 @@ app.use(
       checkPeriod: 86400000, // 24 hours
     }),
     cookie: {
-      secure: false, // Always false - Replit proxy handles HTTPS
-      httpOnly: false, // Allow JavaScript access for debugging
+      secure: 'auto', // Auto-detect: true for HTTPS, false for HTTP
+      httpOnly: false, // Allow JavaScript access (needed for mobile app debugging)
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: false, // Most permissive - no sameSite restriction
+      sameSite: 'none', // Required for cross-origin requests from mobile app
       path: '/', // Ensure cookie is available for all paths
     },
     proxy: true, // Trust the reverse proxy
@@ -38,7 +48,7 @@ app.use(
 );
 
 // Log session configuration
-log(`Session configured: secure=false, httpOnly=false, sameSite=false, maxAge=30days, proxy=true, resave=true`);
+log(`Session configured: secure=auto, httpOnly=false, sameSite=none, maxAge=30days, proxy=true, resave=true`);
 
 app.use((req, res, next) => {
   const start = Date.now();
