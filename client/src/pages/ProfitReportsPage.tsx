@@ -90,8 +90,8 @@ export default function ProfitReportsPage() {
     setIsLoading(true);
     try {
       const [inventoryRes, booksRes] = await Promise.all([
-        fetch("/api/inventory"),
-        fetch("/api/books"),
+        fetch("/api/inventory", { credentials: 'include' }),
+        fetch("/api/books", { credentials: 'include' }),
       ]);
 
       if (!inventoryRes.ok || !booksRes.ok) {

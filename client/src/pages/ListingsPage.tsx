@@ -27,7 +27,7 @@ export default function ListingsPage() {
 
   const fetchListings = async () => {
     try {
-      const response = await fetch("/api/listings");
+      const response = await fetch("/api/listings", { credentials: 'include' });
       if (response.ok) {
         const data = await response.json();
         setListings(data);

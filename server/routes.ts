@@ -68,6 +68,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session
       req.session.userId = user.id;
 
+      // Explicitly save session
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) reject(err);
+          else resolve();
+        });
+      });
+
       res.json({ user, message: "Account created successfully" });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
@@ -86,6 +94,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Set session
       req.session.userId = user.id;
+
+      // Explicitly save session
+      await new Promise<void>((resolve, reject) => {
+        req.session.save((err) => {
+          if (err) {
+            console.error("Session save error:", err);
+            reject(err);
+          } else {
+            console.log(`✓ Session saved for user ${user.id}, sessionID: ${req.sessionID}`);
+            resolve();
+          }
+        });
+      });
 
       res.json({ user, message: "Logged in successfully" });
     } catch (error: any) {

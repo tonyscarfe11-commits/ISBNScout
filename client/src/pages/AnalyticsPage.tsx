@@ -56,7 +56,7 @@ export default function AnalyticsPage() {
   const loadBooks = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/books");
+      const response = await fetch("/api/books", { credentials: 'include' });
       if (response.ok) {
         const booksData = await response.json();
         setBooks(booksData);

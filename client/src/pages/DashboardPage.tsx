@@ -73,9 +73,9 @@ export default function DashboardPage() {
 
       // Fetch user, books and listings in parallel
       const [userResponse, booksResponse, listingsResponse] = await Promise.all([
-        fetch("/api/user/me"),
-        fetch("/api/books"),
-        fetch("/api/listings"),
+        fetch("/api/user/me", { credentials: 'include' }),
+        fetch("/api/books", { credentials: 'include' }),
+        fetch("/api/listings", { credentials: 'include' }),
       ]);
 
       // Get user's subscription tier from API (but localStorage takes priority)

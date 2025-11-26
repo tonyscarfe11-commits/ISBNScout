@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 // Configuration for different environments
 const API_URLS = {
-  development: 'http://localhost:5000',
+  development: 'https://isbn-scout-offline.replit.app', // Use your Replit URL for mobile testing
   production: undefined, // Set this to your Railway/Fly.io URL when deploying
   // production: 'https://isbnscout-production.up.railway.app',
 };
@@ -16,9 +16,11 @@ const config: CapacitorConfig = {
   appName: 'ISBNScout',
   webDir: 'dist/public',
   server: {
-    // Uses localhost in development, production URL when building for release
+    // Uses Replit URL for development, production URL when building for release
     url: apiUrl,
-    cleartext: true, // Required for localhost connections
+    cleartext: false, // Use HTTPS for Replit
+    androidScheme: 'https', // Use HTTPS scheme for Android
+    iosScheme: 'https', // Use HTTPS scheme for iOS
   },
   plugins: {
     SplashScreen: {
@@ -34,6 +36,12 @@ const config: CapacitorConfig = {
       // Native barcode scanner configuration
       cameraDirection: "back",
       scanInstructions: "Position the barcode within the frame",
+    },
+    CapacitorHttp: {
+      enabled: true, // Enable CapacitorHttp for better cookie handling
+    },
+    CapacitorCookies: {
+      enabled: true, // Enable cookie support
     }
   }
 };

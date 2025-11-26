@@ -63,7 +63,7 @@ export default function SettingsPage() {
     // Fetch trial info
     const fetchTrialInfo = async () => {
       try {
-        const response = await fetch('/api/user/trial-status');
+        const response = await fetch('/api/user/trial-status', { credentials: 'include' });
         if (response.ok) {
           const data = await response.json();
           setTrialInfo(data);
@@ -80,7 +80,7 @@ export default function SettingsPage() {
     // Fetch API usage on mount and every 30 seconds
     const fetchUsage = async () => {
       try {
-        const response = await fetch('/api/usage');
+        const response = await fetch('/api/usage', { credentials: 'include' });
         if (response.ok) {
           const data = await response.json();
           setApiUsage({

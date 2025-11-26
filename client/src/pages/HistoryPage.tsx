@@ -52,7 +52,7 @@ export default function HistoryPage() {
   const loadBooks = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/books");
+      const response = await fetch("/api/books", { credentials: 'include' });
       if (response.ok) {
         const booksData = await response.json();
         // Convert to BookDetails format
@@ -133,7 +133,7 @@ export default function HistoryPage() {
     setIsExporting(true);
     try {
       // Fetch export data from API
-      const response = await fetch('/api/books/export');
+      const response = await fetch('/api/books/export', { credentials: 'include' });
       if (!response.ok) {
         throw new Error('Failed to fetch export data');
       }

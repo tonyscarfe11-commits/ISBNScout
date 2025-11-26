@@ -80,9 +80,9 @@ export default function RepricingPage() {
   const fetchData = async () => {
     try {
       const [rulesRes, historyRes, listingsRes] = await Promise.all([
-        fetch("/api/repricing/rules"),
-        fetch("/api/repricing/history"),
-        fetch("/api/listings"),
+        fetch("/api/repricing/rules", { credentials: 'include' }),
+        fetch("/api/repricing/history", { credentials: 'include' }),
+        fetch("/api/listings", { credentials: 'include' }),
       ]);
 
       if (rulesRes.ok) {

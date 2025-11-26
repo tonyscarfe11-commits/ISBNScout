@@ -129,14 +129,14 @@ export default function InventoryPage() {
     setIsLoading(true);
     try {
       // Load inventory items
-      const inventoryResponse = await fetch("/api/inventory");
+      const inventoryResponse = await fetch("/api/inventory", { credentials: 'include' });
       if (!inventoryResponse.ok) {
         throw new Error("Failed to load inventory");
       }
       const inventoryData = await inventoryResponse.json();
 
       // Load books
-      const booksResponse = await fetch("/api/books");
+      const booksResponse = await fetch("/api/books", { credentials: 'include' });
       if (!booksResponse.ok) {
         throw new Error("Failed to load books");
       }

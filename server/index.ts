@@ -15,28 +15,46 @@ app.use(express.urlencoded({ extended: false }));
 
 // Session configuration
 const MemoryStoreSession = MemoryStore(session);
+const isDevelopment = process.env.NODE_ENV === 'development';
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
-    resave: false,
-    saveUninitialized: false,
+    resave: true, // Force session to be saved back to store
+    saveUninitialized: true, // Force session to be saved even if unmodified
+    rolling: true, // Reset expiry on every request
     store: new MemoryStoreSession({
       checkPeriod: 86400000, // 24 hours
     }),
     cookie: {
-      secure: false, // Set to false for Replit (even though it uses HTTPS, the proxy complicates things)
-      httpOnly: true,
+      secure: false, // Always false - Replit proxy handles HTTPS
+      httpOnly: false, // Allow JavaScript access for debugging
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: 'lax', // Allow cookies on navigation but not cross-site requests
+      sameSite: false, // Most permissive - no sameSite restriction
       path: '/', // Ensure cookie is available for all paths
     },
+    proxy: true, // Trust the reverse proxy
   })
 );
+
+// Log session configuration
+log(`Session configured: secure=false, httpOnly=false, sameSite=false, maxAge=30days, proxy=true, resave=true`);
 
 app.use((req, res, next) => {
   const start = Date.now();
   const path = req.path;
   let capturedJsonResponse: Record<string, any> | undefined = undefined;
+
+  // Log cookie presence for debugging
+  if (path.startsWith("/api")) {
+    const hasCookie = !!req.headers.cookie;
+    const hasSessionCookie = req.headers.cookie?.includes('connect.sid');
+    if (!hasCookie && path !== "/api/auth/login" && path !== "/api/auth/signup") {
+      log(`⚠️  No cookie in request to ${path}`);
+    } else if (hasCookie && !hasSessionCookie && path !== "/api/auth/login" && path !== "/api/auth/signup") {
+      log(`⚠️  Cookie present but no session cookie in request to ${path}`);
+    }
+  }
 
   const originalResJson = res.json;
   res.json = function (bodyJson, ...args) {
@@ -48,12 +66,32 @@ app.use((req, res, next) => {
     const duration = Date.now() - start;
     if (path.startsWith("/api")) {
       let logLine = `${req.method} ${path} ${res.statusCode} in ${duration}ms`;
+
+      // Add session debug info
+      const sessionId = req.sessionID;
+      const userId = (req.session as any)?.userId;
+      const setCookieHeader = res.getHeader('Set-Cookie');
+
+      if (sessionId) {
+        logLine += ` [sid:${sessionId.substring(0, 8)}...]`;
+      }
+      if (userId) {
+        logLine += ` [user:${userId}]`;
+      } else if (path !== "/api/auth/login" && path !== "/api/auth/signup" && path.startsWith("/api")) {
+        logLine += ` [NO USER]`;
+      }
+
+      // Log if Set-Cookie header is being sent
+      if (setCookieHeader) {
+        logLine += ` [Cookie-SET]`;
+      }
+
       if (capturedJsonResponse) {
         logLine += ` :: ${JSON.stringify(capturedJsonResponse)}`;
       }
 
-      if (logLine.length > 80) {
-        logLine = logLine.slice(0, 79) + "…";
+      if (logLine.length > 150) {
+        logLine = logLine.slice(0, 149) + "…";
       }
 
       log(logLine);
