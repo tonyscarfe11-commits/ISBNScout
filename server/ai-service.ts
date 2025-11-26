@@ -191,6 +191,11 @@ FOR EACH BOOK YOU DETECT:
    - LOW: Barely visible or very unclear
 6. Skip books that are completely illegible
 
+IMPORTANT - Condition Assessment:
+- For SPINE photos: Set condition to null - you cannot assess full book condition from spine alone
+- For COVER photos: You may assess condition based on visible wear and damage
+- Only assess what you can actually see in the image
+
 Return a JSON object with this EXACT structure:
 {
   "books": [
@@ -199,7 +204,7 @@ Return a JSON object with this EXACT structure:
       "author": "Author name or initials",
       "isbn": "digits only if visible",
       "publisher": "if visible from logo",
-      "condition": "New|Like New|Very Good|Good|Acceptable",
+      "condition": null,
       "keywords": ["genre", "category"],
       "imageType": "spine|cover|unknown",
       "confidence": "high|medium|low",

@@ -8,6 +8,7 @@ import { salesVelocityService } from "./sales-velocity-service";
 import { authService } from "./auth-service";
 import { googleBooksService } from "./google-books-service";
 import { ebayPricingService } from "./ebay-pricing-service";
+import { amazonPricingService } from "./amazon-pricing-service";
 import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
@@ -1063,25 +1064,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Try to fetch book data from Google Books if we don't have title
+      // Try to fetch book data from Google Books
       let bookData = { isbn, title, author, ...otherData };
 
-      if (!title || title === `Book with ISBN ${isbn}`) {
+      // Check if ISBN is fake (AI-generated)
+      const isAIGeneratedISBN = isbn.startsWith('AI-');
+
+      if (!title || title === `Book with ISBN ${isbn}` || isAIGeneratedISBN) {
         try {
-          console.log(`Looking up ISBN ${isbn} in Google Books...`);
-          const googleBookData = await googleBooksService.lookupByISBN(isbn);
+          let googleBookData = null;
+
+          if (isAIGeneratedISBN && title && author) {
+            // Search by title + author for AI-generated ISBNs
+            console.log(`AI-generated ISBN detected. Searching Google Books by title+author: "${title}" by ${author}`);
+            const searchResults = await googleBooksService.search(`intitle:${title} inauthor:${author}`, 1);
+            if (searchResults.length > 0) {
+              googleBookData = searchResults[0];
+              console.log(`Found book via search: ${googleBookData.title}`);
+              // Update ISBN with real one if found
+              if (googleBookData.isbn) {
+                bookData.isbn = googleBookData.isbn;
+              }
+            }
+          } else if (!isAIGeneratedISBN) {
+            // Normal ISBN lookup
+            console.log(`Looking up ISBN ${isbn} in Google Books...`);
+            googleBookData = await googleBooksService.lookupByISBN(isbn);
+          }
 
           if (googleBookData) {
             console.log(`Found book: ${googleBookData.title}`);
             bookData = {
-              isbn: googleBookData.isbn,
+              ...bookData,
               title: googleBookData.title,
               author: googleBookData.author || author || "Unknown Author",
               thumbnail: googleBookData.thumbnail,
               ...otherData,
             };
           } else {
-            console.log(`No results found for ISBN ${isbn}`);
+            console.log(`No results found for ${isAIGeneratedISBN ? 'title+author' : 'ISBN'}`);
             // Keep the provided data or use defaults
             if (!title) {
               bookData.title = `Book with ISBN ${isbn}`;
@@ -1104,18 +1125,36 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Try to fetch eBay pricing data
       try {
-        console.log(`Looking up eBay pricing for ISBN ${isbn}...`);
-        const ebayData = await ebayPricingService.getPriceByISBN(isbn);
+        console.log(`Looking up eBay pricing for ISBN ${bookData.isbn}...`);
+        const ebayData = await ebayPricingService.getPriceByISBN(bookData.isbn, bookData.title);
 
         if (ebayData && ebayData.averagePrice) {
           console.log(`Found eBay average price: £${ebayData.averagePrice}`);
           bookData.ebayPrice = ebayData.averagePrice;
         } else {
-          console.log(`No eBay pricing found for ISBN ${isbn}`);
+          console.log(`No eBay pricing found for ISBN ${bookData.isbn}`);
         }
       } catch (ebayError: any) {
         console.error("eBay pricing error:", ebayError.message);
         // Continue without eBay pricing if it fails
+      }
+
+      // Try to fetch Amazon pricing data
+      try {
+        if (amazonPricingService.isConfigured()) {
+          console.log(`Looking up Amazon pricing for ISBN ${bookData.isbn}...`);
+          const amazonData = await amazonPricingService.getPriceByISBN(bookData.isbn);
+
+          if (amazonData && amazonData.price) {
+            console.log(`Found Amazon price: £${amazonData.price}`);
+            bookData.amazonPrice = amazonData.price;
+          } else {
+            console.log(`No Amazon pricing found for ISBN ${bookData.isbn}`);
+          }
+        }
+      } catch (amazonError: any) {
+        console.error("Amazon pricing error:", amazonError.message);
+        // Continue without Amazon pricing if it fails
       }
 
       // Set default status if not provided

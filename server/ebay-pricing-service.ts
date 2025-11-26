@@ -122,10 +122,10 @@ export class EbayPricingService {
   }
 
   /**
-   * Get pricing data for a book by ISBN
+   * Get pricing data for a book by ISBN or title
    * Searches active listings only (sold data no longer available)
    */
-  async getPriceByISBN(isbn: string): Promise<EbayPriceData | null> {
+  async getPriceByISBN(isbn: string, title?: string): Promise<EbayPriceData | null> {
     if (!this.clientId || !this.clientSecret) {
       throw new Error(
         "eBay credentials not configured. Set EBAY_APP_ID and EBAY_CERT_ID environment variables."
@@ -139,8 +139,14 @@ export class EbayPricingService {
       // Get access token
       const accessToken = await this.getAccessToken();
 
-      // Search active listings using Browse API
-      const searchResults = await this.searchActiveListings(cleanIsbn, accessToken);
+      // Try ISBN search first
+      let searchResults = await this.searchActiveListings(cleanIsbn, accessToken);
+
+      // If ISBN search fails and we have a title, try title search
+      if ((!searchResults || searchResults.length === 0) && title) {
+        console.log(`[eBay] ISBN search failed, trying title search: "${title}"`);
+        searchResults = await this.searchActiveListings(title, accessToken);
+      }
 
       if (!searchResults || searchResults.length === 0) {
         return null;
