@@ -1,5 +1,7 @@
 // Profit calculation utilities for book selling
 
+import { calculateShippingCost, getCheapestShipping, type ShippingCarrier } from './shippingCalculator';
+
 export type Platform = "amazon-fba" | "amazon-fbm" | "ebay";
 
 export interface PlatformFees {
@@ -90,10 +92,11 @@ export interface CalculateProfitParams {
   platform: Platform;
   salePrice: number;
   purchaseCost: number;
-  shippingCost?: number;
+  shippingCost?: number; // Optional: override auto-calculated shipping
   packagingCost?: number;
   inboundShippingCost?: number;
-  bookWeight?: number; // in kg, for FBA fee calculation
+  bookWeight?: number; // in kg, for FBA fee calculation and shipping
+  shippingCarrier?: ShippingCarrier; // Optional: specify carrier for non-FBA
 }
 
 /**
@@ -104,11 +107,21 @@ export function calculateProfit(params: CalculateProfitParams): ProfitCalculatio
     platform,
     salePrice,
     purchaseCost,
-    shippingCost = 0,
     packagingCost = 0,
     inboundShippingCost = 0,
     bookWeight = 0.3, // Default: 300g paperback
+    shippingCarrier = 'royal-mail-2nd',
   } = params;
+
+  // Calculate dynamic shipping cost if not provided
+  let shippingCost = params.shippingCost;
+  if (shippingCost === undefined && platform !== 'amazon-fba') {
+    // Use dynamic shipping calculator for FBM and eBay
+    const shippingRate = calculateShippingCost(bookWeight, shippingCarrier);
+    shippingCost = shippingRate.cost;
+  } else if (shippingCost === undefined) {
+    shippingCost = 0; // FBA handles shipping
+  }
 
   const fees = PLATFORM_FEES[platform];
 
@@ -173,7 +186,7 @@ export function calculateProfitAllPlatforms(
       salePrice,
       purchaseCost,
       bookWeight,
-      shippingCost: platform !== "amazon-fba" ? 2.50 : 0, // Default Royal Mail 2nd class
+      // Dynamic shipping calculated automatically based on weight
       packagingCost: platform !== "amazon-fba" ? 0.50 : 0,
       inboundShippingCost: platform === "amazon-fba" ? 0.20 : 0,
     });
