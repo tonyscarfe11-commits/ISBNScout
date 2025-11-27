@@ -8,6 +8,7 @@
  */
 
 import Stripe from 'stripe';
+import { STRIPE_PRICE_IDS } from '../src/config/stripePrices';
 
 export interface SubscriptionPlan {
   id: string;
@@ -15,6 +16,8 @@ export interface SubscriptionPlan {
   price: number;
   interval: 'month' | 'year';
   features: string[];
+  stripePriceId?: string;
+  trialDays?: number;
 }
 
 export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
@@ -25,26 +28,69 @@ export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
     interval: 'month',
     features: ['10 free scans', 'ISBN scanning only', 'Live pricing data'],
   },
-  basic: {
-    id: 'basic',
-    name: 'Basic',
-    price: 9.99,
-    interval: 'month',
-    features: ['100 scans/month', 'ISBN scanning only', 'Live pricing data', 'Book library'],
-  },
-  pro: {
-    id: 'pro',
+  pro_monthly: {
+    id: 'pro_monthly',
     name: 'Pro',
-    price: 24.99,
+    price: 14.99,
     interval: 'month',
-    features: ['Unlimited scans', 'AI shelf scanning', 'AI cover/spine recognition', 'Automated repricing', 'Priority support'],
+    stripePriceId: STRIPE_PRICE_IDS.PRO_MONTHLY,
+    trialDays: 14,
+    features: [
+      'Unlimited scans',
+      'Offline mode',
+      'Barcode, cover & AI spine recognition',
+      'Amazon + eBay UK profit calculator',
+      'Royal Mail & Evri postage estimates',
+      'Scan history',
+    ],
   },
-  enterprise: {
-    id: 'enterprise',
-    name: 'Enterprise',
-    price: 99.99,
+  pro_yearly: {
+    id: 'pro_yearly',
+    name: 'Pro (Annual)',
+    price: 149,
+    interval: 'year',
+    stripePriceId: STRIPE_PRICE_IDS.PRO_YEARLY,
+    trialDays: 14,
+    features: [
+      'Unlimited scans',
+      'Offline mode',
+      'Barcode, cover & AI spine recognition',
+      'Amazon + eBay UK profit calculator',
+      'Royal Mail & Evri postage estimates',
+      'Scan history',
+      'Save ~2 months vs monthly',
+    ],
+  },
+  elite_monthly: {
+    id: 'elite_monthly',
+    name: 'Elite',
+    price: 19.99,
     interval: 'month',
-    features: ['Truly unlimited scans (no daily caps)', 'All Pro features', 'Bulk operations', 'Advanced reporting', 'Custom integrations support', 'Dedicated account manager', 'Priority support (4-hour response)'],
+    stripePriceId: STRIPE_PRICE_IDS.ELITE_MONTHLY,
+    trialDays: 14,
+    features: [
+      'Everything in Pro',
+      'Buy / Don\'t Buy triggers',
+      'Custom profit rules',
+      'CSV export',
+      'Multi-device access',
+    ],
+  },
+  elite_yearly: {
+    id: 'elite_yearly',
+    name: 'Elite (Annual)',
+    price: 199,
+    interval: 'year',
+    stripePriceId: STRIPE_PRICE_IDS.ELITE_YEARLY,
+    trialDays: 14,
+    features: [
+      'Everything in Pro',
+      'Buy / Don\'t Buy triggers',
+      'Custom profit rules',
+      'CSV export',
+      'Multi-device access',
+      'Save ~2½ months vs monthly',
+    ],
   },
 };
 
@@ -85,6 +131,10 @@ export class StripeService {
       throw new Error('Cannot create checkout session for free plan');
     }
 
+    if (!plan.stripePriceId) {
+      throw new Error(`Plan ${planId} does not have a Stripe price ID configured`);
+    }
+
     try {
       // Create or retrieve Stripe customer
       let stripeCustomerId = customerId;
@@ -103,17 +153,7 @@ export class StripeService {
         payment_method_types: ['card', 'paypal'],
         line_items: [
           {
-            price_data: {
-              currency: 'gbp',
-              product_data: {
-                name: plan.name,
-                description: plan.features.join(', '),
-              },
-              recurring: {
-                interval: plan.interval,
-              },
-              unit_amount: Math.round(plan.price * 100), // Convert to pence
-            },
+            price: plan.stripePriceId, // Use pre-configured Stripe price ID
             quantity: 1,
           },
         ],
@@ -138,6 +178,16 @@ export class StripeService {
           planId,
         },
       };
+
+      // Add 14-day free trial if configured for this plan
+      if (plan.trialDays) {
+        sessionConfig.subscription_data = {
+          trial_period_days: plan.trialDays,
+          metadata: {
+            planId,
+          },
+        };
+      }
 
       // Add customer or enable customer creation (mutually exclusive)
       if (stripeCustomerId) {

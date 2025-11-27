@@ -1,81 +1,57 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Check, Sparkles, Zap, Crown } from "lucide-react";
+import { Check, Zap, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
+type BillingPeriod = 'monthly' | 'yearly';
+
 const plans = [
-  {
-    id: "basic",
-    name: "Basic",
-    price: "£9.99",
-    period: "per month",
-    icon: Sparkles,
-    description: "Perfect for beginners starting out",
-    features: [
-      "100 scans per month",
-      "ISBN barcode scanning only",
-      "Live pricing from Amazon & eBay",
-      "Book library & history",
-      "Offline scanning mode",
-      "Email support",
-    ],
-    limitations: [
-      "No AI recognition",
-      "No shelf scanning",
-    ],
-    buttonText: "Subscribe to Basic",
-    highlighted: false,
-  },
   {
     id: "pro",
     name: "Pro",
-    price: "£24.99",
-    period: "per month",
+    monthlyPrice: "£14.99",
+    yearlyPrice: "£149",
     icon: Zap,
-    description: "Best for full-time sellers",
+    description: "Perfect for UK sellers sourcing weekly in charity shops",
     features: [
-      "Unlimited scans - scan as much as you want",
-      "AI shelf scanning - scan entire shelves at once (unique!)",
-      "AI cover/spine recognition - works without barcodes",
-      "Automated repricing",
-      "Book library & history",
-      "Offline scanning mode",
-      "Priority email support",
+      "Unlimited scans",
+      "Offline mode",
+      "Barcode, cover & AI spine recognition",
+      "Amazon + eBay UK profit calculator",
+      "Royal Mail & Evri postage estimates",
+      "Scan history",
     ],
-    limitations: [],
-    buttonText: "Subscribe to Pro",
+    buttonText: "Start 14-Day Pro Trial",
     highlighted: true,
     badge: "Most Popular",
+    yearlySavings: "Save ~2 months",
   },
   {
-    id: "enterprise",
-    name: "Enterprise",
-    price: "£99.99",
-    period: "per month",
+    id: "elite",
+    name: "Elite",
+    monthlyPrice: "£19.99",
+    yearlyPrice: "£199",
     icon: Crown,
-    description: "For businesses & teams",
+    description: "For high-volume sellers with advanced automation needs",
     features: [
-      "Everything in Pro, plus:",
-      "Truly unlimited scans (no daily limits)",
-      "Bulk operations & batch processing",
-      "Advanced reporting & analytics",
-      "Custom integrations support",
-      "Dedicated account manager",
-      "Priority support (4-hour response)",
-      "Custom feature development",
-      "SLA & uptime guarantees",
+      "Everything in Pro",
+      "Buy / Don't Buy triggers",
+      "Custom profit rules",
+      "CSV export",
+      "Multi-device access",
     ],
-    limitations: [],
-    buttonText: "Contact Sales",
+    buttonText: "Start 14-Day Elite Trial",
     highlighted: false,
+    yearlySavings: "Save ~2½ months",
   },
 ];
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<string | null>(null);
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -88,7 +64,7 @@ export default function SubscriptionPage() {
     if (sessionId) {
       toast({
         title: "Payment Successful! 🎉",
-        description: "Your subscription has been activated. Welcome aboard!",
+        description: "Your 14-day free trial has started. Welcome aboard!",
       });
       // Clean up URL
       window.history.replaceState({}, '', '/subscription');
@@ -103,22 +79,15 @@ export default function SubscriptionPage() {
     }
   }, [toast]);
 
-  const handleSubscribe = async (planId: string) => {
-    if (planId === "enterprise") {
-      toast({
-        title: "Contact Sales",
-        description: "Please email sales@isbnscout.com for Enterprise pricing",
-      });
-      return;
-    }
-
-    setIsLoading(planId);
+  const handleSubscribe = async (planId: string, period: BillingPeriod) => {
+    const fullPlanId = `${planId}_${period}`;
+    setIsLoading(fullPlanId);
 
     try {
       const response = await fetch("/api/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId }),
+        body: JSON.stringify({ planId: fullPlanId }),
       });
 
       if (!response.ok) {
@@ -133,7 +102,7 @@ export default function SubscriptionPage() {
       } else {
         toast({
           title: "Success",
-          description: `Upgraded to ${planId} plan!`,
+          description: `Started 14-day trial for ${planId}!`,
         });
       }
     } catch (error: any) {
@@ -152,19 +121,47 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-4">
-            10 Free Scans - No Card Required
+            14-Day Free Trial - No Card Required
           </Badge>
           <h1 className="text-4xl font-bold">
-            Choose Your Plan
+            Simple pricing for serious UK book flippers
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Start with 10 free scans. Upgrade anytime to unlock unlimited scans and AI features.
+            Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12">
+        {/* Billing Period Toggle */}
+        <div className="flex justify-center items-center gap-3 mt-8">
+          <span className={`text-sm ${billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}`}>
+            Monthly
+          </span>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+            className="relative w-14 h-8 rounded-full p-0"
+          >
+            <div className={`absolute w-6 h-6 bg-primary rounded-full transition-transform ${
+              billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-1'
+            }`} />
+          </Button>
+          <span className={`text-sm ${billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}`}>
+            Yearly
+          </span>
+          {billingPeriod === 'yearly' && (
+            <Badge variant="secondary" className="ml-2">
+              Save up to £40/year
+            </Badge>
+          )}
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
           {plans.map((plan) => {
             const Icon = plan.icon;
+            const currentPrice = billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
+            const fullPlanId = `${plan.id}_${billingPeriod}`;
+
             return (
               <Card
                 key={plan.id}
@@ -197,9 +194,14 @@ export default function SubscriptionPage() {
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{plan.price}</span>
-                    <span className="text-muted-foreground">/{plan.period.split(' ')[1] || plan.period}</span>
+                    <span className="text-4xl font-bold">{currentPrice}</span>
+                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
                   </div>
+                  {billingPeriod === 'yearly' && (
+                    <p className="text-sm text-muted-foreground mt-1">
+                      {plan.yearlySavings}
+                    </p>
+                  )}
                 </div>
 
                 <ul className="space-y-3 mb-6 flex-1">
@@ -209,21 +211,20 @@ export default function SubscriptionPage() {
                       <span className="text-sm">{feature}</span>
                     </li>
                   ))}
-                  {plan.limitations.map((limitation, index) => (
-                    <li key={`limit-${index}`} className="flex items-start gap-2 opacity-60">
-                      <span className="text-sm line-through">{limitation}</span>
-                    </li>
-                  ))}
                 </ul>
 
                 <Button
-                  onClick={() => handleSubscribe(plan.id)}
-                  disabled={isLoading === plan.id}
+                  onClick={() => handleSubscribe(plan.id, billingPeriod)}
+                  disabled={isLoading === fullPlanId}
                   variant={plan.highlighted ? "default" : "outline"}
                   className="w-full"
                 >
-                  {isLoading === plan.id ? "Processing..." : plan.buttonText}
+                  {isLoading === fullPlanId ? "Processing..." : plan.buttonText}
                 </Button>
+
+                <p className="text-xs text-center text-muted-foreground mt-3">
+                  14-day free trial • No card required • Cancel anytime
+                </p>
               </Card>
             );
           })}
@@ -257,15 +258,15 @@ export default function SubscriptionPage() {
               </div>
               <div className="flex items-center gap-2">
                 <Check className="h-4 w-4 text-primary" />
-                <span>Data export</span>
+                <span>UK-specific features</span>
               </div>
             </div>
           </Card>
         </div>
 
         <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>All prices in GBP. 10 free scans to start, no credit card required. Cancel anytime.</p>
-          <p className="mt-2">30-day money-back guarantee on all paid plans.</p>
+          <p>All prices in GBP. Try free for 14 days with full access. Cancel anytime during trial.</p>
+          <p className="mt-2">After trial: Continue with paid plan or downgrade to free tier (10 scans/month).</p>
         </div>
       </div>
     </div>

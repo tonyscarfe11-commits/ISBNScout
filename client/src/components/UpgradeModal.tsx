@@ -77,31 +77,6 @@ export function UpgradeModal({
 
           {/* Pricing Plans */}
           <div className="space-y-3">
-            {/* Basic Plan */}
-            <div className="rounded-lg border-2 border-border bg-background p-4 hover:border-primary/30 transition-colors cursor-pointer">
-              <div className="flex items-start justify-between mb-2">
-                <div>
-                  <h3 className="font-bold text-base">Basic</h3>
-                  <div className="text-2xl font-bold mt-1">£9.99<span className="text-sm font-normal text-muted-foreground">/month</span></div>
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground mb-3">Perfect for beginners</p>
-              <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
-                <div className="flex items-center gap-2">
-                  <Zap className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>100 scans/month</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>ISBN scanning only</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>Live pricing data</span>
-                </div>
-              </div>
-            </div>
-
             {/* Pro Plan - Recommended */}
             <div className="rounded-lg border-2 border-primary bg-gradient-to-br from-primary/5 to-primary/10 p-4 relative">
               <Badge className="absolute -top-2 right-4 bg-gradient-to-r from-orange-500 to-orange-600">
@@ -110,62 +85,71 @@ export function UpgradeModal({
               <div className="flex items-start justify-between mb-2">
                 <div>
                   <h3 className="font-bold text-lg">Pro</h3>
-                  <div className="text-3xl font-bold mt-1">£24.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                  <div className="text-3xl font-bold mt-1">£14.99<span className="text-base font-normal text-muted-foreground">/month</span></div>
+                  <div className="text-sm text-muted-foreground">or £149/year (save ~2 months)</div>
                 </div>
               </div>
-              <p className="text-sm text-muted-foreground mb-3">Best for full-time sellers</p>
+              <p className="text-sm text-muted-foreground mb-3">Perfect for UK sellers sourcing weekly</p>
               <div className="space-y-2 text-sm">
                 <div className="flex items-start gap-2">
                   <Zap className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <span><strong>Unlimited scans</strong> - scan as much as you want</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <Library className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <span><strong>AI shelf scanning</strong> - scan entire shelves at once</span>
+                  <span><strong>Unlimited scans</strong></span>
                 </div>
                 <div className="flex items-start gap-2">
                   <BookOpen className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <span><strong>AI cover/spine recognition</strong> - no barcode needed</span>
+                  <span><strong>Barcode, cover & AI spine recognition</strong></span>
                 </div>
                 <div className="flex items-start gap-2">
                   <TrendingUp className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
-                  <span><strong>Automated repricing</strong></span>
+                  <span>Amazon + eBay UK profit calculator</span>
                 </div>
+                <div className="flex items-start gap-2">
+                  <Library className="h-4 w-4 mt-0.5 text-primary flex-shrink-0" />
+                  <span>Offline mode & scan history</span>
+                </div>
+              </div>
+              <div className="mt-3 pt-3 border-t border-primary/20">
+                <p className="text-xs text-center text-primary font-semibold">14-day free trial • No card required</p>
               </div>
             </div>
 
-            {/* Enterprise Plan */}
+            {/* Elite Plan */}
             <div className="rounded-lg border-2 border-border bg-background p-4 hover:border-primary/30 transition-colors cursor-pointer">
               <div className="flex items-start justify-between mb-2">
                 <div>
-                  <h3 className="font-bold text-base">Enterprise</h3>
-                  <div className="text-2xl font-bold mt-1">£99.99<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+                  <h3 className="font-bold text-base">Elite</h3>
+                  <div className="text-2xl font-bold mt-1">£19.99<span className="text-sm font-normal text-muted-foreground">/month</span></div>
+                  <div className="text-xs text-muted-foreground">or £199/year (save ~2½ months)</div>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground mb-3">For high-volume sellers with automation</p>
               <div className="space-y-1.5 text-sm text-muted-foreground mb-3">
                 <div className="flex items-center gap-2">
                   <Zap className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>Truly unlimited (no daily caps)</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Library className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>All Pro features</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>Custom integrations</span>
+                  <span>Everything in Pro</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <TrendingUp className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>Dedicated support</span>
+                  <span>Buy / Don't Buy triggers</span>
                 </div>
+                <div className="flex items-center gap-2">
+                  <Library className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span>Custom profit rules</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span>CSV export & multi-device</span>
+                </div>
+              </div>
+              <div className="mt-2 pt-2 border-t">
+                <p className="text-xs text-center text-muted-foreground">14-day free trial included</p>
               </div>
             </div>
           </div>
 
           {isTrial && (
             <div className="text-center text-sm text-muted-foreground">
-              <p>30-day money-back guarantee. Cancel anytime.</p>
+              <p>Try free for 14 days. Cancel anytime during trial.</p>
             </div>
           )}
         </div>
