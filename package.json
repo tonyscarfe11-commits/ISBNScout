@@ -63,6 +63,7 @@
     "@types/bcrypt": "^6.0.0",
     "@types/cors": "^2.8.19",
     "@zxing/library": "^0.21.3",
+    "amazon-paapi": "^1.0.7",
     "amazon-sp-api": "^1.1.7",
     "bcrypt": "^6.0.0",
     "better-sqlite3": "^12.4.1",

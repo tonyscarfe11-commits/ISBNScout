@@ -15,10 +15,12 @@ export interface EbayPriceData {
   isbn: string;
   currentPrice?: number;
   averagePrice?: number;
+  medianPrice?: number;
   minPrice?: number;
   maxPrice?: number;
   soldCount?: number; // Always 0 - kept for backwards compatibility
   activeListings?: number;
+  totalListings?: number; // Alias for activeListings for backwards compatibility
   currency: string;
   lastUpdated: Date;
   listings?: EbayListing[];
@@ -180,14 +182,22 @@ export class EbayPricingService {
       const sortedPrices = allPrices.sort((a, b) => a - b);
       const averagePrice = allPrices.reduce((sum, price) => sum + price, 0) / allPrices.length;
 
+      // Calculate median price
+      const midpoint = Math.floor(sortedPrices.length / 2);
+      const medianPrice = sortedPrices.length % 2 === 0
+        ? (sortedPrices[midpoint - 1] + sortedPrices[midpoint]) / 2
+        : sortedPrices[midpoint];
+
       return {
         isbn: cleanIsbn,
         currentPrice: activeListings.length > 0 ? activeListings[0].price : undefined,
         averagePrice,
+        medianPrice,
         minPrice: sortedPrices[0],
         maxPrice: sortedPrices[sortedPrices.length - 1],
         soldCount: 0, // No longer available in Browse API
         activeListings: searchResults.length,
+        totalListings: searchResults.length, // Alias for backwards compatibility
         currency: "GBP",
         lastUpdated: new Date(),
         listings: activeListings.slice(0, 5), // Return top 5 listings

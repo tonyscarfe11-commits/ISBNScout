@@ -82,9 +82,9 @@ async function testBookCreationFlow(): Promise<boolean> {
 
   // Create test user
   db.prepare(`
-    INSERT INTO users (id, username, email, passwordHash, createdAt)
-    VALUES (?, ?, ?, ?, ?)
-  `).run(testUserId, 'testuser', 'test@test.com', 'hash', new Date().toISOString());
+    INSERT INTO users (id, username, email, password, createdAt, updatedAt)
+    VALUES (?, ?, ?, ?, ?, ?)
+  `).run(testUserId, 'testuser', 'test@test.com', 'hash', new Date().toISOString(), new Date().toISOString());
 
   // Create book with AI-generated ISBN
   db.prepare(`
@@ -111,9 +111,14 @@ async function testBookCreationFlow(): Promise<boolean> {
 }
 
 async function testScanLimitCheck(): Promise<boolean> {
-  // Test that scan limit logic exists in users table
-  const columns = db.prepare("PRAGMA table_info(users)").all() as any[];
-  return columns.some(c => c.name === 'scansUsed' || c.name === 'scanCount');
+  // Test that trial_scans table exists for tracking scan limits
+  const tables = db.prepare("SELECT name FROM sqlite_master WHERE type='table' AND name='trial_scans'").all() as any[];
+  if (tables.length === 0) return false;
+
+  // Verify trial_scans table has required columns
+  const columns = db.prepare("PRAGMA table_info(trial_scans)").all() as any[];
+  const requiredColumns = ['fingerprint', 'scansUsed', 'firstScanAt', 'lastScanAt'];
+  return requiredColumns.every(col => columns.some(c => c.name === col));
 }
 
 async function runAllTests(): Promise<void> {

@@ -11,9 +11,49 @@ const app = express();
 // Enable trust proxy for Replit
 app.set('trust proxy', 1);
 
-// CORS configuration for mobile app - allow all origins in development
+// CORS configuration - whitelist specific origins only
+const allowedOrigins = [
+  'http://localhost:5000',
+  'http://localhost:3000',
+  'http://127.0.0.1:5000',
+  'http://127.0.0.1:3000',
+  // Add your production domains here:
+  // 'https://your-production-domain.com',
+  // 'https://www.your-production-domain.com',
+  // Mobile app scheme (if using custom URL scheme):
+  // 'app://your-mobile-app',
+];
+
+// In development, allow additional origins
+if (process.env.NODE_ENV === 'development') {
+  // Allow Replit preview URLs or other dev URLs
+  allowedOrigins.push('https://*.replit.dev');
+}
+
 app.use(cors({
-  origin: true, // Allow all origins
+  origin: (origin, callback) => {
+    // Allow requests with no origin (like mobile apps, Postman, curl)
+    if (!origin) {
+      return callback(null, true);
+    }
+
+    // Check if origin is in whitelist or matches pattern
+    const isAllowed = allowedOrigins.some(allowedOrigin => {
+      if (allowedOrigin.includes('*')) {
+        // Handle wildcard patterns
+        const pattern = new RegExp('^' + allowedOrigin.replace(/\*/g, '.*') + '$');
+        return pattern.test(origin);
+      }
+      return origin === allowedOrigin;
+    });
+
+    if (isAllowed) {
+      callback(null, true);
+    } else {
+      console.warn(`[CORS] Blocked origin: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true, // Allow cookies to be sent
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -37,10 +77,10 @@ app.use(
       checkPeriod: 86400000, // 24 hours
     }),
     cookie: {
-      secure: 'auto', // Auto-detect: true for HTTPS, false for HTTP
-      httpOnly: false, // Allow JavaScript access (needed for mobile app debugging)
+      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      httpOnly: true, // ✅ SECURITY: Prevent JavaScript access (XSS protection)
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: 'none', // Required for cross-origin requests from mobile app
+      sameSite: isDevelopment ? 'lax' : 'strict', // ✅ SECURITY: CSRF protection
       path: '/', // Ensure cookie is available for all paths
     },
     proxy: true, // Trust the reverse proxy
@@ -48,7 +88,7 @@ app.use(
 );
 
 // Log session configuration
-log(`Session configured: secure=auto, httpOnly=false, sameSite=none, maxAge=30days, proxy=true, resave=true`);
+log(`Session configured: secure=${process.env.NODE_ENV === 'production'}, httpOnly=true, sameSite=${isDevelopment ? 'lax' : 'strict'}, maxAge=30days, proxy=true, resave=true`);
 
 app.use((req, res, next) => {
   const start = Date.now();

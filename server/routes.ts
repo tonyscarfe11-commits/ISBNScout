@@ -1171,10 +1171,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Update book prices
-  app.patch("/api/books/:isbn", async (req, res) => {
+  app.patch("/api/books/:isbn", requireAuth, async (req, res) => {
     try {
+      const userId = getUserId(req);
       const { isbn } = req.params;
       const updates = req.body;
+
+      // Find the book first to verify ownership
+      const existingBook = await storage.getBookByISBN(isbn);
+
+      if (!existingBook) {
+        return res.status(404).json({ message: "Book not found" });
+      }
+
+      // ✅ SECURITY: Verify user owns this book
+      if (existingBook.userId !== userId) {
+        return res.status(403).json({ message: "You do not have permission to update this book" });
+      }
 
       const updatedBook = await storage.updateBook(isbn, updates);
 
