@@ -38,6 +38,7 @@ export default function SettingsPage() {
         const response = await fetch('/api/user/trial-status', { credentials: 'include' });
         if (response.ok) {
           const data = await response.json();
+          console.log('[Settings] Trial info received:', data);
           setTrialInfo(data);
         }
       } catch (error) {

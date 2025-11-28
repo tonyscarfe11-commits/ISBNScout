@@ -44,11 +44,7 @@ function Router() {
     <div className="min-h-screen bg-background">
       <Switch>
         {/* Public routes */}
-        <Route path="/">
-          <AppLayout>
-            <ScanPage />
-          </AppLayout>
-        </Route>
+        <Route path="/" component={LandingPage} />
         <Route path="/landing" component={LandingPage} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/subscription" component={SubscriptionPage} />
