@@ -8,7 +8,7 @@
  */
 
 import Stripe from 'stripe';
-import { STRIPE_PRICE_IDS } from '../src/config/stripePrices';
+import { STRIPE_PRICE_IDS } from '../client/src/config/stripePrices';
 
 export interface SubscriptionPlan {
   id: string;
