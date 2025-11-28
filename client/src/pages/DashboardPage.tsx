@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { AppHeader } from "@/components/AppHeader";
 import { useLocation } from "wouter";
 import {
   TrendingUp,
@@ -43,7 +44,7 @@ interface RecentScan {
 export default function DashboardPage() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(true);
-  const [userPlan, setUserPlan] = useState("basic");
+  const [userPlan, setUserPlan] = useState("trial");
   const [stats, setStats] = useState<DashboardStats>({
     scansThisMonth: 0,
     totalInventory: 0,
@@ -63,12 +64,6 @@ export default function DashboardPage() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      // Check localStorage first for subscription tier
-      const savedPlan = localStorage.getItem('userPlan');
-      if (savedPlan) {
-        setUserPlan(savedPlan);
-      }
-
       // Fetch user, books and listings in parallel
       const [userResponse, booksResponse, listingsResponse] = await Promise.all([
         fetch("/api/user/me", { credentials: 'include' }),
@@ -76,10 +71,10 @@ export default function DashboardPage() {
         fetch("/api/listings", { credentials: 'include' }),
       ]);
 
-      // Get user's subscription tier from API (but localStorage takes priority)
-      if (userResponse.ok && !savedPlan) {
+      // Get user's subscription tier from API
+      if (userResponse.ok) {
         const userData = await userResponse.json();
-        setUserPlan(userData.subscriptionTier || "free");
+        setUserPlan(userData.subscriptionTier || "trial");
       }
 
       if (booksResponse.ok && listingsResponse.ok) {
@@ -185,6 +180,7 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen pb-20 bg-background">
+      <AppHeader />
       <div className="max-w-7xl mx-auto p-4 space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
@@ -206,16 +202,10 @@ export default function DashboardPage() {
               <span className="text-sm text-muted-foreground">Scans This Month</span>
               <Calendar className="h-4 w-4 text-muted-foreground" />
             </div>
-            <div className="flex items-baseline gap-2">
-              <span className="text-3xl font-bold">{stats.scansThisMonth}</span>
-              <span className="text-sm text-muted-foreground">/ {stats.scansLimit}</span>
-            </div>
-            <div className="mt-2 h-2 bg-muted rounded-full overflow-hidden">
-              <div
-                className="h-full bg-primary"
-                style={{ width: `${(stats.scansThisMonth / stats.scansLimit) * 100}%` }}
-              />
-            </div>
+            <div className="text-3xl font-bold">{stats.scansThisMonth}</div>
+            <p className="text-sm text-muted-foreground mt-1">
+              Unlimited scans
+            </p>
           </Card>
 
           <Card className="p-6">
@@ -391,14 +381,18 @@ export default function DashboardPage() {
             <div className="mt-6 p-4 bg-primary/5 rounded-lg">
               <div className="flex items-start gap-3">
                 <CheckCircle2 className="h-5 w-5 text-primary mt-0.5" />
-                <div>
-                  <h3 className="font-semibold mb-1">You're on the {userPlan.charAt(0).toUpperCase() + userPlan.slice(1)} Plan</h3>
+                <div className="flex-1">
+                  <h3 className="font-semibold mb-1">
+                    {userPlan === 'trial' ? 'Free Trial Active' : `${userPlan.charAt(0).toUpperCase() + userPlan.slice(1).replace(/_/g, ' ')} Plan`}
+                  </h3>
                   <p className="text-sm text-muted-foreground mb-3">
-                    {stats.scansLimit - stats.scansThisMonth} scans remaining this month
+                    {userPlan === 'trial' ? 'Unlimited scans during trial' : 'Unlimited scans'}
                   </p>
-                  <Button size="sm" onClick={() => setLocation("/subscription")}>
-                    Upgrade to Pro
-                  </Button>
+                  {userPlan === 'trial' && (
+                    <Button size="sm" onClick={() => setLocation("/subscription")}>
+                      View Plans
+                    </Button>
+                  )}
                 </div>
               </div>
             </div>

@@ -197,7 +197,7 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between p-3 border rounded-lg bg-primary/5">
                 <div>
                   <p className="text-sm font-medium">Current Plan</p>
-                  {trialInfo && trialInfo.status === 'trialing' ? (
+                  {trialInfo && trialInfo.tier === 'trial' ? (
                     <>
                       <p className="text-xs text-muted-foreground">Free Trial</p>
                       <p className="text-xs text-muted-foreground mt-1">
@@ -207,15 +207,19 @@ export default function SettingsPage() {
                   ) : (
                     <>
                       <p className="text-xs text-muted-foreground">
-                        {trialInfo?.tier === 'basic' ? 'Basic Plan' : trialInfo?.tier === 'pro' ? 'Pro Plan' : trialInfo?.tier === 'enterprise' ? 'Enterprise Plan' : 'No Active Plan'}
+                        {trialInfo?.tier ?
+                          trialInfo.tier.split('_').map((word: string) =>
+                            word.charAt(0).toUpperCase() + word.slice(1)
+                          ).join(' ')
+                          : 'No Active Plan'}
                       </p>
                     </>
                   )}
                 </div>
-                {trialInfo && trialInfo.status === 'trialing' ? (
+                {trialInfo && trialInfo.tier === 'trial' ? (
                   <Badge variant="default">Trial Active</Badge>
                 ) : (
-                  <Badge variant="secondary">{trialInfo?.tier || 'Free'}</Badge>
+                  <Badge variant="secondary">{trialInfo?.tier?.split('_').map((w: string) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ') || 'None'}</Badge>
                 )}
               </div>
               <Button

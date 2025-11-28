@@ -235,7 +235,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       // Get the plan ID from session metadata
-      const planId = session.metadata?.planId || 'basic';
+      const planId = session.metadata?.planId || 'pro_monthly';
       console.log('[Stripe Verify] Plan ID:', planId);
 
       // Update user's subscription in database
@@ -343,7 +343,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
           if (user) {
             await storage.updateUser(user.id, {
-              subscriptionTier: planId || 'basic',
+              subscriptionTier: planId || 'pro_monthly',
               subscriptionStatus: 'active',
               stripeSubscriptionId: subscriptionId,
               stripeCustomerId: customerId,
@@ -2137,6 +2137,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json(history);
     } catch (error: any) {
       console.error("[Repricing] Get history error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Migration endpoint: Fix users with old "basic" tier
+  app.post("/api/admin/migrate-basic-users", async (req, res) => {
+    try {
+      // This is a temporary migration endpoint
+      // Get all users (this will need to be updated if you have many users)
+      const users = await storage.getUsers?.() || [];
+
+      let updatedCount = 0;
+      for (const user of users) {
+        if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free') {
+          // Update to trial with 14-day period
+          const now = new Date();
+          const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+          await storage.updateUser(user.id, {
+            subscriptionTier: 'trial',
+            subscriptionStatus: 'active',
+            trialStartedAt: now,
+            trialEndsAt: trialEnds,
+          });
+
+          updatedCount++;
+        }
+      }
+
+      res.json({
+        success: true,
+        message: `Updated ${updatedCount} users from basic/free to trial`,
+        updatedCount
+      });
+    } catch (error: any) {
+      console.error("[Migration] Error:", error);
       res.status(500).json({ message: error.message });
     }
   });
