@@ -2,7 +2,7 @@
 
 import { calculateShippingCost, getCheapestShipping, type ShippingCarrier } from './shippingCalculator';
 
-export type Platform = "amazon-fba" | "amazon-fbm" | "ebay";
+export type Platform = "amazon-fbm" | "ebay";
 
 export interface PlatformFees {
   name: string;
@@ -37,14 +37,6 @@ export interface ProfitCalculation {
 
 // Platform fee structures
 export const PLATFORM_FEES: Record<Platform, PlatformFees> = {
-  "amazon-fba": {
-    name: "Amazon FBA",
-    commission: 0.15, // 15%
-    fulfillment: 2.50, // Base rate - will be calculated based on weight
-    storage: 0.50,
-    closingFee: 0,
-    description: "15% commission + fulfillment + storage fees",
-  },
   "amazon-fbm": {
     name: "Amazon FBM",
     commission: 0.15, // 15%
@@ -64,22 +56,6 @@ export const PLATFORM_FEES: Record<Platform, PlatformFees> = {
 };
 
 /**
- * Calculate FBA fulfillment fee based on book weight
- * Amazon UK FBA fees for books (Media category)
- */
-export function calculateFBAFulfillmentFee(weightKg: number): number {
-  // Amazon UK FBA fees for Media (Books) - 2024 rates
-  // Standard size books (most books)
-  if (weightKg <= 0.25) return 1.99;
-  if (weightKg <= 0.50) return 2.39;
-  if (weightKg <= 1.00) return 2.79;
-  if (weightKg <= 2.00) return 3.19;
-
-  // Heavier books
-  return 3.19 + ((weightKg - 2.0) * 0.40); // £0.40 per additional kg
-}
-
-/**
  * Estimate book weight based on typical book weights
  * Most paperbacks: 0.2-0.4kg
  * Most hardcovers: 0.5-0.8kg
@@ -95,8 +71,8 @@ export interface CalculateProfitParams {
   shippingCost?: number; // Optional: override auto-calculated shipping
   packagingCost?: number;
   inboundShippingCost?: number;
-  bookWeight?: number; // in kg, for FBA fee calculation and shipping
-  shippingCarrier?: ShippingCarrier; // Optional: specify carrier for non-FBA
+  bookWeight?: number; // in kg, for shipping calculation
+  shippingCarrier?: ShippingCarrier; // Optional: specify carrier
 }
 
 /**
@@ -115,12 +91,10 @@ export function calculateProfit(params: CalculateProfitParams): ProfitCalculatio
 
   // Calculate dynamic shipping cost if not provided
   let shippingCost = params.shippingCost;
-  if (shippingCost === undefined && platform !== 'amazon-fba') {
-    // Use dynamic shipping calculator for FBM and eBay
+  if (shippingCost === undefined) {
+    // Use dynamic shipping calculator for all platforms
     const shippingRate = calculateShippingCost(bookWeight, shippingCarrier);
     shippingCost = shippingRate.cost;
-  } else if (shippingCost === undefined) {
-    shippingCost = 0; // FBA handles shipping
   }
 
   const fees = PLATFORM_FEES[platform];
@@ -128,21 +102,16 @@ export function calculateProfit(params: CalculateProfitParams): ProfitCalculatio
   // Calculate commission
   const commissionFee = salePrice * fees.commission;
 
-  // Calculate fulfillment fee (weight-based for FBA)
-  let fulfillmentFee = fees.fulfillment;
-  if (platform === "amazon-fba") {
-    fulfillmentFee = calculateFBAFulfillmentFee(bookWeight);
-  }
+  // Calculate fulfillment fee
+  const fulfillmentFee = fees.fulfillment;
 
   const storageFee = fees.storage;
   const closingFee = fees.closingFee;
 
-  // For FBA, shipping and packaging to customer are included in fulfillment fee
-  const actualShippingCost = platform === "amazon-fba" ? 0 : shippingCost;
-  const actualPackagingCost = platform === "amazon-fba" ? 0 : packagingCost;
-
-  // For FBA, add inbound shipping cost (sending to Amazon warehouse)
-  const actualInboundShipping = platform === "amazon-fba" ? inboundShippingCost : 0;
+  // All platforms handle their own shipping
+  const actualShippingCost = shippingCost;
+  const actualPackagingCost = packagingCost;
+  const actualInboundShipping = 0; // Not applicable for FBM/eBay
 
   const totalFees = commissionFee + fulfillmentFee + storageFee + closingFee;
   const totalCosts = purchaseCost + actualShippingCost + actualPackagingCost + actualInboundShipping;
@@ -176,7 +145,7 @@ export function calculateProfitAllPlatforms(
   purchaseCost: number,
   bookWeight: number = 0.3
 ): Record<Platform, ProfitCalculation> {
-  const platforms: Platform[] = ["amazon-fba", "amazon-fbm", "ebay"];
+  const platforms: Platform[] = ["amazon-fbm", "ebay"];
 
   const results: Partial<Record<Platform, ProfitCalculation>> = {};
 
@@ -187,8 +156,7 @@ export function calculateProfitAllPlatforms(
       purchaseCost,
       bookWeight,
       // Dynamic shipping calculated automatically based on weight
-      packagingCost: platform !== "amazon-fba" ? 0.50 : 0,
-      inboundShippingCost: platform === "amazon-fba" ? 0.20 : 0,
+      packagingCost: 0.50, // Standard packaging cost for all platforms
     });
   }
 
@@ -205,7 +173,7 @@ export function getBestPlatform(
 ): { platform: Platform; calculation: ProfitCalculation } {
   const allCalculations = calculateProfitAllPlatforms(salePrice, purchaseCost, bookWeight);
 
-  let bestPlatform: Platform = "amazon-fba";
+  let bestPlatform: Platform = "amazon-fbm";
   let bestROI = -Infinity;
 
   for (const [platform, calc] of Object.entries(allCalculations) as [Platform, ProfitCalculation][]) {

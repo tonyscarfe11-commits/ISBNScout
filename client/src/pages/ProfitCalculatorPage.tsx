@@ -18,7 +18,7 @@ export default function ProfitCalculatorPage() {
     window.scrollTo(0, 0);
   }, []);
 
-  const [platform, setPlatform] = useState<string>("amazon-fba");
+  const [platform, setPlatform] = useState<string>("amazon-fbm");
   const [salePrice, setSalePrice] = useState<string>("20.00");
   const [purchaseCost, setPurchaseCost] = useState<string>("3.00");
   const [shippingCost, setShippingCost] = useState<string>("0.00");
@@ -27,14 +27,6 @@ export default function ProfitCalculatorPage() {
 
   // Platform fee structures
   const platformFees = {
-    "amazon-fba": {
-      name: "Amazon FBA",
-      commission: 0.15, // 15%
-      fulfillment: 2.50,
-      storage: 0.50,
-      closingFee: 0,
-      description: "15% commission + fulfillment + storage fees",
-    },
     "amazon-fbm": {
       name: "Amazon FBM",
       commission: 0.15, // 15%
@@ -57,11 +49,10 @@ export default function ProfitCalculatorPage() {
   const calculateProfit = () => {
     const price = parseFloat(salePrice) || 0;
     const cost = parseFloat(purchaseCost) || 0;
-    // For FBA, shipping and packaging to customer are included in fulfillment fee
-    const shipping = platform === "amazon-fba" ? 0 : (parseFloat(shippingCost) || 0);
-    const packaging = platform === "amazon-fba" ? 0 : (parseFloat(packagingCost) || 0);
-    // For FBA, add inbound shipping cost (sending to Amazon warehouse)
-    const inboundShipping = platform === "amazon-fba" ? (parseFloat(inboundShippingCost) || 0) : 0;
+    // All platforms handle their own shipping
+    const shipping = parseFloat(shippingCost) || 0;
+    const packaging = parseFloat(packagingCost) || 0;
+    const inboundShipping = 0; // Not applicable for FBM/eBay
 
     const fees = platformFees[platform as keyof typeof platformFees];
 
@@ -128,7 +119,6 @@ export default function ProfitCalculatorPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="amazon-fba">Amazon FBA</SelectItem>
                     <SelectItem value="amazon-fbm">Amazon FBM</SelectItem>
                     <SelectItem value="ebay">eBay</SelectItem>
                   </SelectContent>
@@ -167,59 +157,37 @@ export default function ProfitCalculatorPage() {
                 </p>
               </div>
 
-              {/* Inbound Shipping (for FBA only) */}
-              {platform === "amazon-fba" && (
-                <div className="space-y-2">
-                  <Label htmlFor="inbound-shipping">Shipping to Amazon (£/book)</Label>
-                  <Input
-                    id="inbound-shipping"
-                    type="number"
-                    step="0.01"
-                    value={inboundShippingCost}
-                    onChange={(e) => setInboundShippingCost(e.target.value)}
-                    placeholder="0.20"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Cost per book to ship to Amazon warehouse (e.g. £10 for 50 books = £0.20)
-                  </p>
-                </div>
-              )}
+              {/* Shipping Cost */}
+              <div className="space-y-2">
+                <Label htmlFor="shipping-cost">Shipping Cost (£)</Label>
+                <Input
+                  id="shipping-cost"
+                  type="number"
+                  step="0.01"
+                  value={shippingCost}
+                  onChange={(e) => setShippingCost(e.target.value)}
+                  placeholder="0.00"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Royal Mail or courier fees
+                </p>
+              </div>
 
-              {/* Shipping Cost (for FBM/eBay) */}
-              {platform !== "amazon-fba" && (
-                <div className="space-y-2">
-                  <Label htmlFor="shipping-cost">Shipping Cost (£)</Label>
-                  <Input
-                    id="shipping-cost"
-                    type="number"
-                    step="0.01"
-                    value={shippingCost}
-                    onChange={(e) => setShippingCost(e.target.value)}
-                    placeholder="0.00"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Royal Mail or courier fees
-                  </p>
-                </div>
-              )}
-
-              {/* Packaging Cost (only for FBM/eBay) */}
-              {platform !== "amazon-fba" && (
-                <div className="space-y-2">
-                  <Label htmlFor="packaging-cost">Packaging Cost (£)</Label>
-                  <Input
-                    id="packaging-cost"
-                    type="number"
-                    step="0.01"
-                    value={packagingCost}
-                    onChange={(e) => setPackagingCost(e.target.value)}
-                    placeholder="0.50"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Boxes, bubble wrap, labels (Amazon FBA includes this)
-                  </p>
-                </div>
-              )}
+              {/* Packaging Cost */}
+              <div className="space-y-2">
+                <Label htmlFor="packaging-cost">Packaging Cost (£)</Label>
+                <Input
+                  id="packaging-cost"
+                  type="number"
+                  step="0.01"
+                  value={packagingCost}
+                  onChange={(e) => setPackagingCost(e.target.value)}
+                  placeholder="0.50"
+                />
+                <p className="text-xs text-muted-foreground">
+                  Boxes, bubble wrap, labels
+                </p>
+              </div>
 
               <Button
                 className="w-full mt-4"

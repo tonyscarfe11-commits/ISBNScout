@@ -87,7 +87,6 @@ scenarios.forEach((book, index) => {
 
   // Format and display each platform
   const platforms = [
-    { key: 'amazon-fba', name: 'Amazon FBA' },
     { key: 'amazon-fbm', name: 'Amazon FBM' },
     { key: 'ebay', name: 'eBay' }
   ];
@@ -101,7 +100,6 @@ scenarios.forEach((book, index) => {
     }
 
     const isBest = calc.roi === Math.max(
-      profits['amazon-fba'].roi,
       profits['amazon-fbm'].roi,
       profits['ebay'].roi
     );
@@ -184,7 +182,6 @@ let totalPotentialProfit = 0;
 scenarios.forEach(book => {
   const profits = calculateProfitAllPlatforms(book.sellPrice, book.buyPrice, book.weight);
   const bestProfit = Math.max(
-    profits['amazon-fba'].netProfit,
     profits['amazon-fbm'].netProfit,
     profits['ebay'].netProfit
   );

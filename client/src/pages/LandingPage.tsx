@@ -35,7 +35,7 @@ export default function LandingPage() {
     {
       icon: TrendingUp,
       title: "Real-Time Market Pricing",
-      description: "Know exactly what a book is worth before you buy it. Our system pulls live pricing data from Amazon (FBA & FBM) and eBay simultaneously, showing you current market values, recent sold prices, and demand trends. Make informed buying decisions and never overpay again.",
+      description: "Know exactly what a book is worth before you buy it. Our system pulls live pricing data from Amazon and eBay simultaneously, showing you current market values, recent sold prices, and demand trends. Make informed buying decisions and never overpay again.",
     },
     {
       icon: Sparkles,
@@ -45,7 +45,7 @@ export default function LandingPage() {
     {
       icon: Zap,
       title: "Multi-Platform Quick Listing",
-      description: "Post to Amazon (FBA & FBM) and eBay simultaneously with a single click. The system auto-fills all required fields, formats descriptions correctly for each platform, and handles technical requirements like FBA prep instructions. Save hours on data entry and focus on sourcing more inventory.",
+      description: "Post to Amazon and eBay simultaneously with a single click. The system auto-fills all required fields, formats descriptions correctly for each platform, and handles all technical requirements. Save hours on data entry and focus on sourcing more inventory.",
     },
     {
       icon: BarChart3,
@@ -62,7 +62,7 @@ export default function LandingPage() {
   const testimonials = [
     {
       name: "Sarah Johnson",
-      role: "Full-Time Amazon FBA Seller • £8K/month",
+      role: "Full-Time Book Seller • £8K/month",
       content: "ISBNScout has completely transformed my book business. The AI photo recognition is incredibly accurate - I can scan an entire car boot sale in under an hour. I went from listing 50 books a week to over 200, and my monthly revenue tripled. The offline mode is a game-changer at charity shops with no signal.",
       rating: 5,
     },

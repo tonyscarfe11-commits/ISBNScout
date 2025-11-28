@@ -61,12 +61,12 @@ export default function BlogPost1() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">3. Use Real-Time Pricing Data</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Never rely on gut feeling. Apps like ISBNScout show you current Amazon FBA, FBM, and eBay prices in seconds. Check both "Buy Now" prices and recent sold listings. A book listed at £50 but last sold for £12 isn't actually worth £50.
+            Never rely on gut feeling. Apps like ISBNScout show you current Amazon and eBay prices in seconds. Check both "Buy Now" prices and recent sold listings. A book listed at £50 but last sold for £12 isn't actually worth £50.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">4. Calculate All Your Costs</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Amazon FBA fees average 35-40% of your sale price. eBay takes 12.8% + £0.30. Factor in your purchase price, petrol, packaging, and prep time. Use the 3x rule: if you can't sell it for 3x your cost, it's probably not worth your time.
+            Amazon fees are 15% commission plus shipping costs. eBay takes 12.8% + £0.30. Factor in your purchase price, petrol, packaging, and prep time. Use the 3x rule: if you can't sell it for 3x your cost, it's probably not worth your time.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">5. Master the Art of Negotiation</h2>

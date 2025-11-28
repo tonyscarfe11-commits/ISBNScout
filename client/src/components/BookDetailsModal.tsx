@@ -58,7 +58,7 @@ export function BookDetailsModal({
   onList,
 }: BookDetailsModalProps) {
   const [yourCost, setYourCost] = useState(book?.yourCost?.toString() || "");
-  const [selectedPlatform, setSelectedPlatform] = useState<Platform>("amazon-fba");
+  const [selectedPlatform, setSelectedPlatform] = useState<Platform>("amazon-fbm");
   const [showComparison, setShowComparison] = useState(false);
 
   if (!book) return null;
@@ -195,7 +195,6 @@ export function BookDetailsModal({
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="amazon-fba">Amazon FBA</SelectItem>
                     <SelectItem value="amazon-fbm">Amazon FBM</SelectItem>
                     <SelectItem value="ebay">eBay</SelectItem>
                   </SelectContent>

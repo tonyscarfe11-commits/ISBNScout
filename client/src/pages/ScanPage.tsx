@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { ScannerInterface } from "@/components/ScannerInterface";
+import { BatchScanner } from "@/components/BatchScanner";
 import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -659,6 +660,34 @@ export default function ScanPage() {
         <ScannerInterface
           onIsbnScan={handleIsbnScan}
           onCoverScan={handleCoverScan}
+        />
+
+        {/* Batch Scanner */}
+        <BatchScanner
+          onComplete={(results) => {
+            // Add successful scans to recent scans
+            const successfulBooks = results
+              .filter(r => r.status === 'success' && r.title)
+              .map(r => ({
+                id: 0,
+                isbn: r.isbn,
+                title: r.title || 'Unknown',
+                author: r.author || 'Unknown',
+                ebayPrice: r.ebayPrice,
+                amazonPrice: r.amazonPrice,
+                status: 'pending' as const,
+              }));
+
+            if (successfulBooks.length > 0) {
+              setRecentScans(prev => [...successfulBooks, ...prev].slice(0, 10));
+              refreshScanLimits(); // Refresh limits after batch scan
+
+              toast({
+                title: "Batch scan complete",
+                description: `Added ${successfulBooks.length} books to your library`,
+              });
+            }
+          }}
         />
 
         {/* AI Recognition Status */}

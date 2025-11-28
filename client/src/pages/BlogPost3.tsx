@@ -32,7 +32,7 @@ export default function BlogPost3() {
 
       <article className="max-w-3xl mx-auto px-4 py-16">
         <Badge variant="secondary" className="mb-4">Platforms</Badge>
-        <h1 className="text-4xl font-bold mb-4">Amazon FBA vs FBM vs eBay: Which Platform is Right for You?</h1>
+        <h1 className="text-4xl font-bold mb-4">Amazon FBM vs eBay: Which Platform is Right for You?</h1>
 
         <div className="flex items-center gap-4 text-sm text-muted-foreground mb-8">
           <div className="flex items-center gap-1">
@@ -47,39 +47,7 @@ export default function BlogPost3() {
 
         <div className="prose prose-slate max-w-none space-y-6">
           <p className="text-lg text-muted-foreground leading-relaxed">
-            Choosing the right platform can make or break your book business. Each option - Amazon FBA, Amazon FBM, and eBay - has distinct advantages and trade-offs. This comprehensive guide breaks down fees, effort, and profitability to help you decide.
-          </p>
-
-          <h2 className="text-2xl font-bold mt-8 mb-4">Amazon FBA (Fulfilled by Amazon)</h2>
-
-          <Card className="p-6 my-6">
-            <h3 className="text-lg font-semibold mb-3">How It Works</h3>
-            <p className="text-muted-foreground">
-              You send books in bulk to Amazon's warehouses. They store inventory, pack orders, ship to customers, and handle returns. You pay storage fees (£0.42-£1.05 per item/month) plus fulfillment fees (£1.86-£3.74 per item).
-            </p>
-          </Card>
-
-          <h3 className="text-xl font-bold mb-3">Pros:</h3>
-          <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-            <li><strong>Prime eligibility:</strong> 82% of Amazon shoppers have Prime. Your books appear first in search results and convert 3x better.</li>
-            <li><strong>Zero fulfillment work:</strong> No packing, no post office trips, no customer service. Amazon handles everything.</li>
-            <li><strong>Scalability:</strong> Send 1,000 books as easily as 10. Storage and logistics handled professionally.</li>
-            <li><strong>Trust factor:</strong> "Fulfilled by Amazon" badge increases conversion rates by 30-40%.</li>
-            <li><strong>Better margins on higher-value books:</strong> Fees are flat regardless of book price, so £30+ books are very profitable.</li>
-          </ul>
-
-          <h3 className="text-xl font-bold mb-3 mt-6">Cons:</h3>
-          <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-            <li><strong>High fees:</strong> Total fees average 35-40% of sale price (15% commission + storage + fulfillment).</li>
-            <li><strong>Minimum profitability threshold:</strong> Not worth it for books under £8-10 after fees.</li>
-            <li><strong>Storage costs accumulate:</strong> Slow-moving inventory costs you monthly. Books over 365 days incur extra fees.</li>
-            <li><strong>Prep requirements:</strong> Books need proper labeling, bagging for good condition, removal of stickers.</li>
-            <li><strong>Inventory risk:</strong> Amazon occasionally loses or damages items. Insurance claims are time-consuming.</li>
-          </ul>
-
-          <h3 className="text-xl font-bold mb-3 mt-6">Best For:</h3>
-          <p className="text-muted-foreground">
-            Sellers focused on higher-value books (£10+), high volume operations, and those wanting hands-off fulfillment. Ideal if you process 100+ books monthly and value time over maximizing per-unit profit.
+            Choosing the right platform can make or break your book business. Amazon FBM and eBay each have distinct advantages and trade-offs. This comprehensive guide breaks down fees, effort, and profitability to help you decide which platform works best for your selling style.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Amazon FBM (Fulfilled by Merchant)</h2>
@@ -93,25 +61,25 @@ export default function BlogPost3() {
 
           <h3 className="text-xl font-bold mb-3">Pros:</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-            <li><strong>Lower fees:</strong> Only 15% commission (vs 35-40% for FBA). Significantly better margins per book.</li>
+            <li><strong>Lower fees:</strong> Only 15% commission. Significantly better margins per book.</li>
             <li><strong>No storage costs:</strong> Keep inventory at home. No monthly fees eating into profits.</li>
-            <li><strong>Profitable on any price point:</strong> Even £3-5 books can be profitable without FBA fees.</li>
+            <li><strong>Profitable on any price point:</strong> Even £3-5 books can be profitable with these lower fees.</li>
             <li><strong>Full inventory control:</strong> Check condition before shipping, bundle orders, include personalized notes.</li>
             <li><strong>Better for rare/collectible books:</strong> You handle packaging to ensure safe delivery of valuable items.</li>
           </ul>
 
           <h3 className="text-xl font-bold mb-3 mt-6">Cons:</h3>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4">
-            <li><strong>Lower visibility:</strong> No Prime badge. Your listings appear below FBA listings in search results.</li>
+            <li><strong>Lower visibility:</strong> No Prime badge. Your listings may appear lower in search results.</li>
             <li><strong>Manual fulfillment:</strong> You pack every order, print labels, and make post office trips.</li>
-            <li><strong>Slower sell-through:</strong> FBM books typically take 2-3x longer to sell than identical FBA listings.</li>
+            <li><strong>Variable sell-through:</strong> Fulfillment by merchant can affect conversion rates.</li>
             <li><strong>Customer service:</strong> You handle all inquiries, returns, and issues directly.</li>
             <li><strong>Shipping costs:</strong> Royal Mail adds £2-4 per book, eating into the fee savings.</li>
           </ul>
 
           <h3 className="text-xl font-bold mb-3 mt-6">Best For:</h3>
           <p className="text-muted-foreground">
-            Part-time sellers, those with lower-value inventory (£5-10 range), sellers of rare/collectible books, or anyone wanting to test Amazon before committing to FBA. Also good for maintaining control and maximizing margin per book.
+            Part-time sellers, those with lower-value inventory (£5-10 range), sellers of rare/collectible books, or anyone wanting to maintain control and maximize margin per book. Ideal for charity shop flippers and individual sellers.
           </p>
 
           <h2 className="text-2xl font-bold mt-8 mb-4">eBay</h2>
@@ -153,13 +121,6 @@ export default function BlogPost3() {
             <p className="text-sm text-muted-foreground mb-4">Example: £20 book sale</p>
             <div className="space-y-3">
               <div className="border-b pb-2">
-                <p className="font-semibold">Amazon FBA</p>
-                <p className="text-muted-foreground text-sm">Commission: £3.00 (15%)</p>
-                <p className="text-muted-foreground text-sm">Fulfillment: £2.50</p>
-                <p className="text-muted-foreground text-sm">Storage (avg): £0.50</p>
-                <p className="font-bold mt-1">Net: £14.00 (70%)</p>
-              </div>
-              <div className="border-b pb-2">
                 <p className="font-semibold">Amazon FBM</p>
                 <p className="text-muted-foreground text-sm">Commission: £3.00 (15%)</p>
                 <p className="text-muted-foreground text-sm">Shipping: £2.50</p>
@@ -176,14 +137,14 @@ export default function BlogPost3() {
 
           <h2 className="text-2xl font-bold mt-8 mb-4">Multi-Platform Strategy: The Smart Approach</h2>
           <p className="text-muted-foreground leading-relaxed">
-            Most successful sellers don't choose one platform - they use all three strategically:
+            Most successful sellers use both platforms strategically:
           </p>
           <ul className="list-disc list-inside text-muted-foreground space-y-2 ml-4 mt-4">
-            <li><strong>High-value (£15+):</strong> Amazon FBA for volume and Prime customers</li>
+            <li><strong>High-value (£15+):</strong> Amazon FBM for volume and trusted platform</li>
             <li><strong>Mid-range (£8-15):</strong> Amazon FBM or eBay depending on rarity</li>
             <li><strong>Low-value (£3-8):</strong> eBay for better margins</li>
             <li><strong>Collectibles/Signed:</strong> eBay for storytelling and global reach</li>
-            <li><strong>Fast movers:</strong> Amazon FBA for quick turnover</li>
+            <li><strong>Common titles:</strong> Amazon FBM for higher traffic and quick sales</li>
           </ul>
 
           <p className="text-muted-foreground leading-relaxed mt-4">
@@ -193,7 +154,7 @@ export default function BlogPost3() {
           <div className="bg-primary/5 p-6 rounded-lg mt-8">
             <h3 className="text-xl font-bold mb-3">List Smarter Across All Platforms</h3>
             <p className="text-muted-foreground mb-4">
-              ISBNScout automatically optimizes listings for Amazon FBA, FBM, and eBay. One-click cross-posting with platform-specific titles, keywords, and pricing strategies.
+              ISBNScout automatically optimizes listings for Amazon FBM and eBay. One-click cross-posting with platform-specific titles, keywords, and pricing strategies.
             </p>
             <Button onClick={() => setLocation("/auth")}>
               Start Multi-Platform Selling Today

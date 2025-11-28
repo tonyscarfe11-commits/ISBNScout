@@ -26,6 +26,7 @@ import {
   Loader2,
   ScanBarcode,
   FileText,
+  Download,
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
@@ -242,6 +243,55 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
     startScanning();
   };
 
+  const exportToCSV = () => {
+    if (queue.length === 0) {
+      toast({
+        title: "Nothing to export",
+        description: "Add some ISBNs to the queue first",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // CSV headers
+    const headers = ["ISBN", "Status", "Title", "Author", "eBay Price", "Amazon Price", "Error"];
+
+    // CSV rows
+    const rows = queue.map((item) => [
+      item.isbn,
+      item.status,
+      item.title || "",
+      item.author || "",
+      item.ebayPrice ? `£${item.ebayPrice.toFixed(2)}` : "",
+      item.amazonPrice ? `£${item.amazonPrice.toFixed(2)}` : "",
+      item.error || "",
+    ]);
+
+    // Combine headers and rows
+    const csvContent = [
+      headers.join(","),
+      ...rows.map((row) =>
+        row.map((cell) => `"${cell.toString().replace(/"/g, '""')}"`).join(",")
+      ),
+    ].join("\n");
+
+    // Create download link
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.setAttribute("href", url);
+    link.setAttribute("download", `batch-scan-${new Date().toISOString().slice(0, 10)}.csv`);
+    link.style.visibility = "hidden";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast({
+      title: "CSV exported",
+      description: `Exported ${queue.length} items to CSV`,
+    });
+  };
+
   const progress =
     queue.length > 0
       ? (queue.filter((q) => q.status === "success" || q.status === "error")
@@ -355,15 +405,25 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
                 Queue ({queue.length} items)
               </h3>
               {queue.length > 0 && !isScanning && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={clearQueue}
-                  disabled={isScanning}
-                >
-                  <X className="h-4 w-4 mr-1" />
-                  Clear All
-                </Button>
+                <div className="flex gap-2">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={exportToCSV}
+                  >
+                    <Download className="h-4 w-4 mr-1" />
+                    Export CSV
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearQueue}
+                    disabled={isScanning}
+                  >
+                    <X className="h-4 w-4 mr-1" />
+                    Clear All
+                  </Button>
+                </div>
               )}
             </div>
 
