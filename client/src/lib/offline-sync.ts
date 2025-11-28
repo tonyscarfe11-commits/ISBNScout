@@ -5,6 +5,8 @@
  * Works with HybridStorage on the backend
  */
 
+import { getScanQueue } from './scan-queue';
+
 export class OfflineSyncService {
   private isOnline: boolean = navigator.onLine;
   private listeners: Array<(status: OfflineStatus) => void> = [];
@@ -54,14 +56,27 @@ export class OfflineSyncService {
   private async triggerSync() {
     try {
       console.log("[OfflineSync] Triggering background sync...");
+
+      // 1. Process local scan queue first
+      const scanQueue = getScanQueue();
+      const queueResult = await scanQueue.processQueue();
+      console.log(`[OfflineSync] Processed scan queue: ${queueResult.synced} synced, ${queueResult.failed} failed`);
+
+      // 2. Then trigger server-side sync (if using HybridStorage)
       const response = await fetch("/api/sync/trigger", {
         method: "POST",
       });
 
       if (response.ok) {
         const result = await response.json();
-        console.log(`[OfflineSync] Synced ${result.count} items`);
-        this.notifyListeners(result);
+        console.log(`[OfflineSync] Server synced ${result.count} items`);
+
+        // Combine results for notification
+        const combinedResult = {
+          ...result,
+          count: result.count + queueResult.synced,
+        };
+        this.notifyListeners(combinedResult);
       }
     } catch (error) {
       console.warn("[OfflineSync] Sync failed:", error);
@@ -69,9 +84,10 @@ export class OfflineSyncService {
   }
 
   getStatus(): OfflineStatus {
+    const scanQueue = getScanQueue();
     return {
       isOnline: this.isOnline,
-      pendingSync: 0, // Will be updated by server
+      pendingSync: scanQueue.count(), // Count from local queue + will be updated by server
       lastSync: null,
     };
   }
@@ -86,9 +102,10 @@ export class OfflineSyncService {
   }
 
   private notifyListeners(serverStatus?: any) {
+    const scanQueue = getScanQueue();
     const status: OfflineStatus = {
       isOnline: this.isOnline,
-      pendingSync: serverStatus?.pendingSync || 0,
+      pendingSync: scanQueue.count() + (serverStatus?.pendingSync || 0),
       lastSync: serverStatus?.lastSync
         ? new Date(serverStatus.lastSync)
         : null,

@@ -482,6 +482,24 @@ export class HybridStorage implements IStorage {
       .get() as any;
     return result?.lastSync ? new Date(result.lastSync) : null;
   }
+
+  // Wrapper method for sync status API endpoint
+  getSyncQueueStatus(): { pendingCount: number; lastSync: Date | null } {
+    return {
+      pendingCount: this.getPendingSyncCount(),
+      lastSync: this.getLastSyncTime(),
+    };
+  }
+
+  // Wrapper method for manual sync trigger API endpoint
+  async triggerSync(): Promise<{ syncedCount: number }> {
+    const pendingBefore = this.getPendingSyncCount();
+    await this.forceSyncNow();
+    const pendingAfter = this.getPendingSyncCount();
+    return {
+      syncedCount: pendingBefore - pendingAfter,
+    };
+  }
 }
 
 interface SyncOperation {

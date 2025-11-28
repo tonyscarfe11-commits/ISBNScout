@@ -15,12 +15,17 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap, Library, Camera } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
+import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
+import { getScanQueue } from "@/lib/scan-queue";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [isOnline] = useState(true);
-  const [pendingCount] = useState(0);
+  const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>({
+    isOnline: navigator.onLine,
+    pendingSync: 0,
+    lastSync: null,
+  });
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
 
@@ -47,6 +52,22 @@ export default function ScanPage() {
   });
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [currentTier, setCurrentTier] = useState("trial");
+
+  // Set up offline sync service
+  useEffect(() => {
+    const syncService = getOfflineSyncService();
+
+    // Update status immediately
+    setOfflineStatus(syncService.getStatus());
+
+    // Subscribe to status changes
+    const unsubscribe = syncService.onStatusChange((status) => {
+      setOfflineStatus(status);
+    });
+
+    // Cleanup on unmount
+    return unsubscribe;
+  }, []);
 
   useEffect(() => {
     localStorage.setItem("bluetoothScannerEnabled", bluetoothEnabled.toString());
@@ -93,6 +114,27 @@ export default function ScanPage() {
 
   // Helper to save scan and handle limit errors
   const saveScan = async (isbn: string, bookData: any) => {
+    // If offline, queue the scan instead
+    if (!offlineStatus.isOnline) {
+      const scanQueue = getScanQueue();
+      scanQueue.enqueue({
+        isbn,
+        title: bookData.title || `Book with ISBN ${isbn}`,
+        author: bookData.author || "Unknown Author",
+      });
+
+      toast({
+        title: "Scan Queued",
+        description: "Will sync when back online",
+      });
+
+      // Update offline status to reflect new queue count
+      const syncService = getOfflineSyncService();
+      setOfflineStatus(syncService.getStatus());
+
+      return true; // Return true so the UI updates
+    }
+
     try {
       const response = await fetch("/api/books", {
         method: "POST",
@@ -122,6 +164,28 @@ export default function ScanPage() {
       return true;
     } catch (error: any) {
       console.error("Save scan error:", error);
+
+      // If save failed due to network error, queue it instead
+      if (!navigator.onLine || error.message.includes('fetch')) {
+        const scanQueue = getScanQueue();
+        scanQueue.enqueue({
+          isbn,
+          title: bookData.title || `Book with ISBN ${isbn}`,
+          author: bookData.author || "Unknown Author",
+        });
+
+        toast({
+          title: "Scan Queued",
+          description: "Network error - will sync when connection restored",
+        });
+
+        // Update offline status
+        const syncService = getOfflineSyncService();
+        setOfflineStatus(syncService.getStatus());
+
+        return true; // Return true so the UI updates
+      }
+
       toast({
         title: "Save Failed",
         description: error.message || "Could not save scan",
@@ -489,13 +553,31 @@ export default function ScanPage() {
     setLocation("/listings/new");
   };
 
+  // Handle manual sync trigger
+  const handleSync = async () => {
+    const syncService = getOfflineSyncService();
+    try {
+      await syncService.forceSyncNow();
+      toast({
+        title: "Sync Complete",
+        description: `Synced ${offlineStatus.pendingSync} items`,
+      });
+    } catch (error: any) {
+      toast({
+        title: "Sync Failed",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
   return (
     <div className="min-h-screen pb-20">
       <AppHeader />
       <OfflineBanner
-        isOnline={isOnline}
-        pendingCount={pendingCount}
-        onSync={() => console.log("Syncing...")}
+        isOnline={offlineStatus.isOnline}
+        pendingCount={offlineStatus.pendingSync}
+        onSync={handleSync}
       />
 
       <div className="max-w-2xl mx-auto p-4 space-y-6">

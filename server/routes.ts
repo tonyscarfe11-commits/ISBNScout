@@ -1623,6 +1623,56 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // ======= SYNC ENDPOINTS =======
+
+  // Get sync status (pending operations count, last sync time)
+  app.get("/api/sync/status", (req, res) => {
+    try {
+      // Check if storage has sync queue (only HybridStorage does)
+      if (typeof (storage as any).getSyncQueueStatus === 'function') {
+        const status = (storage as any).getSyncQueueStatus();
+        res.json({
+          pendingSync: status.pendingCount || 0,
+          lastSync: status.lastSync || null,
+        });
+      } else {
+        // If not using hybrid storage, just return empty status
+        res.json({
+          pendingSync: 0,
+          lastSync: null,
+        });
+      }
+    } catch (error: any) {
+      console.error("[Sync] Status error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  // Manually trigger a sync
+  app.post("/api/sync/trigger", async (req, res) => {
+    try {
+      // Check if storage has sync functionality (only HybridStorage does)
+      if (typeof (storage as any).triggerSync === 'function') {
+        const result = await (storage as any).triggerSync();
+        res.json({
+          success: true,
+          count: result.syncedCount || 0,
+          message: "Sync completed successfully",
+        });
+      } else {
+        // If not using hybrid storage, just return success with 0 count
+        res.json({
+          success: true,
+          count: 0,
+          message: "No sync required (not using offline mode)",
+        });
+      }
+    } catch (error: any) {
+      console.error("[Sync] Trigger error:", error);
+      res.status(500).json({ error: error.message });
+    }
+  });
+
   // ======= OFFLINE PRICE LOOKUP ENDPOINTS =======
 
   // Offline price lookup (works with cached data)
