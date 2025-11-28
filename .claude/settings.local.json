@@ -27,7 +27,9 @@
       "Bash(mv:*)",
       "Bash(rmdir:*)",
       "Bash(rm:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "WebFetch(domain:www.isbnscout.com)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

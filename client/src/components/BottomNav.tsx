@@ -1,13 +1,11 @@
-import { BarChart3, Camera, Clock, Package, Settings, Archive } from "lucide-react";
+import { Camera, Clock, Settings, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
-// Focus on core features only - "Go Narrow, Go Deep" strategy
+// Core scouting features only - simple and focused
 const navItems = [
+  { path: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/app/scan", icon: Camera, label: "Scan" },
   { path: "/app/history", icon: Clock, label: "History" },
-  // Advanced features hidden for now - will add back as Pro tier features
-  // { path: "/app/inventory", icon: Archive, label: "Inventory" },
-  // { path: "/app/listings", icon: Package, label: "Listings" },
   { path: "/app/settings", icon: Settings, label: "Settings" },
 ];
 

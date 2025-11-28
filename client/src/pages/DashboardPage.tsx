@@ -19,7 +19,6 @@ import { getSubscriptionLimits } from "@shared/subscription-limits";
 
 interface DashboardStats {
   scansThisMonth: number;
-  scansLimit: number;
   totalInventory: number;
   listedBooks: number;
   soldThisMonth: number;
@@ -47,7 +46,6 @@ export default function DashboardPage() {
   const [userPlan, setUserPlan] = useState("basic");
   const [stats, setStats] = useState<DashboardStats>({
     scansThisMonth: 0,
-    scansLimit: 100,
     totalInventory: 0,
     listedBooks: 0,
     soldThisMonth: 0,
@@ -367,14 +365,6 @@ export default function DashboardPage() {
               <Button
                 variant="outline"
                 className="w-full justify-start"
-                onClick={() => setLocation("/app/listings")}
-              >
-                <Package className="h-4 w-4 mr-2" />
-                Manage Listings
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full justify-start"
                 onClick={() => setLocation("/app/history")}
               >
                 <Clock className="h-4 w-4 mr-2" />
@@ -394,7 +384,7 @@ export default function DashboardPage() {
                 onClick={() => setLocation("/subscription")}
               >
                 <TrendingUp className="h-4 w-4 mr-2" />
-                Upgrade Plan
+                View Plans
               </Button>
             </div>
 

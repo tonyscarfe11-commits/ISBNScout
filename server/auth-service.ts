@@ -28,12 +28,22 @@ export class AuthService {
     // Hash password
     const hashedPassword = await this.hashPassword(password);
 
-    // Create user
+    // Set up 14-day trial period
+    const now = new Date();
+    const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
+
+    // Create user with trial dates
     const user = await storage.createUser({
       username,
       email,
       password: hashedPassword,
-    });
+      subscriptionTier: 'trial',
+      subscriptionStatus: 'active',
+      trialStartedAt: now,
+      trialEndsAt: trialEnds,
+    } as any);
+
+    console.log(`[Auth] Created user ${username} with trial ending ${trialEnds.toISOString()}`);
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;

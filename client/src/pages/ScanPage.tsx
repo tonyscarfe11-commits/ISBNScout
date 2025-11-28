@@ -5,7 +5,6 @@ import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AppHeader } from "@/components/AppHeader";
-import { UpgradeModal } from "@/components/UpgradeModal";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
@@ -46,15 +45,6 @@ export default function ScanPage() {
   const [shelfResults, setShelfResults] = useState<any[]>([]);
   const [selectedBooks, setSelectedBooks] = useState<Set<number>>(new Set());
 
-  // Scan limit state
-  const [scanLimits, setScanLimits] = useState({
-    scansUsed: 0,
-    scansLimit: 10,
-    scansRemaining: 10,
-    percentUsed: 0,
-    isUnlimited: false,
-  });
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
   const [currentTier, setCurrentTier] = useState("trial");
 
   // Set up offline sync service
@@ -77,46 +67,24 @@ export default function ScanPage() {
     localStorage.setItem("bluetoothScannerEnabled", bluetoothEnabled.toString());
   }, [bluetoothEnabled]);
 
-  // Fetch scan limits on mount
+  // Fetch user tier on mount
   useEffect(() => {
-    const fetchScanLimits = async () => {
+    const fetchUser = async () => {
       try {
-        const [limitsResponse, userResponse] = await Promise.all([
-          fetch("/api/user/scan-limits", { credentials: 'include' }),
-          fetch("/api/user/me", { credentials: 'include' }),
-        ]);
-
-        if (limitsResponse.ok) {
-          const limits = await limitsResponse.json();
-          setScanLimits(limits);
-        }
-
+        const userResponse = await fetch("/api/user/me", { credentials: 'include' });
         if (userResponse.ok) {
           const user = await userResponse.json();
           setCurrentTier(user.subscriptionTier || "trial");
         }
       } catch (error) {
-        console.error("Failed to fetch scan limits:", error);
+        console.error("Failed to fetch user:", error);
       }
     };
 
-    fetchScanLimits();
+    fetchUser();
   }, []);
 
-  // Helper to refresh scan limits
-  const refreshScanLimits = async () => {
-    try {
-      const response = await fetch("/api/user/scan-limits", { credentials: 'include' });
-      if (response.ok) {
-        const limits = await response.json();
-        setScanLimits(limits);
-      }
-    } catch (error) {
-      console.error("Failed to refresh scan limits:", error);
-    }
-  };
-
-  // Helper to save scan and handle limit errors
+  // Helper to save scan and handle subscription errors
   const saveScan = async (isbn: string, bookData: any) => {
     // If offline, queue the scan instead
     if (!offlineStatus.isOnline) {
@@ -163,8 +131,6 @@ export default function ScanPage() {
         throw new Error("Failed to save scan");
       }
 
-      // Refresh scan limits after successful scan
-      await refreshScanLimits();
       return true;
     } catch (error: any) {
       console.error("Save scan error:", error);
@@ -683,97 +649,6 @@ export default function ScanPage() {
           </div>
         )}
 
-        {/* Scan Counter Banner */}
-        {!scanLimits.isUnlimited && currentTier !== "pro" && currentTier !== "enterprise" && (
-          <Card
-            className={`p-4 transition-colors ${
-              scanLimits.percentUsed >= 90
-                ? 'border-red-500 bg-gradient-to-r from-red-50 to-orange-50'
-                : scanLimits.percentUsed >= 70
-                ? 'border-orange-500 bg-gradient-to-r from-orange-50 to-yellow-50'
-                : 'border-primary/20 bg-gradient-to-r from-primary/5 to-blue-50'
-            }`}
-          >
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3 flex-1">
-                <div className={`flex h-10 w-10 items-center justify-center rounded-full ${
-                  scanLimits.percentUsed >= 90
-                    ? 'bg-red-100'
-                    : scanLimits.percentUsed >= 70
-                    ? 'bg-orange-100'
-                    : 'bg-primary/10'
-                }`}>
-                  <Zap className={`h-5 w-5 ${
-                    scanLimits.percentUsed >= 90
-                      ? 'text-red-600'
-                      : scanLimits.percentUsed >= 70
-                      ? 'text-orange-600'
-                      : 'text-primary'
-                  }`} />
-                </div>
-                <div className="flex-1">
-                  <div className="flex items-baseline gap-2 mb-1">
-                    <span className="text-lg font-bold">
-                      {scanLimits.scansRemaining}
-                    </span>
-                    <span className="text-sm text-muted-foreground">
-                      {currentTier === "trial" || currentTier === "free"
-                        ? "free scans remaining"
-                        : currentTier === "basic"
-                        ? "scans remaining (ISBN only)"
-                        : "scans remaining this month"}
-                    </span>
-                  </div>
-                  <Progress
-                    value={scanLimits.percentUsed}
-                    className={`h-2 ${
-                      scanLimits.percentUsed >= 90 ? 'bg-red-200' :
-                      scanLimits.percentUsed >= 70 ? 'bg-orange-200' : ''
-                    }`}
-                  />
-                  <p className="text-xs text-muted-foreground mt-1.5">
-                    {scanLimits.scansUsed} of {scanLimits.scansLimit} scans used
-                    {(currentTier === "trial" || currentTier === "free") && scanLimits.percentUsed >= 50 && (
-                      <span className="ml-1">
-                        • <button
-                          onClick={() => setLocation("/subscription")}
-                          className="text-primary font-medium underline hover:text-primary/80"
-                        >
-                          Upgrade to Pro for unlimited scans + AI
-                        </button>
-                      </span>
-                    )}
-                    {currentTier === "basic" && scanLimits.percentUsed >= 70 && (
-                      <span className="ml-1">
-                        • <button
-                          onClick={() => setLocation("/subscription")}
-                          className="text-primary font-medium underline hover:text-primary/80"
-                        >
-                          Upgrade to Pro for unlimited scans + AI
-                        </button>
-                      </span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              {(scanLimits.percentUsed >= 70 || currentTier === "trial" || currentTier === "free" || currentTier === "basic") && (
-                <Button
-                  onClick={() => setLocation("/subscription")}
-                  size="sm"
-                  variant={scanLimits.percentUsed >= 90 ? "destructive" : "default"}
-                  className={scanLimits.percentUsed < 90 ? "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700" : ""}
-                >
-                  {currentTier === "trial" || currentTier === "free"
-                    ? "Upgrade"
-                    : currentTier === "basic"
-                    ? "Upgrade to Pro"
-                    : "Get More"}
-                </Button>
-              )}
-            </div>
-          </Card>
-        )}
-
         <ScannerInterface
           onIsbnScan={handleIsbnScan}
           onCoverScan={handleCoverScan}
@@ -797,7 +672,6 @@ export default function ScanPage() {
 
             if (successfulBooks.length > 0) {
               setRecentScans(prev => [...successfulBooks, ...prev].slice(0, 10));
-              refreshScanLimits(); // Refresh limits after batch scan
 
               toast({
                 title: "Batch scan complete",
@@ -1051,14 +925,6 @@ export default function ScanPage() {
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
         onList={handleListFromModal}
-      />
-
-      <UpgradeModal
-        open={upgradeModalOpen}
-        onOpenChange={setUpgradeModalOpen}
-        scansUsed={scanLimits.scansUsed}
-        scansLimit={scanLimits.scansLimit}
-        currentTier={currentTier}
       />
 
       {/* PWA Install Prompt */}

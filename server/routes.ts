@@ -14,6 +14,7 @@ import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
 import { RepricingScheduler } from "./repricing-scheduler";
 import { requireAuth, getUserId } from "./middleware/auth";
+import { requireActiveSubscription } from "./middleware/subscription";
 import { scanLimitService } from "./services/scan-limit-service";
 import { z } from "zod";
 import express from "express";
@@ -261,6 +262,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
       console.error("Subscription verification error:", error);
       res.status(500).json({
         message: error.message || "Failed to verify subscription",
+        success: false,
+      });
+    }
+  });
+
+  // Create Stripe customer portal session
+  app.post("/api/subscription/portal", requireAuth, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+
+      if (!stripeService.isConfigured()) {
+        return res.status(503).json({
+          message: "Payment processing not configured.",
+          success: false,
+        });
+      }
+
+      // Get user's Stripe customer ID
+      const user = await authService.getUserById(userId);
+
+      if (!user?.stripeCustomerId) {
+        return res.status(400).json({
+          message: "No active subscription found",
+          success: false,
+        });
+      }
+
+      // Create portal session
+      const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+      const { url } = await stripeService.createPortalSession(
+        user.stripeCustomerId,
+        `${baseUrl}/subscription`
+      );
+
+      res.json({
+        success: true,
+        portalUrl: url,
+      });
+    } catch (error: any) {
+      console.error("Portal creation error:", error);
+      res.status(500).json({
+        message: error.message || "Failed to create portal session",
         success: false,
       });
     }
@@ -824,38 +867,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Lookup book pricing by ISBN (real-time API calls + caching)
-  // Note: No auth required - this is public pricing data lookup
-  app.post("/api/books/lookup-pricing", async (req, res) => {
+  // Requires auth + active subscription (trial or paid)
+  app.post("/api/books/lookup-pricing", requireAuth, requireActiveSubscription, async (req, res) => {
     try {
       const { isbn } = req.body;
 
       if (!isbn) {
         return res.status(400).json({ message: "ISBN is required" });
-      }
-
-      // Check trial/scan limits BEFORE processing
-      const { getUserIdentifier } = await import("./fingerprint");
-      const { getTrialService } = await import("./trial-service");
-
-      const { userId, fingerprint } = getUserIdentifier(req);
-      const trialService = getTrialService((storage as any).local || storage);
-
-      // Check if user can scan
-      const canScan = await trialService.canScan(userId, fingerprint);
-
-      if (!canScan) {
-        const trialStatus = trialService.getTrialStatus(fingerprint);
-        return res.status(403).json({
-          message: "Trial limit reached",
-          trialExpired: true,
-          scansUsed: trialStatus.scansUsed,
-          scansLimit: trialStatus.scansLimit,
-        });
-      }
-
-      // Record the scan (for anonymous users)
-      if (!userId) {
-        trialService.recordTrialScan(fingerprint);
       }
 
       console.log(`[PricingLookup] Looking up ISBN ${isbn}...`);
@@ -1037,31 +1055,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Create or update a book scan
-  app.post("/api/books", requireAuth, async (req, res) => {
+  app.post("/api/books", requireAuth, requireActiveSubscription, async (req, res) => {
     try {
       const userId = getUserId(req);
       const { isbn, title, author, ...otherData } = req.body;
 
       if (!isbn) {
         return res.status(400).json({ message: "ISBN is required" });
-      }
-
-      // Check scan limits
-      const user = await authService.getUserById(userId);
-      if (!user) {
-        return res.status(404).json({ message: "User not found" });
-      }
-
-      const limitService = scanLimitService(storage);
-      const canScan = await limitService.canScan(user);
-
-      if (!canScan.allowed) {
-        return res.status(403).json({
-          error: "scan_limit_reached",
-          message: canScan.message,
-          scansUsed: canScan.scansUsed,
-          scansLimit: canScan.scansLimit,
-        });
       }
 
       // Try to fetch book data from Google Books
@@ -1234,6 +1234,95 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       res.json(exportData);
     } catch (error: any) {
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Sync scans from client (offline queue) to server
+  app.post("/api/scans/sync", requireAuth, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { scans } = req.body;
+
+      if (!Array.isArray(scans)) {
+        return res.status(400).json({ message: "Scans must be an array" });
+      }
+
+      const results = {
+        success: 0,
+        failed: 0,
+        errors: [] as any[],
+      };
+
+      // Process each scan
+      for (const scan of scans) {
+        try {
+          const { isbn, title, author, ...otherData } = scan;
+
+          if (!isbn) {
+            results.failed++;
+            results.errors.push({ isbn: 'unknown', error: 'ISBN is required' });
+            continue;
+          }
+
+          // Create or update book scan
+          await storage.createBook({
+            ...scan,
+            userId,
+            createdAt: scan.createdAt ? new Date(scan.createdAt) : new Date(),
+          });
+
+          results.success++;
+        } catch (error: any) {
+          results.failed++;
+          results.errors.push({
+            isbn: scan?.isbn || 'unknown',
+            error: error.message
+          });
+        }
+      }
+
+      res.json({
+        success: true,
+        synced: results.success,
+        failed: results.failed,
+        errors: results.errors,
+      });
+    } catch (error: any) {
+      console.error("[Scans] Sync error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get scan history for the user
+  app.get("/api/scans/history", requireAuth, async (req, res) => {
+    try {
+      const userId = getUserId(req);
+      const { limit = 100, offset = 0 } = req.query;
+
+      // Get books as scan history
+      const books = await storage.getBooks(userId);
+
+      // Sort by creation date (most recent first) and paginate
+      const sortedBooks = books.sort((a, b) => {
+        const dateA = new Date(a.createdAt || 0).getTime();
+        const dateB = new Date(b.createdAt || 0).getTime();
+        return dateB - dateA;
+      });
+
+      const paginatedBooks = sortedBooks.slice(
+        Number(offset),
+        Number(offset) + Number(limit)
+      );
+
+      res.json({
+        scans: paginatedBooks,
+        total: books.length,
+        limit: Number(limit),
+        offset: Number(offset),
+      });
+    } catch (error: any) {
+      console.error("[Scans] History error:", error);
       res.status(500).json({ message: error.message });
     }
   });

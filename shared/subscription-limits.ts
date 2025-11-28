@@ -14,49 +14,49 @@ export interface SubscriptionLimits {
 
 export const SUBSCRIPTION_LIMITS: Record<string, SubscriptionLimits> = {
   trial: {
-    scansPerMonth: 10,
-    scansPerDay: 10, // Can use all 10 in one day if they want
-    canAutoList: false,
-    canUseAI: false,
-    canUseShelfScan: false,
-    canUseRepricing: false,
-    canAccessAPI: false,
-  },
-  free: {
-    scansPerMonth: 10,
-    scansPerDay: 10,
-    canAutoList: false,
-    canUseAI: false,
-    canUseShelfScan: false,
-    canUseRepricing: false,
-    canAccessAPI: false,
-  },
-  basic: {
-    scansPerMonth: 100,
-    scansPerDay: 50, // 50/day = ~100/month (with some days off)
-    canAutoList: false,
-    canUseAI: false,
-    canUseShelfScan: false,
-    canUseRepricing: false,
-    canAccessAPI: false,
-  },
-  pro: {
-    scansPerMonth: -1, // Unlimited
-    scansPerDay: 500, // Fair use limit: 500 scans/day
+    scansPerMonth: -1, // Unlimited during trial period (time-limited, not scan-limited)
+    scansPerDay: -1, // No daily limit during trial
     canAutoList: true,
     canUseAI: true,
     canUseShelfScan: true,
     canUseRepricing: true,
     canAccessAPI: false,
   },
-  enterprise: {
+  pro_monthly: {
     scansPerMonth: -1, // Unlimited
-    scansPerDay: -1, // Truly unlimited (no daily cap)
+    scansPerDay: -1, // Unlimited
     canAutoList: true,
     canUseAI: true,
     canUseShelfScan: true,
     canUseRepricing: true,
-    canAccessAPI: false, // API not implemented yet
+    canAccessAPI: false,
+  },
+  pro_yearly: {
+    scansPerMonth: -1, // Unlimited
+    scansPerDay: -1, // Unlimited
+    canAutoList: true,
+    canUseAI: true,
+    canUseShelfScan: true,
+    canUseRepricing: true,
+    canAccessAPI: false,
+  },
+  elite_monthly: {
+    scansPerMonth: -1, // Unlimited
+    scansPerDay: -1, // Unlimited
+    canAutoList: true,
+    canUseAI: true,
+    canUseShelfScan: true,
+    canUseRepricing: true,
+    canAccessAPI: true,
+  },
+  elite_yearly: {
+    scansPerMonth: -1, // Unlimited
+    scansPerDay: -1, // Unlimited
+    canAutoList: true,
+    canUseAI: true,
+    canUseShelfScan: true,
+    canUseRepricing: true,
+    canAccessAPI: true,
   },
 };
 

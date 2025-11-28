@@ -2,24 +2,13 @@ import { Card } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AppHeader } from "@/components/AppHeader";
 import { Badge } from "@/components/ui/badge";
-import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock, TrendingDown } from "lucide-react";
+import { CloudOff, Database, Bell, Info, Crown, Clock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { getOfflineDB } from "@/lib/offline-db";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useLocation } from "wouter";
 
 export default function SettingsPage() {
@@ -33,30 +22,6 @@ export default function SettingsPage() {
     imageCount: 0,
     totalSize: "0 MB",
   });
-  const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = useState(false);
-  const [hasEbayCredentials, setHasEbayCredentials] = useState(false);
-  const [hasAmazonCredentials, setHasAmazonCredentials] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-
-  // eBay credentials
-  const [ebayAppId, setEbayAppId] = useState("");
-  const [ebayCertId, setEbayCertId] = useState("");
-  const [ebayDevId, setEbayDevId] = useState("");
-  const [ebayAuthToken, setEbayAuthToken] = useState("");
-
-  // Amazon credentials
-  const [amazonClientId, setAmazonClientId] = useState("");
-  const [amazonClientSecret, setAmazonClientSecret] = useState("");
-  const [amazonRefreshToken, setAmazonRefreshToken] = useState("");
-  const [amazonAwsAccessKey, setAmazonAwsAccessKey] = useState("");
-  const [amazonAwsSecretKey, setAmazonAwsSecretKey] = useState("");
-  const [amazonSellerRole, setAmazonSellerRole] = useState("");
-  const [amazonRegion, setAmazonRegion] = useState("eu");
-
-  // API usage tracking
-  const [apiUsage, setApiUsage] = useState<{
-    ebay: { callCount: number; remaining: number };
-  } | null>(null);
 
   // Trial status
   const [trialInfo, setTrialInfo] = useState<{
@@ -81,31 +46,6 @@ export default function SettingsPage() {
     };
 
     fetchTrialInfo();
-  }, []);
-
-  useEffect(() => {
-    // Fetch API usage on mount and every 30 seconds
-    const fetchUsage = async () => {
-      try {
-        const response = await fetch('/api/usage', { credentials: 'include' });
-        if (response.ok) {
-          const data = await response.json();
-          setApiUsage({
-            ebay: {
-              callCount: data.today.ebay.callCount,
-              remaining: data.limits.ebay.remaining
-            }
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch API usage:', error);
-      }
-    };
-
-    fetchUsage();
-    const interval = setInterval(fetchUsage, 30000); // Refresh every 30s
-
-    return () => clearInterval(interval);
   }, []);
 
   // Load storage stats on mount
@@ -155,86 +95,6 @@ export default function SettingsPage() {
       });
     } catch (error) {
       console.error('[Settings] Failed to load storage stats:', error);
-    }
-  };
-
-  const handleSaveEbayCredentials = async () => {
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          platform: "ebay",
-          credentials: {
-            appId: ebayAppId,
-            certId: ebayCertId,
-            devId: ebayDevId,
-            authToken: ebayAuthToken,
-            sandbox: false,
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save credentials");
-      }
-
-      setHasEbayCredentials(true);
-      toast({
-        title: "Success",
-        description: "eBay credentials saved successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save eBay credentials",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleSaveAmazonCredentials = async () => {
-    setIsSaving(true);
-    try {
-      const response = await fetch("/api/credentials", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          platform: "amazon",
-          credentials: {
-            region: amazonRegion,
-            refresh_token: amazonRefreshToken,
-            credentials: {
-              SELLING_PARTNER_APP_CLIENT_ID: amazonClientId,
-              SELLING_PARTNER_APP_CLIENT_SECRET: amazonClientSecret,
-              AWS_ACCESS_KEY_ID: amazonAwsAccessKey,
-              AWS_SECRET_ACCESS_KEY: amazonAwsSecretKey,
-              AWS_SELLING_PARTNER_ROLE: amazonSellerRole,
-            },
-          },
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to save credentials");
-      }
-
-      setHasAmazonCredentials(true);
-      toast({
-        title: "Success",
-        description: "Amazon credentials saved successfully",
-      });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Failed to save Amazon credentials",
-        variant: "destructive",
-      });
-    } finally {
-      setIsSaving(false);
     }
   };
 
@@ -327,298 +187,6 @@ export default function SettingsPage() {
               </div>
             </Card>
           )}
-
-          {/* Quick Links Card */}
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4">Quick Links</h2>
-            <div className="space-y-2">
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => setLocation('/app/repricing')}
-                data-testid="link-repricing"
-              >
-                <TrendingDown className="h-4 w-4 mr-3" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">Repricing</p>
-                  <p className="text-xs text-muted-foreground">Auto-adjust prices to stay competitive</p>
-                </div>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => setLocation('/app/alerts')}
-              >
-                <Bell className="h-4 w-4 mr-3" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">Price Alerts</p>
-                  <p className="text-xs text-muted-foreground">Manage notifications for profit opportunities</p>
-                </div>
-              </Button>
-              <Button
-                variant="ghost"
-                className="w-full justify-start"
-                onClick={() => setLocation('/app/analytics')}
-              >
-                <Activity className="h-4 w-4 mr-3" />
-                <div className="flex-1 text-left">
-                  <p className="text-sm font-medium">Analytics</p>
-                  <p className="text-xs text-muted-foreground">View your performance dashboard</p>
-                </div>
-              </Button>
-            </div>
-          </Card>
-
-          {/* API Usage Card */}
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <Activity className="h-5 w-5" />
-              API Usage Today
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div>
-                  <p className="text-sm font-medium">eBay API</p>
-                  <p className="text-xs text-muted-foreground">
-                    {apiUsage ? (
-                      <>
-                        {apiUsage.ebay.callCount.toLocaleString()} / 5,000 calls used
-                      </>
-                    ) : (
-                      'Loading...'
-                    )}
-                  </p>
-                </div>
-                <div className="text-right">
-                  {apiUsage && (
-                    <>
-                      <p className="text-2xl font-bold font-mono">
-                        {apiUsage.ebay.remaining.toLocaleString()}
-                      </p>
-                      <p className="text-xs text-muted-foreground">remaining</p>
-                      {apiUsage.ebay.remaining < 1000 && (
-                        <Badge variant="destructive" className="mt-1">
-                          Low Limit
-                        </Badge>
-                      )}
-                      {apiUsage.ebay.remaining >= 1000 && apiUsage.ebay.remaining < 2000 && (
-                        <Badge variant="secondary" className="mt-1">
-                          Warning
-                        </Badge>
-                      )}
-                    </>
-                  )}
-                </div>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Resets daily at 8:00 AM GMT (midnight PST)
-              </p>
-            </div>
-          </Card>
-
-          <Card className="p-4">
-            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-              <ShoppingCart className="h-5 w-5" />
-              Marketplace Integrations
-            </h2>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">eBay</p>
-                    <p className="text-xs text-muted-foreground">
-                      {hasEbayCredentials ? "Connected" : "Not connected"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasEbayCredentials && (
-                    <Badge variant="default" className="gap-1">
-                      <Check className="h-3 w-3" />
-                      Active
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex items-center justify-between p-3 border rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                    <ShoppingCart className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium">Amazon (FBA & FBM)</p>
-                    <p className="text-xs text-muted-foreground">
-                      {hasAmazonCredentials ? "Connected" : "Not connected"}
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-2">
-                  {hasAmazonCredentials && (
-                    <Badge variant="default" className="gap-1">
-                      <Check className="h-3 w-3" />
-                      Active
-                    </Badge>
-                  )}
-                </div>
-              </div>
-
-              <Dialog open={isCredentialsDialogOpen} onOpenChange={setIsCredentialsDialogOpen}>
-                <DialogTrigger asChild>
-                  <Button className="w-full mt-2" variant="outline">
-                    <Key className="h-4 w-4 mr-2" />
-                    Manage API Credentials
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle>API Credentials</DialogTitle>
-                    <DialogDescription>
-                      Enter your eBay and Amazon (FBA & FBM) API credentials to enable direct listing
-                    </DialogDescription>
-                  </DialogHeader>
-
-                  <Tabs defaultValue="ebay" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                      <TabsTrigger value="ebay">eBay</TabsTrigger>
-                      <TabsTrigger value="amazon">Amazon</TabsTrigger>
-                    </TabsList>
-
-                    <TabsContent value="ebay" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="ebay-app-id">App ID (Client ID)</Label>
-                        <Input
-                          id="ebay-app-id"
-                          type="text"
-                          value={ebayAppId}
-                          onChange={(e) => setEbayAppId(e.target.value)}
-                          placeholder="Your eBay App ID"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ebay-cert-id">Cert ID (Client Secret)</Label>
-                        <Input
-                          id="ebay-cert-id"
-                          type="password"
-                          value={ebayCertId}
-                          onChange={(e) => setEbayCertId(e.target.value)}
-                          placeholder="Your eBay Cert ID"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ebay-dev-id">Dev ID</Label>
-                        <Input
-                          id="ebay-dev-id"
-                          type="text"
-                          value={ebayDevId}
-                          onChange={(e) => setEbayDevId(e.target.value)}
-                          placeholder="Your eBay Dev ID"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="ebay-auth-token">Auth Token (Optional)</Label>
-                        <Input
-                          id="ebay-auth-token"
-                          type="password"
-                          value={ebayAuthToken}
-                          onChange={(e) => setEbayAuthToken(e.target.value)}
-                          placeholder="Your eBay Auth Token"
-                        />
-                      </div>
-                      <Button
-                        onClick={handleSaveEbayCredentials}
-                        disabled={isSaving || !ebayAppId || !ebayCertId || !ebayDevId}
-                        className="w-full"
-                      >
-                        {isSaving ? "Saving..." : "Save eBay Credentials"}
-                      </Button>
-                    </TabsContent>
-
-                    <TabsContent value="amazon" className="space-y-4 mt-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-client-id">Client ID</Label>
-                        <Input
-                          id="amazon-client-id"
-                          type="text"
-                          value={amazonClientId}
-                          onChange={(e) => setAmazonClientId(e.target.value)}
-                          placeholder="Your Amazon Client ID"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-client-secret">Client Secret</Label>
-                        <Input
-                          id="amazon-client-secret"
-                          type="password"
-                          value={amazonClientSecret}
-                          onChange={(e) => setAmazonClientSecret(e.target.value)}
-                          placeholder="Your Amazon Client Secret"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-refresh-token">Refresh Token</Label>
-                        <Input
-                          id="amazon-refresh-token"
-                          type="password"
-                          value={amazonRefreshToken}
-                          onChange={(e) => setAmazonRefreshToken(e.target.value)}
-                          placeholder="Your Amazon Refresh Token"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-aws-access-key">AWS Access Key ID</Label>
-                        <Input
-                          id="amazon-aws-access-key"
-                          type="text"
-                          value={amazonAwsAccessKey}
-                          onChange={(e) => setAmazonAwsAccessKey(e.target.value)}
-                          placeholder="Your AWS Access Key"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-aws-secret-key">AWS Secret Access Key</Label>
-                        <Input
-                          id="amazon-aws-secret-key"
-                          type="password"
-                          value={amazonAwsSecretKey}
-                          onChange={(e) => setAmazonAwsSecretKey(e.target.value)}
-                          placeholder="Your AWS Secret Key"
-                        />
-                      </div>
-                      <div className="space-y-2">
-                        <Label htmlFor="amazon-seller-role">AWS Selling Partner Role ARN</Label>
-                        <Input
-                          id="amazon-seller-role"
-                          type="text"
-                          value={amazonSellerRole}
-                          onChange={(e) => setAmazonSellerRole(e.target.value)}
-                          placeholder="arn:aws:iam::..."
-                        />
-                      </div>
-                      <Button
-                        onClick={handleSaveAmazonCredentials}
-                        disabled={
-                          isSaving ||
-                          !amazonClientId ||
-                          !amazonClientSecret ||
-                          !amazonRefreshToken ||
-                          !amazonAwsAccessKey ||
-                          !amazonAwsSecretKey ||
-                          !amazonSellerRole
-                        }
-                        className="w-full"
-                      >
-                        {isSaving ? "Saving..." : "Save Amazon Credentials"}
-                      </Button>
-                    </TabsContent>
-                  </Tabs>
-                </DialogContent>
-              </Dialog>
-            </div>
-          </Card>
 
           <Card className="p-4">
             <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -727,7 +295,7 @@ export default function SettingsPage() {
                   Push Notifications
                 </Label>
                 <p className="text-xs text-muted-foreground mt-1">
-                  Get notified when books are synced or listed
+                  Get notified when books are synced
                 </p>
               </div>
               <Switch

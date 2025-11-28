@@ -29,63 +29,36 @@ export default function LandingPage() {
   const features = [
     {
       icon: Camera,
-      title: "AI-Powered Photo Recognition",
-      description: "Simply photograph any book cover and watch our advanced AI instantly extract the title, author, ISBN, and even assess the book's condition. No more manual typing - scan dozens of books in minutes, not hours. Perfect for scouting at car boot sales, charity shops, or bulk purchases.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Real-Time Market Pricing",
-      description: "Know exactly what a book is worth before you buy it. Our system pulls live pricing data from Amazon and eBay simultaneously, showing you current market values, recent sold prices, and demand trends. Make informed buying decisions and never overpay again.",
+      title: "Barcode Scanner",
+      description: "Point. Scan. Decide. Instant ISBN detection with your phone camera. Fast, accurate, and works in low light. Get pricing and profit calculations in under 2 seconds.",
     },
     {
       icon: Sparkles,
-      title: "AI Listing Optimization",
-      description: "Our intelligent system generates SEO-optimized titles, compelling product descriptions, and targeted keywords tailored to each platform. Boost your visibility in search results and convert more browsers into buyers. The AI learns what sells and applies those insights to your listings.",
+      title: "AI Cover Recognition",
+      description: "Just take a photo. Our AI extracts title, author, and ISBN from book covers automatically. No more typing – perfect for books with damaged or missing barcodes.",
     },
     {
-      icon: Zap,
-      title: "Multi-Platform Quick Listing",
-      description: "Post to Amazon and eBay simultaneously with a single click. The system auto-fills all required fields, formats descriptions correctly for each platform, and handles all technical requirements. Save hours on data entry and focus on sourcing more inventory.",
-    },
-    {
-      icon: BarChart3,
-      title: "Comprehensive Analytics",
-      description: "Track every metric that matters: profit margins, inventory turnover, top-performing categories, and seasonal trends. Visual dashboards show your business performance at a glance. Export detailed reports for tax time or to identify your most profitable sourcing channels.",
+      icon: BookOpen,
+      title: "AI Spine Recognition",
+      description: "Scan the whole shelf. Point your camera at a bookshelf and our AI reads every spine at once. Find profitable books 10x faster without pulling each one off the shelf.",
     },
     {
       icon: Clock,
-      title: "Offline Scouting Mode",
-      description: "Scout anywhere, even without internet. Scan books at locations with poor signal, and the app queues your scans for later. When you're back online, all pricing data syncs automatically. Never miss a profitable find because of connectivity issues.",
+      title: "Offline-First Engine",
+      description: "Scout anywhere, even with zero signal. SQLite storage with local profit calculations using cached pricing. Auto-sync to cloud when connection restores. Never miss a profitable find.",
+    },
+    {
+      icon: TrendingUp,
+      title: "Real Profit Calculator",
+      description: "See actual profit after Amazon/eBay fees, Royal Mail postage, and Evri costs. Includes sales velocity data so you know what sells fast. Make data-driven buying decisions.",
+    },
+    {
+      icon: BarChart3,
+      title: "Export & Analytics",
+      description: "Export your scan history to CSV for record-keeping and tax purposes. Track your scouting performance with detailed stats: scans per day, profit margins, and top-performing categories.",
     },
   ];
 
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Full-Time Book Seller • £8K/month",
-      content: "ISBNScout has completely transformed my book business. The AI photo recognition is incredibly accurate - I can scan an entire car boot sale in under an hour. I went from listing 50 books a week to over 200, and my monthly revenue tripled. The offline mode is a game-changer at charity shops with no signal.",
-      rating: 5,
-    },
-    {
-      name: "Michael Chen",
-      role: "Part-Time Reseller • Evenings & Weekends",
-      content: "As someone with a full-time job, I don't have hours to spend on listings. The AI-generated descriptions are better than what I used to write myself, and they're done in seconds. I've increased my sell-through rate by 40% and now make an extra £1,500/month working just 10 hours a week.",
-      rating: 5,
-    },
-    {
-      name: "Emma Williams",
-      role: "Professional Book Scout • 5 Years Experience",
-      content: "I've tried every scouting app on the market, and ISBNScout is simply the best. The profit calculator accounts for all fees automatically, the pricing data is always current, and I love that it shows both Amazon and eBay prices side-by-side. My ROI has gone from 100% to 180% since switching. Worth every penny.",
-      rating: 5,
-    },
-  ];
-
-  const stats = [
-    { value: "10K+", label: "Books Scanned Daily" },
-    { value: "£2M+", label: "Revenue Generated" },
-    { value: "500+", label: "Active Sellers" },
-    { value: "99%", label: "Accuracy Rate" },
-  ];
 
   return (
     <div className="min-h-screen bg-background">
@@ -99,7 +72,7 @@ export default function LandingPage() {
             <span className="text-xl font-bold text-white">ISBNScout</span>
           </div>
           <div className="flex items-center gap-4">
-            <Button variant="ghost" onClick={() => setLocation("/subscription")} className="text-white hover:text-white hover:bg-slate-800">
+            <Button variant="ghost" onClick={() => scrollToSection("pricing")} className="text-white hover:text-white hover:bg-slate-800">
               Pricing
             </Button>
             <Button variant="ghost" onClick={() => setLocation("/auth")} className="text-white hover:text-white hover:bg-slate-800">
@@ -120,23 +93,24 @@ export default function LandingPage() {
             <div className="space-y-8">
               <Badge variant="secondary" className="w-fit">
                 <Sparkles className="h-3 w-3 mr-1" />
-                AI-Powered Book Scouting
+                Book scouting, upgraded
               </Badge>
               <h1 className="text-5xl lg:text-6xl font-bold leading-tight">
-                Scan. Analyze. List.
-                <span className="text-primary"> Profit.</span>
+                Scan books.
+                <span className="text-primary"> Even offline.</span>
               </h1>
               <p className="text-xl text-muted-foreground">
-                The smartest way to buy and sell books online. Powered by AI,
-                built for serious sellers.
+                ISBNScout helps UK book resellers find profitable books in seconds
+                with barcode, cover, and AI spine recognition. Built for charity shops,
+                car-boot sales, and anywhere signal drops.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" onClick={() => setLocation("/auth")} className="text-lg">
-                  Start Free Trial
+                  Start 14-Day Free Trial
                   <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
-                <Button size="lg" variant="outline" onClick={() => setLocation("/subscription")}>
-                  View Pricing
+                <Button size="lg" variant="outline" onClick={() => scrollToSection("demo")}>
+                  Watch 30s Demo
                 </Button>
               </div>
               <div className="flex items-center gap-8 pt-4">
@@ -146,7 +120,7 @@ export default function LandingPage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 className="h-5 w-5 text-primary" />
-                  <span className="text-sm">14-day free trial</span>
+                  <span className="text-sm">Cancel anytime</span>
                 </div>
               </div>
             </div>
@@ -158,28 +132,28 @@ export default function LandingPage() {
                       <BookOpen className="h-6 w-6 text-primary" />
                     </div>
                     <div>
-                      <div className="font-semibold">The Great Gatsby</div>
-                      <div className="text-sm text-muted-foreground">F. Scott Fitzgerald</div>
+                      <div className="font-semibold">Introduction to Cognitive Science</div>
+                      <div className="text-sm text-muted-foreground">3rd Edition</div>
                     </div>
                   </div>
                   <div className="grid grid-cols-2 gap-4">
                     <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3">
-                      <div className="text-xs text-muted-foreground">Amazon Price</div>
+                      <div className="text-xs text-muted-foreground">Amazon Used</div>
                       <div className="text-xl font-bold text-green-600">£12.99</div>
                     </div>
                     <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3">
-                      <div className="text-xs text-muted-foreground">eBay Price</div>
+                      <div className="text-xs text-muted-foreground">eBay Sold Avg</div>
                       <div className="text-xl font-bold text-blue-600">£11.50</div>
                     </div>
                   </div>
                   <div className="bg-primary/10 border border-primary/20 rounded-lg p-3">
-                    <div className="text-xs text-muted-foreground">Estimated Profit</div>
-                    <div className="text-2xl font-bold text-primary">£8.75</div>
+                    <div className="text-xs text-muted-foreground">Net Profit (after fees & postage)</div>
+                    <div className="text-2xl font-bold text-primary">£7.90</div>
+                    <div className="text-xs text-muted-foreground mt-1">18 sales / 30 days</div>
                   </div>
-                  <Button className="w-full">
-                    <Zap className="h-4 w-4 mr-2" />
-                    List on Both Platforms
-                  </Button>
+                  <div className="bg-green-500/10 border border-green-500/20 rounded-lg p-3 text-center">
+                    <div className="text-sm font-semibold text-green-600">Strong buy – high demand</div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -187,16 +161,45 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="border-y bg-muted/50 py-12">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl font-bold text-primary">{stat.value}</div>
-                <div className="text-sm text-muted-foreground mt-1">{stat.label}</div>
+      {/* Demo Video Section */}
+      <section id="demo" className="py-20 bg-muted/50">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <Badge variant="secondary" className="mb-4">
+              See It In Action
+            </Badge>
+            <h2 className="text-4xl font-bold mb-4">
+              Watch ISBNScout in action
+            </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              See how book sellers scan, price, and list books in under 30 seconds
+            </p>
+          </div>
+          <div className="relative aspect-video bg-slate-900 rounded-2xl overflow-hidden shadow-2xl border border-slate-800">
+            {/* Placeholder for demo video - replace with actual video embed when available */}
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-primary/20 to-primary/5">
+              <div className="text-center space-y-4">
+                <div className="w-20 h-20 mx-auto bg-primary/20 rounded-full flex items-center justify-center">
+                  <Camera className="h-10 w-10 text-primary" />
+                </div>
+                <p className="text-muted-foreground text-lg">
+                  30s demo video coming soon
+                </p>
+                <p className="text-sm text-muted-foreground max-w-md">
+                  Shelf scanning → spine recognition → profit preview → buy decision
+                </p>
               </div>
-            ))}
+            </div>
+            {/* Uncomment when video is ready:
+            <iframe
+              className="w-full h-full"
+              src="https://www.youtube.com/embed/YOUR_VIDEO_ID"
+              title="ISBNScout 30s Demo"
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+            */}
           </div>
         </div>
       </section>
@@ -232,53 +235,123 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-20 bg-muted/50">
+      {/* Pricing Section */}
+      <section id="pricing" className="py-20">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <Badge variant="secondary" className="mb-4">
-              Testimonials
+              Pricing
             </Badge>
             <h2 className="text-4xl font-bold mb-4">
-              Loved by book sellers worldwide
+              Simple, transparent pricing
             </h2>
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+              14-day free trial. No credit card required. Cancel anytime.
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            {/* Pro Plan */}
+            <Card className="relative p-8 border-primary shadow-lg">
+              <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+                Most Popular
+              </Badge>
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-primary text-primary-foreground">
+                  <Zap className="h-6 w-6" />
                 </div>
-                <p className="text-muted-foreground mb-4">"{testimonial.content}"</p>
-                <div>
-                  <div className="font-semibold">{testimonial.name}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                <h3 className="text-2xl font-bold">Pro</h3>
+              </div>
+              <p className="text-muted-foreground mb-6">
+                Perfect for UK sellers sourcing weekly in charity shops
+              </p>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-bold">£14.99</span>
+                  <span className="text-muted-foreground">/month</span>
                 </div>
-              </Card>
-            ))}
+                <p className="text-sm text-muted-foreground mt-1">
+                  or £149/year (save ~2 months)
+                </p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Unlimited scans",
+                  "Offline mode",
+                  "Barcode, cover & AI spine recognition",
+                  "Amazon + eBay UK profit calculator",
+                  "Royal Mail & Evri postage estimates",
+                  "Scan history",
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button size="lg" className="w-full" onClick={() => setLocation("/auth")}>
+                Start 14-Day Free Trial
+              </Button>
+            </Card>
+
+            {/* Elite Plan */}
+            <Card className="p-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2 rounded-lg bg-primary/10">
+                  <Star className="h-6 w-6 text-primary" />
+                </div>
+                <h3 className="text-2xl font-bold">Elite</h3>
+              </div>
+              <p className="text-muted-foreground mb-6">
+                For professional scouts who need advanced automation and analytics
+              </p>
+              <div className="mb-6">
+                <div className="flex items-baseline gap-1">
+                  <span className="text-5xl font-bold">£19.99</span>
+                  <span className="text-muted-foreground">/month</span>
+                </div>
+                <p className="text-sm text-muted-foreground mt-1">
+                  or £199/year (save ~2½ months)
+                </p>
+              </div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Everything in Pro",
+                  "Buy / Don't Buy triggers",
+                  "Custom profit rules",
+                  "CSV export",
+                  "Multi-device access",
+                ].map((feature, index) => (
+                  <li key={index} className="flex items-start gap-2">
+                    <CheckCircle2 className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                    <span className="text-sm">{feature}</span>
+                  </li>
+                ))}
+              </ul>
+              <Button size="lg" variant="outline" className="w-full" onClick={() => setLocation("/auth")}>
+                Start 14-Day Free Trial
+              </Button>
+            </Card>
           </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="py-20">
+      <section className="py-20 bg-muted/50">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <div className="bg-gradient-to-br from-primary/10 to-primary/5 rounded-2xl p-12">
             <h2 className="text-4xl font-bold mb-4">
-              Ready to scale your book business?
+              Ready to find profitable books faster?
             </h2>
             <p className="text-xl text-muted-foreground mb-8">
-              Join hundreds of successful sellers using ISBNScout
+              Join hundreds of book scouts using ISBNScout
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button size="lg" onClick={() => setLocation("/auth")}>
-                Start Free Trial
+                Start 14-Day Free Trial
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-              <Button size="lg" variant="outline" onClick={() => setLocation("/subscription")}>
-                View Plans & Pricing
+              <Button size="lg" variant="outline" onClick={() => scrollToSection("demo")}>
+                Watch Demo
               </Button>
             </div>
             <div className="flex items-center justify-center gap-8 mt-8 text-sm text-muted-foreground">
@@ -307,30 +380,30 @@ export default function LandingPage() {
                 <span className="font-bold">ISBNScout</span>
               </div>
               <p className="text-sm text-muted-foreground mb-3">
-                The smartest way to buy and sell books online.
+                Scan books. Even offline.
               </p>
               <p className="text-xs text-muted-foreground">
                 Made in the UK for book sellers worldwide
               </p>
-              <div className="mt-3 text-xs text-muted-foreground">
-                <a href="mailto:hello@isbnscout.com" className="hover:text-foreground">
-                  hello@isbnscout.com
-                </a>
+              <div className="mt-3 text-xs text-muted-foreground space-y-1">
+                <div><a href="mailto:support@isbnscout.com" className="hover:text-foreground">support@isbnscout.com</a></div>
+                <div><a href="mailto:contact@isbnscout.com" className="hover:text-foreground">contact@isbnscout.com</a></div>
+                <div><a href="mailto:info@isbnscout.com" className="hover:text-foreground">info@isbnscout.com</a></div>
               </div>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><button onClick={() => scrollToSection('features')} className="hover:text-foreground">Features</button></li>
-                <li><button onClick={() => setLocation('/subscription')} className="hover:text-foreground">Pricing</button></li>
-                <li><button onClick={() => scrollToSection('testimonials')} className="hover:text-foreground">Testimonials</button></li>
+                <li><button onClick={() => scrollToSection('pricing')} className="hover:text-foreground">Pricing</button></li>
+                <li><button onClick={() => scrollToSection('demo')} className="hover:text-foreground">Demo</button></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li><button onClick={() => setLocation('/about')} className="hover:text-foreground">About Us</button></li>
-                <li><a href="mailto:hello@isbnscout.com" className="hover:text-foreground">Contact</a></li>
+                <li><a href="mailto:contact@isbnscout.com" className="hover:text-foreground">Contact</a></li>
                 <li><button onClick={() => setLocation('/blog')} className="hover:text-foreground">Blog</button></li>
               </ul>
             </div>

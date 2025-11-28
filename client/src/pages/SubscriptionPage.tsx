@@ -34,7 +34,7 @@ const plans = [
     monthlyPrice: "£19.99",
     yearlyPrice: "£199",
     icon: Crown,
-    description: "For high-volume sellers with advanced automation needs",
+    description: "For professional scouts who need advanced automation and analytics",
     features: [
       "Everything in Pro",
       "Buy / Don't Buy triggers",
@@ -266,7 +266,7 @@ export default function SubscriptionPage() {
 
         <div className="text-center text-sm text-muted-foreground mt-8">
           <p>All prices in GBP. Try free for 14 days with full access. Cancel anytime during trial.</p>
-          <p className="mt-2">After trial: Continue with paid plan or downgrade to free tier (10 scans/month).</p>
+          <p className="mt-2">After trial: Subscribe to continue scanning or your account will be paused.</p>
         </div>
       </div>
     </div>
