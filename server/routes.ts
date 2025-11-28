@@ -2141,38 +2141,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Migration endpoint: Fix users with old "basic" tier
-  app.post("/api/admin/migrate-basic-users", async (req, res) => {
+  // Fix current user's trial dates if missing
+  app.post("/api/user/fix-trial", requireAuth, async (req, res) => {
     try {
-      // This is a temporary migration endpoint
-      // Get all users (this will need to be updated if you have many users)
-      const users = await storage.getUsers?.() || [];
+      const userId = getUserId(req);
+      const user = await authService.getUserById(userId);
 
-      let updatedCount = 0;
-      for (const user of users) {
-        if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free') {
-          // Update to trial with 14-day period
-          const now = new Date();
-          const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
 
-          await storage.updateUser(user.id, {
-            subscriptionTier: 'trial',
-            subscriptionStatus: 'active',
-            trialStartedAt: now,
-            trialEndsAt: trialEnds,
-          });
+      // Check if user is on trial but missing trial dates
+      if (user.subscriptionTier === 'trial' && !user.trialEndsAt) {
+        const now = new Date();
+        const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
-          updatedCount++;
-        }
+        await storage.updateUser(user.id, {
+          subscriptionStatus: 'active',
+          trialStartedAt: now,
+          trialEndsAt: trialEnds,
+        });
+
+        return res.json({
+          success: true,
+          message: "Trial dates set - you now have 14 days!",
+          trialEndsAt: trialEnds.toISOString(),
+          daysRemaining: 14
+        });
+      }
+
+      // Check if on basic/free tier and migrate to trial
+      if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free') {
+        const now = new Date();
+        const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+        await storage.updateUser(user.id, {
+          subscriptionTier: 'trial',
+          subscriptionStatus: 'active',
+          trialStartedAt: now,
+          trialEndsAt: trialEnds,
+        });
+
+        return res.json({
+          success: true,
+          message: "Migrated to trial - you now have 14 days!",
+          trialEndsAt: trialEnds.toISOString(),
+          daysRemaining: 14
+        });
       }
 
       res.json({
         success: true,
-        message: `Updated ${updatedCount} users from basic/free to trial`,
-        updatedCount
+        message: "No fix needed",
+        tier: user.subscriptionTier,
+        trialEndsAt: user.trialEndsAt
       });
     } catch (error: any) {
-      console.error("[Migration] Error:", error);
+      console.error("[Fix Trial] Error:", error);
       res.status(500).json({ message: error.message });
     }
   });

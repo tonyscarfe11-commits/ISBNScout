@@ -63,6 +63,46 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
+    // Auto-fix: If user is on trial but missing trial dates, set them now
+    if (user.subscriptionTier === 'trial' && !user.trialEndsAt) {
+      const now = new Date();
+      const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+      await storage.updateUser(user.id, {
+        subscriptionStatus: 'active',
+        trialStartedAt: now,
+        trialEndsAt: trialEnds,
+      });
+
+      console.log(`[Auth] Fixed missing trial dates for user ${user.id} - 14 days from now`);
+
+      // Update the user object with new dates
+      user.trialStartedAt = now;
+      user.trialEndsAt = trialEnds;
+      user.subscriptionStatus = 'active';
+    }
+
+    // Auto-migrate: If user is on basic/free tier, upgrade to trial
+    if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free' || !user.subscriptionTier) {
+      const now = new Date();
+      const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+
+      await storage.updateUser(user.id, {
+        subscriptionTier: 'trial',
+        subscriptionStatus: 'active',
+        trialStartedAt: now,
+        trialEndsAt: trialEnds,
+      });
+
+      console.log(`[Auth] Migrated user ${user.id} from ${user.subscriptionTier || 'none'} to trial`);
+
+      // Update the user object
+      user.subscriptionTier = 'trial';
+      user.subscriptionStatus = 'active';
+      user.trialStartedAt = now;
+      user.trialEndsAt = trialEnds;
+    }
+
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
