@@ -17,6 +17,8 @@ import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Z
 import { apiRequest } from "@/lib/queryClient";
 import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
 import { getScanQueue } from "@/lib/scan-queue";
+import { getOfflineDB } from "@/lib/offline-db";
+import { lookupPricing } from "@/lib/offline-pricing";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
@@ -207,29 +209,31 @@ export default function ScanPage() {
     console.log("Scanning ISBN:", isbn);
 
     try {
-      // 1. Fetch real pricing data from API
+      // 1. Fetch pricing data (works offline!)
       toast({
         title: "Looking up book...",
-        description: "Fetching pricing from Amazon and eBay",
+        description: offlineStatus.isOnline
+          ? "Fetching pricing from Amazon and eBay"
+          : "Looking up from offline cache",
       });
 
-      const pricingResponse = await fetch("/api/books/lookup-pricing", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isbn }),
-      });
-
-      if (!pricingResponse.ok) {
-        throw new Error("Failed to fetch pricing data");
-      }
-
-      const pricingData = await pricingResponse.json();
+      const pricingData = await lookupPricing(isbn);
 
       // Show toast indicating data source
-      if (pricingData.source === 'demo') {
+      if (pricingData.source === 'estimate') {
         toast({
-          title: "Using demo pricing",
-          description: "Real eBay API hit rate limit - showing estimated prices",
+          title: "📊 Estimated Pricing",
+          description: "Based on offline price estimation",
+        });
+      } else if (pricingData.source === 'cache') {
+        toast({
+          title: "⚡ Cached Data",
+          description: `From offline cache (${pricingData.cacheAge?.toFixed(0)}h old)`,
+        });
+      } else if (pricingData.source === 'server-cache') {
+        toast({
+          title: "💾 Server Cache",
+          description: "Recent cached pricing data",
         });
       }
 
@@ -297,7 +301,33 @@ export default function ScanPage() {
         return;
       }
 
-      // 5. Update UI
+      // 5. Save to IndexedDB for offline access
+      try {
+        const offlineDB = getOfflineDB();
+        await offlineDB.saveBook({
+          id: book.id,
+          isbn: book.isbn,
+          title: book.title,
+          author: book.author,
+          thumbnail: book.thumbnail,
+          amazonPrice: book.amazonPrice,
+          ebayPrice: book.ebayPrice,
+          yourCost: book.yourCost,
+          profit: book.profit,
+          status: book.status,
+          scannedAt: new Date().toISOString(),
+          salesRank: book.salesRank,
+          velocity: book.velocity,
+          velocityDescription: book.velocityDescription,
+          buyRecommendation: book.buyRecommendation,
+        });
+        console.log('[ScanPage] Saved to IndexedDB');
+      } catch (dbError) {
+        console.error('[ScanPage] Failed to save to IndexedDB:', dbError);
+        // Don't fail the scan if IndexedDB fails
+      }
+
+      // 6. Update UI
       setRecentScans([book, ...recentScans.slice(0, 2)]);
 
       toast({
