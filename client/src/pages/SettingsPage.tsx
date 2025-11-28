@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { CloudOff, Database, Bell, Info, ShoppingCart, Key, Check, Crown, Activity, Clock, TrendingDown } from "lucide-react";
 import { useState, useEffect } from "react";
 import { useToast } from "@/hooks/use-toast";
+import { getOfflineDB } from "@/lib/offline-db";
 import {
   Dialog,
   DialogContent,
@@ -24,8 +25,14 @@ import { useLocation } from "wouter";
 export default function SettingsPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const [offlineMode, setOfflineMode] = useState(false);
+  const [offlineMode, setOfflineMode] = useState(true); // Always enabled now
   const [notifications, setNotifications] = useState(true);
+  const [storageStats, setStorageStats] = useState({
+    bookCount: 0,
+    priceCacheCount: 0,
+    imageCount: 0,
+    totalSize: "0 MB",
+  });
   const [isCredentialsDialogOpen, setIsCredentialsDialogOpen] = useState(false);
   const [hasEbayCredentials, setHasEbayCredentials] = useState(false);
   const [hasAmazonCredentials, setHasAmazonCredentials] = useState(false);
@@ -101,11 +108,54 @@ export default function SettingsPage() {
     return () => clearInterval(interval);
   }, []);
 
-  const handleClearCache = () => {
-    toast({
-      title: "Cache cleared",
-      description: "Offline data has been removed",
-    });
+  // Load storage stats on mount
+  useEffect(() => {
+    loadStorageStats();
+  }, []);
+
+  const handleClearCache = async () => {
+    try {
+      const offlineDB = getOfflineDB();
+      await offlineDB.clearAllData();
+
+      // Update storage stats
+      await loadStorageStats();
+
+      toast({
+        title: "✅ Cache Cleared",
+        description: "All offline data has been removed",
+      });
+    } catch (error: any) {
+      console.error('[Settings] Failed to clear cache:', error);
+      toast({
+        title: "Failed to clear cache",
+        description: error.message,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const loadStorageStats = async () => {
+    try {
+      const offlineDB = getOfflineDB();
+      const stats = await offlineDB.getStorageStats();
+
+      // Estimate size (rough calculation)
+      // Assume average book record ~2KB, price cache ~500B, image ~50KB
+      const estimatedBytes =
+        (stats.bookCount * 2048) +
+        (stats.priceCacheCount * 512) +
+        (stats.imageCount * 51200);
+
+      const sizeInMB = (estimatedBytes / (1024 * 1024)).toFixed(1);
+
+      setStorageStats({
+        ...stats,
+        totalSize: `${sizeInMB} MB`,
+      });
+    } catch (error) {
+      console.error('[Settings] Failed to load storage stats:', error);
+    }
   };
 
   const handleSaveEbayCredentials = async () => {
@@ -619,24 +669,40 @@ export default function SettingsPage() {
               <div className="flex items-center justify-between">
                 <div className="flex-1">
                   <Label htmlFor="offline-mode" className="text-sm font-medium">
-                    Enable Offline Mode
+                    Offline Mode Active
                   </Label>
                   <p className="text-xs text-muted-foreground mt-1">
-                    Continue scanning books without internet connection
+                    Scan books, view history, and see prices without internet
                   </p>
                 </div>
                 <Switch
                   id="offline-mode"
                   checked={offlineMode}
-                  onCheckedChange={setOfflineMode}
+                  disabled={true}
                   data-testid="switch-offline-mode"
                 />
               </div>
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between mb-2">
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex items-center justify-between">
                   <span className="text-sm font-medium">Storage Used</span>
-                  <Badge variant="outline">2.3 MB</Badge>
+                  <Badge variant="outline">{storageStats.totalSize}</Badge>
                 </div>
+                <div className="grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                  <div>
+                    <div className="font-medium text-foreground">{storageStats.bookCount}</div>
+                    <div>Books</div>
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground">{storageStats.priceCacheCount}</div>
+                    <div>Prices</div>
+                  </div>
+                  <div>
+                    <div className="font-medium text-foreground">{storageStats.imageCount}</div>
+                    <div>Images</div>
+                  </div>
+                </div>
+              </div>
+              <div className="pt-4 border-t">
                 <Button
                   variant="outline"
                   className="w-full"
@@ -644,7 +710,7 @@ export default function SettingsPage() {
                   data-testid="button-clear-cache"
                 >
                   <Database className="h-4 w-4 mr-2" />
-                  Clear Offline Cache
+                  Clear All Offline Data
                 </Button>
               </div>
             </div>
