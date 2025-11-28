@@ -63,27 +63,11 @@ export class AuthService {
       throw new Error('Invalid credentials');
     }
 
-    // Auto-fix: If user is on trial but missing trial dates, set them now
-    if (user.subscriptionTier === 'trial' && !user.trialEndsAt) {
-      const now = new Date();
-      const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
+    // Auto-migrate ALL users to trial if they don't have valid subscription
+    const isPaidTier = user.subscriptionTier && ['pro_monthly', 'pro_yearly', 'elite_monthly', 'elite_yearly'].includes(user.subscriptionTier);
 
-      await storage.updateUser(user.id, {
-        subscriptionStatus: 'active',
-        trialStartedAt: now,
-        trialEndsAt: trialEnds,
-      });
-
-      console.log(`[Auth] Fixed missing trial dates for user ${user.id} - 14 days from now`);
-
-      // Update the user object with new dates
-      user.trialStartedAt = now;
-      user.trialEndsAt = trialEnds;
-      user.subscriptionStatus = 'active';
-    }
-
-    // Auto-migrate: If user is on basic/free tier, upgrade to trial
-    if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free' || !user.subscriptionTier) {
+    // If NOT on a paid tier, ensure they have trial
+    if (!isPaidTier) {
       const now = new Date();
       const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
@@ -94,7 +78,7 @@ export class AuthService {
         trialEndsAt: trialEnds,
       });
 
-      console.log(`[Auth] Migrated user ${user.id} from ${user.subscriptionTier || 'none'} to trial`);
+      console.log(`[Auth] Set user ${user.id} to trial (was: ${user.subscriptionTier || 'none'}) - 14 days from now`);
 
       // Update the user object
       user.subscriptionTier = 'trial';
