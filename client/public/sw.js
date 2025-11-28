@@ -239,6 +239,16 @@ self.addEventListener('sync', (event) => {
 });
 
 /**
+ * Message event - handle commands from the page
+ */
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') {
+    // Skip waiting and activate immediately
+    self.skipWaiting();
+  }
+});
+
+/**
  * Push notification event (future enhancement)
  */
 self.addEventListener('push', (event) => {

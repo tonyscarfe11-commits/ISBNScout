@@ -5,6 +5,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { BottomNav } from "@/components/BottomNav";
+import { UpdateNotification } from "@/components/UpdateNotification";
 import DashboardPage from "@/pages/DashboardPage";
 import ScanPage from "@/pages/ScanPage";
 import ProfitCalculatorPage from "@/pages/ProfitCalculatorPage";
@@ -139,6 +140,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <UpdateNotification />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

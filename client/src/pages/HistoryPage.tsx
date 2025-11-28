@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Search, Filter, Loader2, Download, PackagePlus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { exportBooks, type ExportableBook, type ExportOptions } from "@/lib/exportUtils";
+import { getOfflineDB } from "@/lib/offline-db";
 
 export default function HistoryPage() {
   const { toast } = useToast();
@@ -52,24 +53,68 @@ export default function HistoryPage() {
   const loadBooks = async () => {
     setIsLoading(true);
     try {
-      const response = await fetch("/api/books", { credentials: 'include' });
-      if (response.ok) {
-        const booksData = await response.json();
-        // Convert to BookDetails format
-        const formattedBooks: BookDetails[] = booksData.map((book: any) => ({
+      // Try loading from server first (when online)
+      if (navigator.onLine) {
+        try {
+          const response = await fetch("/api/books", { credentials: 'include' });
+          if (response.ok) {
+            const booksData = await response.json();
+            // Convert to BookDetails format
+            const formattedBooks: BookDetails[] = booksData.map((book: any) => ({
+              id: book.id,
+              isbn: book.isbn,
+              title: book.title,
+              author: book.author,
+              thumbnail: book.thumbnail,
+              amazonPrice: book.amazonPrice ? parseFloat(book.amazonPrice) : undefined,
+              ebayPrice: book.ebayPrice ? parseFloat(book.ebayPrice) : undefined,
+              yourCost: book.yourCost ? parseFloat(book.yourCost) : undefined,
+              profit: book.profit ? parseFloat(book.profit) : undefined,
+              status: book.status as any,
+              isPending: book.status === "pending",
+            }));
+            setBooks(formattedBooks);
+            console.log('[HistoryPage] Loaded books from server');
+            return; // Success - exit early
+          }
+        } catch (serverError) {
+          console.warn('[HistoryPage] Server load failed, trying IndexedDB:', serverError);
+        }
+      }
+
+      // Fallback to IndexedDB (offline or server failed)
+      console.log('[HistoryPage] Loading from IndexedDB...');
+      const offlineDB = getOfflineDB();
+      const offlineBooks = await offlineDB.getAllBooks();
+
+      if (offlineBooks.length > 0) {
+        const formattedBooks: BookDetails[] = offlineBooks.map((book) => ({
           id: book.id,
           isbn: book.isbn,
           title: book.title,
-          author: book.author,
+          author: book.author || '',
           thumbnail: book.thumbnail,
-          amazonPrice: book.amazonPrice ? parseFloat(book.amazonPrice) : undefined,
-          ebayPrice: book.ebayPrice ? parseFloat(book.ebayPrice) : undefined,
-          yourCost: book.yourCost ? parseFloat(book.yourCost) : undefined,
-          profit: book.profit ? parseFloat(book.profit) : undefined,
+          amazonPrice: book.amazonPrice ?? undefined,
+          ebayPrice: book.ebayPrice ?? undefined,
+          yourCost: book.yourCost ?? undefined,
+          profit: book.profit ?? undefined,
           status: book.status as any,
           isPending: book.status === "pending",
         }));
         setBooks(formattedBooks);
+
+        toast({
+          title: "📦 Offline Mode",
+          description: `Showing ${offlineBooks.length} books from local storage`,
+        });
+      } else {
+        // No data in IndexedDB either
+        toast({
+          title: "No books found",
+          description: navigator.onLine
+            ? "Scan some books to see them here"
+            : "No offline data available. Connect to internet to sync.",
+        });
       }
     } catch (error) {
       console.error("Failed to load books:", error);

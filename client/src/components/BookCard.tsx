@@ -2,6 +2,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { BookOpen, TrendingUp, TrendingDown, Minus, PackagePlus, Zap, Clock } from "lucide-react";
+import { CachedImage } from "@/components/CachedImage";
 
 export type BookStatus = "profitable" | "break-even" | "loss" | "pending";
 export type VelocityRating = 'very_fast' | 'fast' | 'medium' | 'slow' | 'very_slow' | 'unknown';
@@ -131,33 +132,12 @@ export function BookCard({
     >
       <div className="flex gap-4">
         <div className="w-16 h-24 bg-muted rounded-md flex-shrink-0 overflow-hidden flex items-center justify-center">
-          {thumbnail ? (
-            <img
-              src={thumbnail}
-              alt={title}
-              style={{
-                maxWidth: '64px',
-                maxHeight: '96px',
-                objectFit: 'contain',
-                display: 'block'
-              }}
-              onError={(e) => {
-                console.error("Image failed to load:", thumbnail);
-                const parent = e.currentTarget.parentElement;
-                if (parent) {
-                  e.currentTarget.remove();
-                  const icon = document.createElement('div');
-                  icon.className = 'w-full h-full flex items-center justify-center';
-                  icon.innerHTML = '<svg class="h-8 w-8 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
-                  parent.appendChild(icon);
-                }
-              }}
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <BookOpen className="h-8 w-8 text-muted-foreground" />
-            </div>
-          )}
+          <CachedImage
+            src={thumbnail}
+            alt={title}
+            className="max-w-[64px] max-h-[96px] object-contain block"
+            fallbackIcon={true}
+          />
         </div>
 
         <div className="flex-1 min-w-0">

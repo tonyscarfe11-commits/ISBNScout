@@ -19,10 +19,12 @@ import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
 import { getScanQueue } from "@/lib/scan-queue";
 import { getOfflineDB } from "@/lib/offline-db";
 import { lookupPricing } from "@/lib/offline-pricing";
+import { InstallPrompt, useTrackScansForInstall } from "@/components/InstallPrompt";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { incrementScanCount } = useTrackScansForInstall();
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>({
     isOnline: navigator.onLine,
     pendingSync: 0,
@@ -329,6 +331,9 @@ export default function ScanPage() {
 
       // 6. Update UI
       setRecentScans([book, ...recentScans.slice(0, 2)]);
+
+      // Track scan count for install prompt
+      incrementScanCount();
 
       toast({
         title: "Book scanned successfully",
@@ -1055,6 +1060,9 @@ export default function ScanPage() {
         scansLimit={scanLimits.scansLimit}
         currentTier={currentTier}
       />
+
+      {/* PWA Install Prompt */}
+      <InstallPrompt />
     </div>
   );
 }
