@@ -17,9 +17,9 @@ const allowedOrigins = [
   'http://localhost:3000',
   'http://127.0.0.1:5000',
   'http://127.0.0.1:3000',
-  // Add your production domains here:
-  // 'https://your-production-domain.com',
-  // 'https://www.your-production-domain.com',
+  // Production domains
+  'https://isbnscout.com',
+  'https://www.isbnscout.com',
   // Mobile app scheme (if using custom URL scheme):
   // 'app://your-mobile-app',
 ];
