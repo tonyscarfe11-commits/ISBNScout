@@ -127,37 +127,37 @@ export default function AuthPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-primary/10 p-4">
-      <div className="w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/10 via-background to-primary/5 p-4">
+      <div className="w-full max-w-md animate-in">
         <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <BrandText className="text-3xl" />
+            <BrandText className="text-4xl font-bold gradient-text" />
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-muted-foreground text-lg">
             Book scouting made simple
           </p>
         </div>
 
-        <Card className="p-6">
+        <Card className="p-8 card-elevated">
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-6">
-              <TabsTrigger value="login">Login</TabsTrigger>
-              <TabsTrigger value="signup">Sign Up</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 mb-8 h-12">
+              <TabsTrigger value="login" className="text-base">Login</TabsTrigger>
+              <TabsTrigger value="signup" className="text-base">Sign Up</TabsTrigger>
             </TabsList>
 
             <TabsContent value="login">
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-5">
                 <div className="space-y-2">
-                  <Label htmlFor="login-email">Email</Label>
+                  <Label htmlFor="login-email" className="text-base font-medium">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="login-email"
                       type="email"
                       placeholder="you@example.com"
                       value={loginEmail}
                       onChange={(e) => setLoginEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                     />
@@ -165,16 +165,16 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="login-password">Password</Label>
+                  <Label htmlFor="login-password" className="text-base font-medium">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="login-password"
                       type="password"
                       placeholder="••••••••"
                       value={loginPassword}
                       onChange={(e) => setLoginPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                     />
@@ -183,7 +183,7 @@ export default function AuthPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-12 text-base font-semibold shadow-md"
                   disabled={isLoading}
                 >
                   {isLoading ? "Logging in..." : "Login"}
@@ -194,16 +194,16 @@ export default function AuthPage() {
             <TabsContent value="signup">
               <form onSubmit={handleSignup} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="signup-username">Username</Label>
+                  <Label htmlFor="signup-username" className="text-base font-medium">Username</Label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <User className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signup-username"
                       type="text"
                       placeholder="johndoe"
                       value={signupUsername}
                       onChange={(e) => setSignupUsername(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                     />
@@ -211,16 +211,16 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-email">Email</Label>
+                  <Label htmlFor="signup-email" className="text-base font-medium">Email</Label>
                   <div className="relative">
-                    <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Mail className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signup-email"
                       type="email"
                       placeholder="you@example.com"
                       value={signupEmail}
                       onChange={(e) => setSignupEmail(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                     />
@@ -228,37 +228,37 @@ export default function AuthPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-password">Password</Label>
+                  <Label htmlFor="signup-password" className="text-base font-medium">Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signup-password"
                       type="password"
                       placeholder="••••••••"
                       value={signupPassword}
                       onChange={(e) => setSignupPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                       minLength={8}
                     />
                   </div>
-                  <p className="text-xs text-muted-foreground">
+                  <p className="text-sm text-muted-foreground">
                     Must be at least 8 characters
                   </p>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="signup-confirm-password">Confirm Password</Label>
+                  <Label htmlFor="signup-confirm-password" className="text-base font-medium">Confirm Password</Label>
                   <div className="relative">
-                    <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Lock className="absolute left-3 top-3.5 h-5 w-5 text-muted-foreground" />
                     <Input
                       id="signup-confirm-password"
                       type="password"
                       placeholder="••••••••"
                       value={signupConfirmPassword}
                       onChange={(e) => setSignupConfirmPassword(e.target.value)}
-                      className="pl-10"
+                      className="pl-11 h-12 text-base"
                       required
                       disabled={isLoading}
                     />
@@ -267,13 +267,13 @@ export default function AuthPage() {
 
                 <Button
                   type="submit"
-                  className="w-full"
+                  className="w-full h-12 text-base font-semibold shadow-md"
                   disabled={isLoading}
                 >
                   {isLoading ? "Creating account..." : "Create Account"}
                 </Button>
 
-                <p className="text-xs text-center text-muted-foreground">
+                <p className="text-sm text-center text-muted-foreground pt-2">
                   By signing up, you agree to our Terms of Service and Privacy Policy
                 </p>
               </form>
@@ -281,7 +281,7 @@ export default function AuthPage() {
           </Tabs>
         </Card>
 
-        <p className="text-center text-sm text-muted-foreground mt-4">
+        <p className="text-center text-base text-muted-foreground mt-6 font-medium">
           Start with our Free plan and upgrade anytime
         </p>
       </div>

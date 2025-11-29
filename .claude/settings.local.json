@@ -34,7 +34,13 @@
       "Bash(mkdir:*)",
       "Bash(git checkout:*)",
       "Bash(node dist/index.js:*)",
-      "Bash(printenv:*)"
+      "Bash(printenv:*)",
+      "Bash(export DATABASE_URL:*)",
+      "Bash(if [ -z \"$DATABASE_URL\" ])",
+      "Bash(then echo \"DATABASE_URL is not set\")",
+      "Bash(else echo \"DATABASE_URL is set (length: $#DATABASE_URL characters)\")",
+      "Bash(fi)",
+      "WebSearch"
     ],
     "deny": [],
     "ask": []

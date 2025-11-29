@@ -13,12 +13,12 @@ export function BottomNav() {
   const [location] = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-card border-t border-card-border z-40">
-      <div className="flex items-center justify-around h-16 max-w-full mx-auto">
+    <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border shadow-lg z-40">
+      <div className="flex items-center justify-around h-20 max-w-full mx-auto px-2">
         {navItems.map((item) => {
           const isActive = location === item.path;
           const Icon = item.icon;
-          
+
           return (
             <Link
               key={item.path}
@@ -26,14 +26,16 @@ export function BottomNav() {
               data-testid={`link-nav-${item.label.toLowerCase()}`}
             >
               <button
-                className={`flex flex-col items-center justify-center gap-1 px-6 py-2 rounded-md transition-colors min-h-9 ${
+                className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-smooth min-w-[70px] ${
                   isActive
-                    ? "text-primary"
-                    : "text-muted-foreground hover-elevate"
+                    ? "text-primary bg-primary/10"
+                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
                 }`}
               >
-                <Icon className="h-5 w-5" />
-                <span className="text-xs font-medium">{item.label}</span>
+                <Icon className={`h-6 w-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                <span className={`text-xs font-medium ${isActive ? 'font-semibold' : ''}`}>
+                  {item.label}
+                </span>
               </button>
             </Link>
           );
