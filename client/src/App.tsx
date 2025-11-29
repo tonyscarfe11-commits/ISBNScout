@@ -19,7 +19,6 @@ import ProfitReportsPage from "@/pages/ProfitReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
-import LandingPage from "@/pages/LandingPage";
 import AboutPage from "@/pages/AboutPage";
 import BlogPage from "@/pages/BlogPage";
 import BlogPost1 from "@/pages/BlogPost1";
@@ -44,8 +43,6 @@ function Router() {
     <div className="min-h-screen bg-background">
       <Switch>
         {/* Public routes */}
-        <Route path="/" component={LandingPage} />
-        <Route path="/landing" component={LandingPage} />
         <Route path="/auth" component={AuthPage} />
         <Route path="/subscription" component={SubscriptionPage} />
         <Route path="/subscription/success" component={SubscriptionSuccessPage} />
