@@ -33,7 +33,8 @@
       "Bash(gh repo view:*)",
       "Bash(mkdir:*)",
       "Bash(git checkout:*)",
-      "Bash(node dist/index.js:*)"
+      "Bash(node dist/index.js:*)",
+      "Bash(printenv:*)"
     ],
     "deny": [],
     "ask": []
