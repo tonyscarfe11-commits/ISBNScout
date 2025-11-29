@@ -31,7 +31,8 @@
       "WebFetch(domain:www.isbnscout.com)",
       "Bash(find:*)",
       "Bash(gh repo view:*)",
-      "Bash(mkdir:*)"
+      "Bash(mkdir:*)",
+      "Bash(git checkout:*)"
     ],
     "deny": [],
     "ask": []
