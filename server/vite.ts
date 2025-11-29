@@ -76,9 +76,7 @@ export function serveStatic(app: Express) {
     );
   }
 
-  app.use(express.static(distPath));
-
-  // Serve static HTML landing page at root
+  // Serve static HTML landing page at root BEFORE static middleware
   app.get("/", (_req, res) => {
     const landingPath = path.resolve(distPath, "landing.html");
     if (fs.existsSync(landingPath)) {
@@ -87,6 +85,9 @@ export function serveStatic(app: Express) {
       res.sendFile(path.resolve(distPath, "index.html"));
     }
   });
+
+  // Serve static assets (CSS, JS, images)
+  app.use(express.static(distPath));
 
   // fall through to index.html for React app routes
   app.use("*", (_req, res) => {
