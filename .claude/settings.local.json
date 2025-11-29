@@ -30,7 +30,8 @@
       "Bash(npm install:*)",
       "WebFetch(domain:www.isbnscout.com)",
       "Bash(find:*)",
-      "Bash(gh repo view:*)"
+      "Bash(gh repo view:*)",
+      "Bash(mkdir:*)"
     ],
     "deny": [],
     "ask": []
