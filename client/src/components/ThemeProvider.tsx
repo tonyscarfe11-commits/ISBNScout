@@ -20,9 +20,18 @@ export function ThemeProvider({
   children,
   defaultTheme = "light",
 }: ThemeProviderProps) {
-  const [theme, setTheme] = useState<Theme>(
-    () => (localStorage.getItem("theme") as Theme) || defaultTheme
-  );
+  const [theme, setTheme] = useState<Theme>(() => {
+    // Check localStorage first
+    const stored = localStorage.getItem("theme") as Theme;
+    if (stored) return stored;
+
+    // Auto-detect system preference
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      return "dark";
+    }
+
+    return defaultTheme;
+  });
 
   useEffect(() => {
     const root = document.documentElement;

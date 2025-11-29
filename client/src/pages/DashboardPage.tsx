@@ -179,7 +179,7 @@ export default function DashboardPage() {
   }
 
   return (
-    <div className="min-h-screen pb-24 bg-background">
+    <div className="min-h-screen pb-28 bg-background">
       <AppHeader />
       <div className="max-w-7xl mx-auto p-6 space-y-8 animate-in">
         {/* Header */}
