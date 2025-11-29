@@ -1,6 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { AppHeader } from "@/components/AppHeader";
 import { Check, Zap, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
@@ -118,6 +119,7 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen pb-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
+      <AppHeader />
       <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-4">
