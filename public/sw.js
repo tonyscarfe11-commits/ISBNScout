@@ -4,7 +4,7 @@
  * Caches assets and API responses for offline use
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v2';
 const STATIC_CACHE = `isbnscout-static-${CACHE_VERSION}`;
 const DYNAMIC_CACHE = `isbnscout-dynamic-${CACHE_VERSION}`;
 const API_CACHE = `isbnscout-api-${CACHE_VERSION}`;
