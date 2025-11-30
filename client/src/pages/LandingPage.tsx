@@ -8,11 +8,15 @@ import {
   Camera,
   BookOpen,
   ArrowRight,
+  Check,
 } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
+type BillingPeriod = 'monthly' | 'yearly';
+
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 
   return (
     <div className="min-h-screen bg-background">
@@ -484,73 +488,76 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section className="py-20 bg-background">
-        <div className="max-w-5xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-12">Simple, Transparent Pricing</h2>
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Trial Card */}
-            <Card className="p-6 border-teal-200 dark:border-teal-700">
-              <div className="space-y-6">
-                <div>
-                  <h3 className="text-2xl font-bold text-foreground mb-2">Free Trial</h3>
-                  <p className="text-muted-foreground text-sm">14 days, no commitment</p>
-                </div>
-                <div className="text-4xl font-bold text-foreground">£0<span className="text-lg text-muted-foreground">/trial</span></div>
-                <ul className="space-y-3">
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Full access</span>
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Unlimited scans</span>
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Offline mode</span>
-                  </li>
-                  <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">No card required</span>
-                  </li>
-                </ul>
-                <Button 
-                  size="lg" 
-                  onClick={() => setLocation("/auth")}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
-                  data-testid="button-pricing-trial"
-                >
-                  Start Free
-                </Button>
-              </div>
-            </Card>
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-4">Simple, Transparent Pricing</h2>
+          <p className="text-center text-muted-foreground mb-8">14-day free trial on all plans. No credit card required.</p>
 
+          {/* Billing Period Toggle */}
+          <div className="flex justify-center items-center gap-3 mb-12">
+            <span className={`text-sm ${billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}`}>
+              Monthly
+            </span>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
+              className="relative w-14 h-8 rounded-full p-0"
+            >
+              <div className={`absolute w-6 h-6 bg-teal-600 rounded-full transition-transform ${
+                billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-1'
+              }`} />
+            </Button>
+            <span className={`text-sm ${billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}`}>
+              Yearly
+            </span>
+            {billingPeriod === 'yearly' && (
+              <Badge variant="secondary" className="ml-2">
+                Save up to £40/year
+              </Badge>
+            )}
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {/* Pro Card */}
             <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950">
               <div className="space-y-6">
                 <div>
-                  <Badge className="bg-teal-600 text-white mb-3">POPULAR</Badge>
+                  <Badge className="bg-teal-600 text-white mb-3">MOST POPULAR</Badge>
                   <h3 className="text-2xl font-bold text-foreground mb-2">Pro</h3>
-                  <p className="text-muted-foreground text-sm">For serious scouts</p>
+                  <p className="text-muted-foreground text-sm">Perfect for UK sellers sourcing weekly in charity shops</p>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-foreground">£14.99<span className="text-lg text-muted-foreground">/month</span></div>
-                  <p className="text-xs text-teal-600 font-semibold mt-1">+ 14-day trial</p>
+                  <div className="text-4xl font-bold text-foreground">
+                    {billingPeriod === 'monthly' ? '£14.99' : '£149'}
+                    <span className="text-lg text-muted-foreground">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+                  </div>
+                  {billingPeriod === 'yearly' && (
+                    <p className="text-sm text-teal-600 font-semibold mt-1">Save ~2 months</p>
+                  )}
                 </div>
                 <ul className="space-y-3">
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">Unlimited scans</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">Offline mode</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">AI recognition</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-foreground">Barcode, cover & AI spine recognition</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-foreground">Amazon + eBay UK profit calculator</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-foreground">Royal Mail & Evri postage estimates</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">Scan history</span>
                   </li>
                 </ul>
@@ -562,6 +569,9 @@ export default function LandingPage() {
                 >
                   Start 14-Day Trial
                 </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  14-day free trial • No card required • Cancel anytime
+                </p>
               </div>
             </Card>
 
@@ -570,27 +580,36 @@ export default function LandingPage() {
               <div className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">Elite</h3>
-                  <p className="text-muted-foreground text-sm">Advanced automation</p>
+                  <p className="text-muted-foreground text-sm">For professional scouts who need advanced automation and analytics</p>
                 </div>
                 <div>
-                  <div className="text-4xl font-bold text-foreground">£19.99<span className="text-lg text-muted-foreground">/month</span></div>
-                  <p className="text-xs text-teal-600 font-semibold mt-1">+ 14-day trial</p>
+                  <div className="text-4xl font-bold text-foreground">
+                    {billingPeriod === 'monthly' ? '£19.99' : '£199'}
+                    <span className="text-lg text-muted-foreground">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+                  </div>
+                  {billingPeriod === 'yearly' && (
+                    <p className="text-sm text-teal-600 font-semibold mt-1">Save ~2½ months</p>
+                  )}
                 </div>
                 <ul className="space-y-3">
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">Everything in Pro</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Buy/Don't Buy rules</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-foreground">Buy / Don't Buy triggers</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-foreground">Custom profit rules</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">CSV export</span>
                   </li>
                   <li className="flex gap-2 text-sm">
-                    <span className="text-teal-600 font-bold">✓</span>
+                    <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
                     <span className="text-foreground">Multi-device access</span>
                   </li>
                 </ul>
@@ -602,10 +621,12 @@ export default function LandingPage() {
                 >
                   Start 14-Day Trial
                 </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  14-day free trial • No card required • Cancel anytime
+                </p>
               </div>
             </Card>
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-8">All plans include 14-day free trial. Cancel anytime, no long-term contracts.</p>
         </div>
       </section>
 
