@@ -65,7 +65,7 @@ export default function LandingPage() {
               </h1>
               
               <p className="text-lg text-muted-foreground max-w-xl">
-                ISBNScout helps UK book resellers find profitable books in seconds with barcode, cover, and AI spine recognition. Built for charity shops, car-boot sales, and anywhere signal drops.
+                Scout books with AI instantly. Know profit before you buy. Works offline in charity shops, car-boots, and friend's houses – no signal needed.
               </p>
               
               <Button 
@@ -142,10 +142,6 @@ export default function LandingPage() {
                         <span className="text-sm font-semibold text-green-400">Strong buy - high demand</span>
                       </div>
                     </div>
-
-                    <button className="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-md transition-colors text-sm">
-                      List to Amazon →
-                    </button>
                   </div>
                 </div>
               </Card>
@@ -164,10 +160,10 @@ export default function LandingPage() {
                 <div className="text-xs font-bold text-teal-600 uppercase tracking-widest">BARCODE SCANNER</div>
               </div>
               <h3 className="text-lg font-bold text-foreground">Point. Scan. Decide.</h3>
-              <p className="text-sm text-muted-foreground">Lightning-fast ISBN lookup to Amazon & eBay. Ideal for high-volume scanning sessions in shops and car-boots.</p>
+              <p className="text-sm text-muted-foreground">Lightning-fast ISBN lookup. See profit instantly. Ideal for high-volume scouting sessions in shops and car-boots.</p>
               <ul className="text-sm text-muted-foreground space-y-1 pt-2">
-                <li>• Instant ISBN lookup to Amazon & eBay</li>
-                <li>• Fallback manual ISBN entry when damaged</li>
+                <li>• Instant ISBN → profitability check</li>
+                <li>• Manual ISBN entry when barcodes are damaged</li>
               </ul>
             </div>
 
@@ -177,10 +173,10 @@ export default function LandingPage() {
                 <div className="text-xs font-bold text-teal-600 uppercase tracking-widest">AI COVER RECOGNITION</div>
               </div>
               <h3 className="text-lg font-bold text-foreground">Just take a photo.</h3>
-              <p className="text-sm text-muted-foreground">Snap the front cover and let AI extract title, author, and edition – perfect for older books or missing barcodes.</p>
+              <p className="text-sm text-muted-foreground">Snap any book cover and AI extracts title, author, and ISBN – perfect for older books with faded barcodes.</p>
               <ul className="text-sm text-muted-foreground space-y-1 pt-2">
-                <li>• Ideal for vintage and collectible books</li>
-                <li>• Works even when barcodes are faded or covered</li>
+                <li>• Works on vintage and collectible books</li>
+                <li>• No need to find the barcode</li>
               </ul>
             </div>
 
