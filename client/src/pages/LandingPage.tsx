@@ -25,11 +25,11 @@ export default function LandingPage() {
             <span className="text-lg font-bold text-white">ISBNScout</span>
           </div>
           <div className="flex items-center gap-6">
+            <button onClick={() => scrollToSection("features")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-features">Features</button>
+            <button onClick={() => scrollToSection("offline")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-offline">Offline Mode</button>
             <button onClick={() => scrollToSection("pricing")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-pricing">Pricing</button>
             <button onClick={() => scrollToSection("faq")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-faq">FAQ</button>
-            <button onClick={() => setLocation("/about")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-features">Features</button>
-            <button onClick={() => setLocation("/offline-mode")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-offline">Offline Mode</button>
-            <button onClick={() => setLocation("/contact")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-contact">Contact</button>
+            <button onClick={() => scrollToSection("contact")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-contact">Contact</button>
             <div className="flex gap-2 ml-4">
               <Button 
                 variant="ghost"
@@ -199,7 +199,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features Section */}
-      <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
+      <section id="features" className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-foreground text-center mb-12">
             The fastest way to scout books.
@@ -286,7 +286,7 @@ export default function LandingPage() {
       </section>
 
       {/* Offline Section */}
-      <section className="py-16 bg-background">
+      <section id="offline" className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-foreground mb-3">
             Works even when your signal doesn't.
@@ -700,7 +700,7 @@ export default function LandingPage() {
           </div>
 
           {/* Get in Touch */}
-          <div>
+          <div id="contact">
             <h2 className="text-3xl font-bold text-foreground mb-3">
               Get in touch.
             </h2>
@@ -779,9 +779,10 @@ export default function LandingPage() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p>© 2025 ISBNScout. All rights reserved.</p>
             <div className="flex gap-6 text-slate-300">
+              <button onClick={() => scrollToSection("features")} className="hover:text-teal-400" data-testid="button-footer-features">Features</button>
               <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400" data-testid="button-footer-pricing">Pricing</button>
               <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400" data-testid="button-footer-faq">Docs</button>
-              <button onClick={() => setLocation("/contact")} className="hover:text-teal-400" data-testid="button-footer-contact">Contact</button>
+              <button onClick={() => scrollToSection("contact")} className="hover:text-teal-400" data-testid="button-footer-contact">Contact</button>
               <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400" data-testid="button-footer-privacy">Privacy</button>
               <button onClick={() => setLocation("/terms")} className="hover:text-teal-400" data-testid="button-footer-terms">Terms</button>
             </div>
