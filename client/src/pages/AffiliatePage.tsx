@@ -79,7 +79,7 @@ export default function AffiliatePage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-slate-800 border-b border-slate-700">
+      <header className="bg-slate-700 border-b border-slate-600">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => setLocation("/")}
