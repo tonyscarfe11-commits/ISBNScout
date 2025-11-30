@@ -21,7 +21,7 @@ const faqItems = [
   },
   {
     question: "Is the AI spine recognition real?",
-    answer: "We're building it. Currently, ISBNScout excels at barcode scanning (fastest method) and cover image recognition. AI spine recognition is in development—it's genuinely useful when you encounter books without visible barcodes or covers that are too worn.",
+    answer: "Absolutely. AI spine recognition is ready for launch and currently undergoing final testing. It's genuinely useful when you encounter books without visible barcodes or covers that are too worn. By launch day, it'll be available to all users.",
   },
   {
     question: "Can I export my inventory or scan history?",
