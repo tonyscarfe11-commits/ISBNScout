@@ -115,12 +115,23 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN Price</div>
                         <div className="font-semibold text-slate-300">£12.90</div>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees (6%)</div>
-                        <div className="font-semibold text-slate-300">£12.14</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Referral Fee (15.3%)</div>
+                        <div className="font-semibold text-slate-300">-£1.97</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Closing Fee</div>
+                        <div className="font-semibold text-slate-300">-£0.75</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
+                        <div className="font-semibold text-teal-400">£10.18</div>
                       </div>
                     </div>
 
@@ -137,7 +148,7 @@ export default function LandingPage() {
 
                     <div className="pt-2 border-t border-slate-700">
                       <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit</div>
-                      <div className="text-2xl font-bold text-teal-400">£4.84</div>
+                      <div className="text-2xl font-bold text-teal-400">£4.88</div>
                     </div>
 
                     <div className="pt-2">
