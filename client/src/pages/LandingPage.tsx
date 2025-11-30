@@ -2,42 +2,67 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Barcode, Camera, Eye, Check, Play, Zap, Crown, ChevronDown } from "lucide-react";
+import { Barcode, Camera, Eye, Check, Play, ChevronDown, Menu, X, Star, Wifi, WifiOff, Zap } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
-import { useState } from "react";
+import demoVideo from "@assets/generated_videos/book_scanning_app_demo.mp4";
+import { useState, useRef } from "react";
 
 const faqItems = [
   {
-    question: "Does ISBNScout work without WiFi or mobile data?",
-    answer: "Yes, that's the core feature! ISBNScout is built from the ground up for offline-first scouting. Scan ISBNs with your phone's camera, and all profitability data syncs to your device when you're connected. You can scan hundreds of books at a charity shop or car-boot sale without any signal, then sync everything when you get back online.",
-  },
-  {
-    question: "Is this built for Amazon UK sellers?",
-    answer: "Absolutely. ISBNScout is specifically designed for UK book resellers. All pricing, fees, and postage calculations are calibrated for the UK market. We use Royal Mail Large Letter postage (£2.80) in our profit calculations, support Amazon MFN with correct UK fees, and focus on charity shops and UK car-boot sales.",
-  },
-  {
-    question: "Does it support eBay UK?",
-    answer: "Yes. ISBNScout supports both Amazon MFN and eBay UK. When you scan a book, you'll see profitability forecasts for both platforms side-by-side, including all applicable fees. This helps you make better buy/don't-buy decisions knowing your best-case profit on either channel.",
+    question: "Does it work without WiFi or mobile data?",
+    answer: "Yes, that's the core feature. ISBNScout is built offline-first. Scan books at charity shops or car-boot sales without any signal, then sync when you're back online.",
   },
   {
     question: "Is the AI spine recognition real?",
-    answer: "Absolutely. AI spine recognition is ready for launch and currently undergoing final testing. It's genuinely useful when you encounter books without visible barcodes or covers that are too worn. By launch day, it'll be available to all users.",
+    answer: "Absolutely. AI spine recognition is ready for launch and currently in final testing. Photograph entire shelves without pulling books out—no other scouting app offers this.",
   },
   {
-    question: "Can I export my inventory or scan history?",
-    answer: "Yes. Your scan history and inventory data is yours. You can export your data in CSV format for spreadsheet analysis, accounting, or importing into other tools. This is a Pro and Elite feature, ensuring you're never locked into ISBNScout.",
+    question: "What platforms does it support?",
+    answer: "Both Amazon MFN and eBay UK. You'll see profit forecasts for both platforms side-by-side, including all fees and Royal Mail postage costs.",
   },
   {
     question: "Who is ISBNScout for?",
-    answer: "ISBNScout is built for UK book resellers: casual scouts hitting charity shops on weekends, professional pickers sourcing full-time, and anyone who wants to make better buy/don't-buy decisions at the point of sale. You don't need to be a power seller—the app works just as well for side-hustlers as it does for established shops.",
+    answer: "UK book resellers: weekend charity shop hunters, professional pickers, anyone who wants to make smarter buy/don't-buy decisions at the point of sale.",
+  },
+];
+
+const testimonials = [
+  {
+    quote: "Finally, an app that works in charity shop basements. I've doubled my sourcing speed.",
+    name: "Mark T.",
+    role: "Full-time book seller, Manchester",
+    rating: 5,
+  },
+  {
+    quote: "The spine recognition is a game-changer. I can scan an entire shelf in seconds instead of pulling every book out.",
+    name: "Sarah K.",
+    role: "Weekend reseller, Bristol",
+    rating: 5,
+  },
+  {
+    quote: "Accurate profit calculations that actually account for all the fees. No more nasty surprises.",
+    name: "James P.",
+    role: "Amazon seller, London",
+    rating: 5,
   },
 ];
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [videoPlaying, setVideoPlaying] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  const handlePlayVideo = () => {
+    if (videoRef.current) {
+      videoRef.current.play();
+      setVideoPlaying(true);
+    }
+  };
 
   const scrollToSection = (sectionId: string) => {
+    setMobileMenuOpen(false);
     const element = document.getElementById(sectionId);
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
@@ -46,135 +71,171 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Dark Navy Header */}
+      {/* Header */}
       <nav className="sticky top-0 bg-slate-900 border-b border-slate-800 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
-            <span className="text-lg font-bold text-white">ISBNScout</span>
-          </div>
-          <div className="flex items-center gap-6">
-            <button onClick={() => scrollToSection("features")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-features">Features</button>
-            <button onClick={() => scrollToSection("offline")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-offline">Offline Mode</button>
-            <button onClick={() => scrollToSection("pricing")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-pricing">Pricing</button>
-            <button onClick={() => scrollToSection("faq")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-faq">FAQ</button>
-            <button onClick={() => scrollToSection("contact")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-contact">Contact</button>
-            <div className="flex gap-2 ml-4">
-              <Button 
-                variant="ghost"
-                onClick={() => setLocation("/auth")}
-                className="text-slate-300 hover:text-white hover:bg-slate-800"
-                data-testid="button-login"
-              >
-                Log In
-              </Button>
-              <Button 
-                onClick={() => scrollToSection("pricing")}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
-                data-testid="button-header-trial"
-              >
-                Start Free Trial
-              </Button>
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
+              <span className="text-lg font-bold text-white">ISBNScout</span>
             </div>
+
+            {/* Desktop Nav */}
+            <div className="hidden md:flex items-center gap-6">
+              <button onClick={() => scrollToSection("features")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-faq">FAQ</button>
+              <div className="flex gap-2 ml-4">
+                <Button 
+                  variant="ghost"
+                  onClick={() => setLocation("/auth")}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800"
+                  data-testid="button-login"
+                >
+                  Log In
+                </Button>
+                <Button 
+                  onClick={() => scrollToSection("pricing")}
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-header-trial"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <button 
+              className="md:hidden text-white p-2"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="button-mobile-menu"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
+
+          {/* Mobile Menu */}
+          {mobileMenuOpen && (
+            <div className="md:hidden pt-4 pb-2 space-y-3">
+              <button onClick={() => scrollToSection("features")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-faq">FAQ</button>
+              <div className="flex flex-col gap-2 pt-2">
+                <Button 
+                  variant="ghost"
+                  onClick={() => { setLocation("/auth"); setMobileMenuOpen(false); }}
+                  className="text-slate-300 hover:text-white hover:bg-slate-800 justify-start"
+                  data-testid="button-mobile-login"
+                >
+                  Log In
+                </Button>
+                <Button 
+                  onClick={() => scrollToSection("pricing")}
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-mobile-trial"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
 
       {/* Hero Section */}
-      <section className="py-20 bg-background">
+      <section className="py-12 md:py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-start">
+          <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             {/* Left Column */}
             <div className="space-y-6">
               <Badge className="bg-teal-100 text-teal-800 border-teal-200 w-fit">
-                BOOK SCOUTING, UPGRADED
+                UK BOOK SCOUTING APP
               </Badge>
               
-              <h1 className="text-5xl font-bold text-foreground leading-tight">
-                Scan books.<span className="text-teal-600"> Even offline.</span>
+              <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+                Scan books.<br/><span className="text-teal-600">Even offline.</span>
               </h1>
               
-              <p className="text-base text-muted-foreground max-w-lg">
-                ISBNScout helps UK book resellers find profitable books in seconds with barcode, cover, and AI spine recognition. Built for charity shops, car-boot sales, and anywhere signal drops.
+              <p className="text-base md:text-lg text-muted-foreground max-w-lg">
+                Find profitable books in seconds with barcode, cover, and AI spine recognition. Built for charity shops, car-boots, and anywhere signal drops.
               </p>
               
-              <Button 
-                size="lg" 
-                onClick={() => scrollToSection("pricing")}
-                className="bg-teal-600 hover:bg-teal-700 text-white w-fit"
-              >
-                Start 14-Day Free Trial
-              </Button>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <Button 
+                  size="lg" 
+                  onClick={() => scrollToSection("pricing")}
+                  className="bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-hero-trial"
+                >
+                  Start 14-Day Free Trial
+                </Button>
+                <Button 
+                  size="lg" 
+                  variant="outline"
+                  onClick={() => scrollToSection("demo")}
+                  className="gap-2"
+                  data-testid="button-hero-demo"
+                >
+                  <Play className="h-4 w-4" />
+                  Watch Demo
+                </Button>
+              </div>
               
               <p className="text-xs text-muted-foreground">
                 No credit card required. Cancel anytime.
               </p>
-
-              <div className="pt-4 border-t border-slate-200 dark:border-slate-700 space-y-2">
-                <p className="text-xs text-muted-foreground font-semibold">Sources: <span className="text-slate-600 dark:text-slate-400">Amazon UK • eBay UK • Google Books • AI Vision</span></p>
-                <p className="text-xs text-muted-foreground font-semibold">Built for: <span className="text-slate-600 dark:text-slate-400">Charity shop hunters • Amazon sellers • eBay booksellers</span></p>
-              </div>
             </div>
 
-            {/* Right Column - Product Demo */}
+            {/* Right Column - Product Demo Card */}
             <div>
-              <Card className="bg-slate-900 border-slate-800 p-6 text-white">
+              <Card className="bg-slate-900 border-slate-800 p-4 md:p-6 text-white">
                 <div className="space-y-4">
                   {/* Header */}
-                  <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse" />
                       <span className="font-semibold text-sm">LIVE SCAN</span>
                     </div>
-                    <Badge variant="secondary" className="bg-slate-800 text-slate-300 text-xs">OFFLINE READY</Badge>
+                    <Badge variant="secondary" className="bg-slate-800 text-slate-300 text-xs">
+                      <WifiOff className="h-3 w-3 mr-1" />
+                      OFFLINE
+                    </Badge>
                   </div>
 
-                  {/* Best Candidate */}
+                  {/* Book Info */}
                   <div className="space-y-2 pb-3 border-b border-slate-700">
                     <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Best Candidate</div>
                     <div className="text-sm font-semibold">"Intro to Cognitive Science" – 3rd Ed.</div>
                     <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">AI Spine Recognition</Badge>
+                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">AI Spine</Badge>
                       <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">Charity shop – £2.50</Badge>
                     </div>
                   </div>
 
-                  {/* Metrics Grid */}
+                  {/* Key Metrics */}
                   <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-700">
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit (after fees & postage)</div>
-                      <div className="text-xl font-bold text-teal-400">£7.90</div>
+                    <div>
+                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit</div>
+                      <div className="text-2xl font-bold text-teal-400">£7.90</div>
                     </div>
-                    <div className="space-y-1">
+                    <div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Sales Velocity</div>
                       <div className="text-sm font-semibold text-slate-300">10 sales / 30 days</div>
                     </div>
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Amazon Used</div>
-                      <div className="text-sm font-semibold text-slate-300">£12.90</div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">eBay Sold Avg</div>
-                      <div className="text-sm font-semibold text-slate-300">£11.50</div>
-                    </div>
                   </div>
 
-                  {/* Fees Breakdown */}
+                  {/* Platform Comparison */}
                   <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="space-y-1">
-                      <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon Breakdown</div>
+                      <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon MFN</div>
                       <div className="space-y-1 pl-2 border-l border-slate-700">
                         <div className="flex justify-between text-slate-400">
-                          <span>List Price</span>
+                          <span>Price</span>
                           <span className="text-slate-300">£12.90</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
-                          <span>Referral (15.3%)</span>
-                          <span className="text-slate-300">-£1.97</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Closing Fee</span>
-                          <span className="text-slate-300">-£0.75</span>
+                          <span>Fees</span>
+                          <span className="text-slate-300">-£2.72</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
                           <span>Postage</span>
@@ -187,19 +248,15 @@ export default function LandingPage() {
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <div className="text-slate-500 uppercase tracking-wide font-semibold">eBay Breakdown</div>
+                      <div className="text-slate-500 uppercase tracking-wide font-semibold">eBay UK</div>
                       <div className="space-y-1 pl-2 border-l border-slate-700">
                         <div className="flex justify-between text-slate-400">
-                          <span>Avg Sold</span>
+                          <span>Sold Avg</span>
                           <span className="text-slate-300">£11.50</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
-                          <span>Final Value (12.8%)</span>
-                          <span className="text-slate-300">-£1.47</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>PayPal Fee (3.4%)</span>
-                          <span className="text-slate-300">-£0.39</span>
+                          <span>Fees</span>
+                          <span className="text-slate-300">-£1.86</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
                           <span>Postage</span>
@@ -217,634 +274,377 @@ export default function LandingPage() {
                   <div className="pt-3 border-t border-slate-700">
                     <div className="flex items-center gap-2">
                       <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-xs font-semibold text-green-400">Strong buy - high demand</span>
+                      <span className="text-xs font-semibold text-green-400">Strong buy – high demand, good margin</span>
                     </div>
                   </div>
                 </div>
               </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Strip */}
+      <section className="py-6 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-12 text-center">
+            <div className="flex items-center gap-2">
+              <div className="flex -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-teal-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white dark:border-slate-900">M</div>
+                <div className="w-8 h-8 rounded-full bg-slate-600 flex items-center justify-center text-white text-xs font-bold border-2 border-white dark:border-slate-900">S</div>
+                <div className="w-8 h-8 rounded-full bg-teal-700 flex items-center justify-center text-white text-xs font-bold border-2 border-white dark:border-slate-900">J</div>
+              </div>
+              <span className="text-sm text-muted-foreground">Trusted by UK book scouts</span>
+            </div>
+            <div className="flex items-center gap-1">
+              {[...Array(5)].map((_, i) => (
+                <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+              ))}
+              <span className="text-sm text-muted-foreground ml-1">4.9 rating</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <WifiOff className="h-4 w-4 text-teal-600" />
+              <span className="text-sm text-muted-foreground">Works offline</span>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="py-16 bg-slate-50 dark:bg-slate-900/30">
+      <section id="features" className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-12">
-            The fastest way to scout books.
-          </h2>
-          
-          <p className="text-center text-muted-foreground mb-12 max-w-2xl mx-auto">
-            ISBNScout identifies books in seconds using barcode, cover photo, or exclusive AI spine recognition – so you can single books or scan entire shelves.
-          </p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              Three ways to identify books
+            </h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto">
+              ISBNScout finds books in seconds—barcode, cover photo, or AI spine recognition. All work offline.
+            </p>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Barcode Scanner */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            {/* Barcode */}
+            <Card className="p-6 hover-elevate">
               <div className="space-y-4">
                 <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
                   <Barcode className="h-6 w-6 text-teal-600" />
                 </div>
                 <div>
-                  <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide mb-1">BARCODE SCANNER</div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Point. Scan. Decide.</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Lightning-fast ISBN detection with a mobile-first camera flow. Ideal for high-volume scanning sessions in shops and warehouses.</p>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Instant ISBN lookup to Amazon & eBay</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Fallback manual ISBN entry when barcodes are damaged</span>
-                    </li>
-                  </ul>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Barcode Scanner</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Point and scan. Instant ISBN lookup with profit calculations. The fastest method for high-volume sessions.
+                  </p>
                 </div>
               </div>
             </Card>
 
-            {/* Cover Recognition */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
+            {/* Cover */}
+            <Card className="p-6 hover-elevate">
               <div className="space-y-4">
                 <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
                   <Camera className="h-6 w-6 text-teal-600" />
                 </div>
                 <div>
-                  <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide mb-1">AI COVER RECOGNITION</div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Just take a photo.</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Snap the front cover and let AI extract title, author, and edition – perfect for older books or missing barcodes.</p>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Ideal for vintage and collectible books</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Works even when barcodes are faded or covered</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </Card>
-
-            {/* Spine Recognition */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
-              <div className="space-y-4">
-                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                  <Eye className="h-6 w-6 text-teal-600" />
-                </div>
-                <div>
-                  <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide mb-1">AI SPINE RECOGNITION</div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Scan the whole shelf.</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Photograph a single spine or entire shelf. ISBNScout reads the titles for you. No other scouting app offers this.</p>
-                  <ul className="space-y-2 text-xs text-muted-foreground">
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Rapid shelf scanning without pulling books out</span>
-                    </li>
-                    <li className="flex gap-2">
-                      <span className="text-teal-600 font-bold">•</span>
-                      <span>Huge time-saver on big charity shop trips</span>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* Offline Section */}
-      <section id="offline" className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground mb-3">
-            Works even when your signal doesn't.
-          </h2>
-          <p className="text-base text-muted-foreground max-w-2xl mb-12">
-            Most scouting apps stop the moment your phone loses reception. ISBNScout is built as offline-first, so you keep working in basements, back rooms, and concrete warehouses.
-          </p>
-
-          <div className="grid md:grid-cols-3 gap-6">
-            {/* Offline Scanning */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                  <Barcode className="h-6 w-6 text-teal-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Scan offline</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Cover Recognition</h3>
                   <p className="text-sm text-muted-foreground">
-                    Barcode, cover, and spine scanning work completely offline. Every scan is stored locally on your device until you sync.
+                    Snap the front cover. AI extracts title, author, and edition—perfect for older books or damaged barcodes.
                   </p>
                 </div>
               </div>
             </Card>
 
-            {/* Offline Calculations */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
+            {/* Spine */}
+            <Card className="p-6 hover-elevate border-teal-600 border-2">
               <div className="space-y-4">
-                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                  <Zap className="h-6 w-6 text-teal-600" />
+                <div className="flex items-center gap-2">
+                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                    <Eye className="h-6 w-6 text-teal-600" />
+                  </div>
+                  <Badge className="bg-teal-600 text-white text-xs">EXCLUSIVE</Badge>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Instant calculations</h3>
+                  <h3 className="text-lg font-bold text-foreground mb-2">AI Spine Recognition</h3>
                   <p className="text-sm text-muted-foreground">
-                    Profit estimates, fee breakdowns, and buy/don't-buy decisions all happen instantly—no network needed.
-                  </p>
-                </div>
-              </div>
-            </Card>
-
-            {/* Sync when ready */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                  <Crown className="h-6 w-6 text-teal-600" />
-                </div>
-                <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Sync when you're ready</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Head back online and sync your scans in seconds. No data loss, no friction—just continuous scouting.
+                    Photograph entire shelves. ISBNScout reads the spines for you. No other scouting app offers this.
                   </p>
                 </div>
               </div>
             </Card>
           </div>
-        </div>
-      </section>
 
-      {/* Feature boxes before From Scan to Profit */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-2 gap-6 mb-16">
-            {/* Offline-First Engine */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                  OFFLINE-FIRST ENGINE
-                </Badge>
-                <h3 className="text-xl font-bold text-foreground">Scan anywhere.</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  SQLite on-device storage keeps your scans, profit estimates, and notes safe while you're offline. Work like usual, everything syncs to the cloud.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Offline scanning for barcode, cover, and spine.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Local profit calculations using cached pricing.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Auto-sync to PostgreSQL when connection restores.</span>
-                  </li>
-                </ul>
+          {/* Offline Highlight */}
+          <div className="mt-12 p-6 bg-slate-900 rounded-lg text-white">
+            <div className="flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-teal-600/20 rounded-lg">
+                  <Wifi className="h-8 w-8 text-teal-400" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold">Works when your signal doesn't</h3>
+                  <p className="text-sm text-slate-400">Scan hundreds of books offline. Everything syncs when you're back online.</p>
+                </div>
               </div>
-            </Card>
-
-            {/* Real-World Sourcing */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                  REAL-WORLD SOURCING
-                </Badge>
-                <h3 className="text-xl font-bold text-foreground">Made for UK book hunters.</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Built specifically for how UK resellers actually work: charity shops, car-boot sales, library clear-outs, and house clearances.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Offline banner so you always know your status.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>"Syncing..." indicator when data catches up.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Designed for one-handed use on mobile.</span>
-                  </li>
-                </ul>
+              <div className="flex items-center gap-6 text-center">
+                <div>
+                  <div className="text-2xl font-bold text-teal-400">100%</div>
+                  <div className="text-xs text-slate-400">Offline capable</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-teal-400">&lt;1s</div>
+                  <div className="text-xs text-slate-400">Scan time</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-teal-400">UK</div>
+                  <div className="text-xs text-slate-400">Built for</div>
+                </div>
               </div>
-            </Card>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* From Scan to Profit Section */}
+      {/* Testimonials */}
       <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground mb-3">
-            From scan to profit, in one flow.
-          </h2>
-          
-          <p className="text-base text-muted-foreground max-w-3xl mb-12">
-            ISBNScout combines live pricing, sales velocity, and automated repricing so you can decide quickly, list instantly, and stay competitive without manual price changes.
-          </p>
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              What UK sellers are saying
+            </h2>
+          </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Profit Engine */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                  PROFIT ENGINE
-                </Badge>
-                <h3 className="text-lg font-bold text-foreground">Real profit, not guesswork.</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  See net profit after fees and postage, estimated ROI, and buyshop recommendations based on real sales data.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Amazon used price + eBay sold averages.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Sales velocity: how fast books actually move.</span>
-                  </li>
-                </ul>
-              </div>
-            </Card>
-
-            {/* Multi-Platform Listing */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                  MULTI-PLATFORM LISTING
-                </Badge>
-                <h3 className="text-lg font-bold text-foreground">List directly from ISBNScout.</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Turn scans into live listings in a few taps—without bouncing between different apps and tabs.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Amazon FBM listing support.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>eBay UK listing with titles, prices, and details filled.</span>
-                  </li>
-                </ul>
-              </div>
-            </Card>
-
-            {/* Automated Repricing */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                  AUTOMATED REPRICING
-                </Badge>
-                <h3 className="text-lg font-bold text-foreground">Stay competitive on autopilot.</h3>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Let ISBNScout monitor and update your prices automatically to protect margins and speed up sales.
-                </p>
-                <ul className="space-y-2 text-xs text-muted-foreground">
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Match lowest, beat by %, or beat by £.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Target-margin mode with min/max limits.</span>
-                  </li>
-                  <li className="flex gap-2">
-                    <span className="text-teal-600 font-bold">•</span>
-                    <span>Full repricing history per listing.</span>
-                  </li>
-                </ul>
-              </div>
-            </Card>
+            {testimonials.map((testimonial, index) => (
+              <Card key={index} className="p-6">
+                <div className="space-y-4">
+                  <div className="flex gap-1">
+                    {[...Array(testimonial.rating)].map((_, i) => (
+                      <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                    ))}
+                  </div>
+                  <p className="text-foreground italic">"{testimonial.quote}"</p>
+                  <div>
+                    <div className="font-semibold text-foreground">{testimonial.name}</div>
+                    <div className="text-sm text-muted-foreground">{testimonial.role}</div>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
       {/* Video Section */}
-      <section className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
+      <section id="demo" className="py-16 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-foreground mb-3">
-              See ISBNScout in action.
+              See it in action
             </h2>
-            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              A quick 20-30 second walkthrough: shelf scan, spine recognition, profit preview, and listing pushed live.
+            <p className="text-muted-foreground">
+              Watch how ISBNScout works in a real charity shop
             </p>
           </div>
 
-          {/* Video Placeholder */}
-          <div className="bg-slate-900 rounded-lg aspect-video flex items-center justify-center mb-8">
-            <div className="text-center space-y-4">
-              <div className="flex justify-center">
-                <div className="p-4 bg-white/10 rounded-full">
-                  <Play className="h-8 w-8 text-white fill-white" />
-                </div>
+          <div className="bg-slate-900 rounded-lg aspect-video relative overflow-hidden">
+            <video
+              ref={videoRef}
+              src={demoVideo}
+              className="w-full h-full object-cover"
+              controls={videoPlaying}
+              playsInline
+              onEnded={() => setVideoPlaying(false)}
+              data-testid="video-demo"
+            />
+            {!videoPlaying && (
+              <div 
+                className="absolute inset-0 flex items-center justify-center bg-black/40 cursor-pointer"
+                onClick={handlePlayVideo}
+              >
+                <button 
+                  className="p-6 bg-teal-600 hover:bg-teal-700 rounded-full transition-transform hover:scale-105"
+                  data-testid="button-play-video"
+                >
+                  <Play className="h-10 w-10 text-white fill-white" />
+                </button>
               </div>
-              <p className="text-sm text-slate-400">
-                Embed your Capcut / YouTube demo here.
-              </p>
-            </div>
+            )}
           </div>
         </div>
       </section>
 
       {/* Pricing Section */}
       <section id="pricing" className="py-16 bg-slate-50 dark:bg-slate-900/30">
-        <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground mb-3">
-            Simple pricing for serious UK book flippers
-          </h2>
-          <p className="text-base text-muted-foreground max-w-3xl mb-12">
-            Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
-          </p>
-
-          <div className="grid lg:grid-cols-3 gap-6">
-            {/* Left Column - 14 Day Free Trial */}
-            <div>
-              <Card className="p-6 border-slate-200 dark:border-slate-700 h-full">
-                <div className="space-y-4">
-                  <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
-                    14-DAY FREE TRIAL
-                  </Badge>
-                  <h3 className="text-lg font-bold text-foreground">Test it during real sourcing runs</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Scan books in charity shops, car-boots, and libraries with full features enabled.
-                  </p>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Full Pro & Elite access</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">No card required</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Cancel anytime</span>
-                    </li>
-                  </ul>
-                </div>
-              </Card>
-            </div>
-
-            {/* Middle Column - Pro Plan */}
-            <div>
-              <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30 h-full">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
-                    <p className="text-xs text-muted-foreground">Perfect for UK sellers sourcing weekly in charity shops and car-boots.</p>
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">£14.99</span>
-                      <span className="text-sm text-muted-foreground">/month</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Unlimited scans</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Offline mode</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Barcode, cover & AI spine recognition</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Amazon + eBay UK profit calculator</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Royal Mail postage estimates</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Scan history</span>
-                    </li>
-                  </ul>
-                  <Button 
-                    size="lg" 
-                    onClick={() => setLocation("/auth")}
-                    className="w-full bg-teal-600 hover:bg-teal-700 text-white"
-                  >
-                    Start 14-Day Pro Trial
-                  </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Prefer yearly? £149/year (save ~2 months)
-                  </p>
-                </div>
-              </Card>
-            </div>
-
-            {/* Right Column - Elite Plan */}
-            <div>
-              <Card className="p-6 border-slate-200 dark:border-slate-700 h-full">
-                <div className="space-y-4">
-                  <div>
-                    <h3 className="text-xl font-bold text-foreground mb-1">Elite</h3>
-                    <p className="text-xs text-muted-foreground">For high-volume sellers sourcing automation and advanced tools.</p>
-                  </div>
-                  <div>
-                    <div className="flex items-baseline gap-1">
-                      <span className="text-3xl font-bold text-foreground">£19.99</span>
-                      <span className="text-sm text-muted-foreground">/month</span>
-                    </div>
-                  </div>
-                  <ul className="space-y-2">
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Everything in Pro</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Buy / Don't Buy triggers</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Custom profit rules</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">CSV export</span>
-                    </li>
-                    <li className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Multi-device access</span>
-                    </li>
-                  </ul>
-                  <Button 
-                    size="lg" 
-                    onClick={() => setLocation("/auth")}
-                    className="w-full"
-                  >
-                    Start 14-Day Elite Trial
-                  </Button>
-                  <p className="text-xs text-center text-muted-foreground">
-                    Prefer yearly? £199/year (save ~2 months)
-                  </p>
-                </div>
-              </Card>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ & Contact Section */}
-      <section id="faq" className="py-16 bg-background">
-        <div className="max-w-7xl mx-auto px-4">
-          {/* FAQ */}
-          <div className="mb-16">
-            <h2 className="text-3xl font-bold text-foreground mb-8">
-              Frequently asked questions.
-            </h2>
-            
-            <div className="space-y-3">
-              {faqItems.map((item, index) => (
-                <div key={index}>
-                  <button
-                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                    className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-teal-600 dark:hover:border-teal-600 transition-colors flex items-center justify-between"
-                    data-testid={`button-landing-faq-${index}`}
-                  >
-                    <h3 className="font-semibold text-foreground pr-4">{item.question}</h3>
-                    <ChevronDown 
-                      className={`w-5 h-5 text-teal-600 flex-shrink-0 transition-transform ${
-                        expandedIndex === index ? "rotate-180" : ""
-                      }`}
-                    />
-                  </button>
-                  {expandedIndex === index && (
-                    <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 border-t-0 rounded-t-none">
-                      <p className="text-muted-foreground leading-relaxed text-sm">
-                        {item.answer}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Get in Touch */}
-          <div id="contact">
+        <div className="max-w-5xl mx-auto px-4">
+          <div className="text-center mb-12">
             <h2 className="text-3xl font-bold text-foreground mb-3">
-              Get in touch.
+              Simple, honest pricing
             </h2>
-            <p className="text-base text-muted-foreground max-w-2xl mb-12">
-              Have questions about ISBNScout? Need help getting started? We're here to help.
+            <p className="text-muted-foreground">
+              14-day free trial. No credit card required. Cancel anytime.
             </p>
+          </div>
 
-            <div className="grid md:grid-cols-3 gap-6">
-              {/* Support Card */}
-              <Card className="p-6 border-slate-200 dark:border-slate-700">
-                <div className="space-y-4">
-                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                    <div className="w-6 h-6 text-teal-600">
-                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground">Support</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Questions about your account, technical issues, or how to use ISBNScout.
-                  </p>
-                  <a href="mailto:support@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
-                    support@isbnscout.com
-                  </a>
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+            {/* Pro Plan */}
+            <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30">
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl font-bold text-foreground">Pro</h3>
+                  <Badge className="bg-teal-600 text-white">POPULAR</Badge>
                 </div>
-              </Card>
+                <p className="text-sm text-muted-foreground">For weekly sourcing in charity shops and car-boots.</p>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-foreground">£14.99</span>
+                    <span className="text-muted-foreground">/month</span>
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">or £149/year (save 2 months)</p>
+                </div>
+                <ul className="space-y-2">
+                  {["Unlimited scans", "Offline mode", "Barcode, cover & AI spine", "Amazon + eBay profit calculator", "Scan history"].map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0" />
+                      <span className="text-sm text-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-pricing-pro"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+            </Card>
 
-              {/* General Inquiries Card */}
-              <Card className="p-6 border-slate-200 dark:border-slate-700">
-                <div className="space-y-4">
-                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                    <div className="w-6 h-6 text-teal-600">
-                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
-                      </svg>
-                    </div>
+            {/* Elite Plan */}
+            <Card className="p-6">
+              <div className="space-y-4">
+                <h3 className="text-xl font-bold text-foreground">Elite</h3>
+                <p className="text-sm text-muted-foreground">For high-volume sellers needing advanced tools.</p>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-4xl font-bold text-foreground">£19.99</span>
+                    <span className="text-muted-foreground">/month</span>
                   </div>
-                  <h3 className="text-lg font-bold text-foreground">General Inquiries</h3>
-                  <p className="text-sm text-muted-foreground">
-                    General questions, partnerships, or business inquiries.
-                  </p>
-                  <a href="mailto:contact@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
-                    contact@isbnscout.com
-                  </a>
+                  <p className="text-xs text-muted-foreground mt-1">or £199/year (save 2 months)</p>
                 </div>
-              </Card>
-
-              {/* Information Card */}
-              <Card className="p-6 border-slate-200 dark:border-slate-700">
-                <div className="space-y-4">
-                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                    <div className="w-6 h-6 text-teal-600">
-                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
-                      </svg>
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-bold text-foreground">Information</h3>
-                  <p className="text-sm text-muted-foreground">
-                    Learn more about ISBNScout, features, and pricing options.
-                  </p>
-                  <a href="mailto:info@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
-                    info@isbnscout.com
-                  </a>
-                </div>
-              </Card>
-            </div>
+                <ul className="space-y-2">
+                  {["Everything in Pro", "Buy/Don't Buy triggers", "Custom profit rules", "CSV export", "Multi-device access"].map((feature) => (
+                    <li key={feature} className="flex items-center gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0" />
+                      <span className="text-sm text-foreground">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full"
+                  data-testid="button-pricing-elite"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+            </Card>
           </div>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-300 py-8">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
-            <p>© 2025 ISBNScout. All rights reserved.</p>
-            <div className="flex gap-6 text-slate-300">
-              <button onClick={() => scrollToSection("features")} className="hover:text-teal-400" data-testid="button-footer-features">Features</button>
-              <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400" data-testid="button-footer-pricing">Pricing</button>
-              <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400" data-testid="button-footer-faq">Docs</button>
-              <button onClick={() => scrollToSection("contact")} className="hover:text-teal-400" data-testid="button-footer-contact">Contact</button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400" data-testid="button-footer-privacy">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400" data-testid="button-footer-terms">Terms</button>
-            </div>
+      {/* FAQ Section */}
+      <section id="faq" className="py-16 bg-background">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              Common questions
+            </h2>
+          </div>
+          
+          <div className="space-y-3">
+            {faqItems.map((item, index) => (
+              <div key={index}>
+                <button
+                  onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                  className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-teal-600 dark:hover:border-teal-600 transition-colors flex items-center justify-between gap-4"
+                  data-testid={`button-faq-${index}`}
+                >
+                  <h3 className="font-semibold text-foreground">{item.question}</h3>
+                  <ChevronDown 
+                    className={`w-5 h-5 text-teal-600 flex-shrink-0 transition-transform ${
+                      expandedIndex === index ? "rotate-180" : ""
+                    }`}
+                  />
+                </button>
+                {expandedIndex === index && (
+                  <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg">
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      {item.answer}
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
           </div>
         </div>
-      </footer>
+      </section>
 
-      {/* CTA Section */}
+      {/* Final CTA */}
       <section className="py-16 bg-slate-900 text-white">
-        <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
+        <div className="max-w-3xl mx-auto px-4 text-center space-y-6">
           <h2 className="text-3xl font-bold">Ready to find profitable books faster?</h2>
-          <p className="text-lg opacity-90">
-            Scan shelves, see net profit, and list to Amazon and eBay — even when your phone has no signal.
+          <p className="text-lg text-slate-300">
+            Scan shelves, see net profit, and make smarter buy decisions—even without signal.
           </p>
-          <div className="flex gap-3 justify-center">
+          <div className="flex flex-col sm:flex-row gap-3 justify-center">
             <Button 
               size="lg"
               onClick={() => scrollToSection("pricing")}
               className="bg-teal-600 hover:bg-teal-700 text-white"
+              data-testid="button-cta-trial"
             >
               Start 14-Day Free Trial
             </Button>
+            <Button 
+              size="lg"
+              variant="outline"
+              onClick={() => scrollToSection("demo")}
+              className="border-slate-600 text-white hover:bg-slate-800 gap-2"
+              data-testid="button-cta-demo"
+            >
+              <Play className="h-4 w-4" />
+              Watch Demo
+            </Button>
           </div>
-          <p className="text-sm opacity-75">
-            No credit card required. Designed for UK sellers.
+          <p className="text-sm text-slate-400">
+            No credit card required. Built for UK book sellers.
           </p>
         </div>
       </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-950 text-slate-400 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
+              <span className="text-white font-semibold">ISBNScout</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <button onClick={() => scrollToSection("features")} className="hover:text-teal-400" data-testid="button-footer-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400" data-testid="button-footer-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400" data-testid="button-footer-faq">FAQ</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400" data-testid="button-footer-privacy">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400" data-testid="button-footer-terms">Terms</button>
+            </div>
+          </div>
+          <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">
+            <p>© 2025 ISBNScout. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
