@@ -29,6 +29,7 @@ import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import FAQPage from "@/pages/FAQPage";
+import OfflineModePage from "@/pages/OfflineModePage";
 import NotFound from "@/pages/not-found";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -58,6 +59,7 @@ function Router() {
         <Route path="/blog/amazon-fba-fbm-ebay-comparison" component={BlogPost3} />
         <Route path="/faq" component={FAQPage} />
         <Route path="/contact" component={FAQPage} />
+        <Route path="/offline-mode" component={OfflineModePage} />
         <Route path="/privacy" component={PrivacyPage} />
         <Route path="/terms" component={TermsPage} />
 
