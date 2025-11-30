@@ -250,7 +250,7 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
           </Button>
           <Button
             asChild
-            className="bg-[#E53238] hover:bg-[#c92a2f] text-white font-semibold gap-1"
+            className="bg-[#0064D2] hover:bg-[#0052ab] text-white font-semibold gap-1"
             data-testid="button-ebay-view"
           >
             <a 
