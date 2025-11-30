@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Barcode, Camera, Eye, ArrowRight } from "lucide-react";
+import { Barcode, Camera, Eye } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 export default function LandingPage() {
@@ -18,24 +18,22 @@ export default function LandingPage() {
             <span className="text-lg font-bold text-white">ISBNScout</span>
           </div>
           <div className="flex items-center gap-6">
-            <button onClick={() => setLocation("/about")} className="text-slate-300 hover:text-white text-sm" data-testid="link-features">Features</button>
-            <button onClick={() => setLocation("/app")} className="text-slate-300 hover:text-white text-sm" data-testid="link-offline">Offline Mode</button>
-            <button onClick={() => setLocation("/subscription")} className="text-slate-300 hover:text-white text-sm" data-testid="link-pricing">Pricing</button>
-            <button onClick={() => setLocation("/blog")} className="text-slate-300 hover:text-white text-sm" data-testid="link-faq">FAQ</button>
-            <button onClick={() => setLocation("/contact")} className="text-slate-300 hover:text-white text-sm" data-testid="link-contact">Contact</button>
+            <button onClick={() => setLocation("/about")} className="text-slate-300 hover:text-white text-sm">Features</button>
+            <button onClick={() => setLocation("/offline-mode")} className="text-slate-300 hover:text-white text-sm">Offline Mode</button>
+            <button onClick={() => setLocation("/subscription")} className="text-slate-300 hover:text-white text-sm">Pricing</button>
+            <button onClick={() => setLocation("/faq")} className="text-slate-300 hover:text-white text-sm">FAQ</button>
+            <button onClick={() => setLocation("/faq")} className="text-slate-300 hover:text-white text-sm">Contact</button>
             <div className="flex gap-2 ml-4">
               <Button 
                 variant="ghost"
                 onClick={() => setLocation("/auth")}
                 className="text-slate-300 hover:text-white hover:bg-slate-800"
-                data-testid="button-login"
               >
                 Log In
               </Button>
               <Button 
                 onClick={() => setLocation("/auth")}
                 className="bg-teal-600 hover:bg-teal-700 text-white"
-                data-testid="button-nav-trial"
               >
                 Start Free Trial
               </Button>
@@ -45,9 +43,9 @@ export default function LandingPage() {
       </nav>
 
       {/* Hero Section */}
-      <section className="py-16 bg-background">
+      <section className="py-20 bg-background">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-12 items-start">
             {/* Left Column */}
             <div className="space-y-6">
               <Badge className="bg-teal-100 text-teal-800 border-teal-200 w-fit">
@@ -66,7 +64,6 @@ export default function LandingPage() {
                 size="lg" 
                 onClick={() => setLocation("/auth")}
                 className="bg-teal-600 hover:bg-teal-700 text-white w-fit"
-                data-testid="button-hero-trial"
               >
                 Start 14-Day Free Trial
               </Button>
@@ -223,7 +220,7 @@ export default function LandingPage() {
                 <div>
                   <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide mb-1">BARCODE SCANNER</div>
                   <h3 className="text-lg font-bold text-foreground mb-2">Point. Scan. Decide.</h3>
-                  <p className="text-sm text-muted-foreground mb-3">Lightning-fast ISBN detection. Ideal for high-volume scanning sessions in shops and car-boots.</p>
+                  <p className="text-sm text-muted-foreground mb-3">Lightning-fast ISBN detection with a mobile-first camera flow. Ideal for high-volume scanning sessions in shops and warehouses.</p>
                   <ul className="space-y-2 text-xs text-muted-foreground">
                     <li className="flex gap-2">
                       <span className="text-teal-600 font-bold">•</span>
@@ -313,7 +310,6 @@ export default function LandingPage() {
               size="lg"
               onClick={() => setLocation("/auth")}
               className="bg-white text-teal-700 hover:bg-slate-100"
-              data-testid="button-cta-trial"
             >
               Start Free Trial
             </Button>
@@ -322,7 +318,6 @@ export default function LandingPage() {
               variant="outline"
               onClick={() => setLocation("/subscription")}
               className="border-white text-white hover:bg-white/20"
-              data-testid="button-cta-pricing"
             >
               View Plans
             </Button>
