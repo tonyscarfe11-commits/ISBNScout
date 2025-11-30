@@ -484,33 +484,33 @@ export default function LandingPage() {
 
       {/* Pricing Section */}
       <section className="py-20 bg-background">
-        <div className="max-w-4xl mx-auto px-4">
+        <div className="max-w-5xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-foreground text-center mb-12">Simple, Transparent Pricing</h2>
-          <div className="grid md:grid-cols-2 gap-6">
-            {/* Free Trial Card */}
-            <Card className="p-8 border-teal-200 dark:border-teal-700">
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Trial Card */}
+            <Card className="p-6 border-teal-200 dark:border-teal-700">
               <div className="space-y-6">
                 <div>
                   <h3 className="text-2xl font-bold text-foreground mb-2">Free Trial</h3>
-                  <p className="text-muted-foreground text-sm">14 days, full access</p>
+                  <p className="text-muted-foreground text-sm">14 days, no commitment</p>
                 </div>
                 <div className="text-4xl font-bold text-foreground">£0<span className="text-lg text-muted-foreground">/trial</span></div>
                 <ul className="space-y-3">
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Full access to all features</span>
+                    <span className="text-foreground">Full access</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Unlimited book scans</span>
+                    <span className="text-foreground">Unlimited scans</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Offline mode included</span>
+                    <span className="text-foreground">Offline mode</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">No credit card required</span>
+                    <span className="text-foreground">No card required</span>
                   </li>
                 </ul>
                 <Button 
@@ -519,36 +519,39 @@ export default function LandingPage() {
                   className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                   data-testid="button-pricing-trial"
                 >
-                  Start Free Trial
+                  Start Free
                 </Button>
               </div>
             </Card>
 
             {/* Pro Card */}
-            <Card className="p-8 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950">
+            <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950">
               <div className="space-y-6">
                 <div>
-                  <Badge className="bg-teal-600 text-white mb-3">RECOMMENDED</Badge>
+                  <Badge className="bg-teal-600 text-white mb-3">POPULAR</Badge>
                   <h3 className="text-2xl font-bold text-foreground mb-2">Pro</h3>
-                  <p className="text-muted-foreground text-sm">Unlimited scouting, forever</p>
+                  <p className="text-muted-foreground text-sm">For serious scouts</p>
                 </div>
-                <div className="text-4xl font-bold text-foreground">£4.99<span className="text-lg text-muted-foreground">/month</span></div>
+                <div>
+                  <div className="text-4xl font-bold text-foreground">£14.99<span className="text-lg text-muted-foreground">/month</span></div>
+                  <p className="text-xs text-teal-600 font-semibold mt-1">+ 14-day trial</p>
+                </div>
                 <ul className="space-y-3">
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Everything in Free Trial</span>
+                    <span className="text-foreground">Unlimited scans</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Daily data updates</span>
+                    <span className="text-foreground">Offline mode</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Both Amazon & eBay support</span>
+                    <span className="text-foreground">AI recognition</span>
                   </li>
                   <li className="flex gap-2 text-sm">
                     <span className="text-teal-600 font-bold">✓</span>
-                    <span className="text-foreground">Priority support</span>
+                    <span className="text-foreground">Scan history</span>
                   </li>
                 </ul>
                 <Button 
@@ -557,12 +560,52 @@ export default function LandingPage() {
                   className="w-full bg-teal-600 hover:bg-teal-700 text-white"
                   data-testid="button-pricing-pro"
                 >
-                  Subscribe Now
+                  Start 14-Day Trial
+                </Button>
+              </div>
+            </Card>
+
+            {/* Elite Card */}
+            <Card className="p-6 border-teal-200 dark:border-teal-700">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Elite</h3>
+                  <p className="text-muted-foreground text-sm">Advanced automation</p>
+                </div>
+                <div>
+                  <div className="text-4xl font-bold text-foreground">£19.99<span className="text-lg text-muted-foreground">/month</span></div>
+                  <p className="text-xs text-teal-600 font-semibold mt-1">+ 14-day trial</p>
+                </div>
+                <ul className="space-y-3">
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Everything in Pro</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Buy/Don't Buy rules</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">CSV export</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Multi-device access</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-pricing-elite"
+                >
+                  Start 14-Day Trial
                 </Button>
               </div>
             </Card>
           </div>
-          <p className="text-center text-sm text-muted-foreground mt-8">Cancel anytime. No long-term contracts.</p>
+          <p className="text-center text-sm text-muted-foreground mt-8">All plans include 14-day free trial. Cancel anytime, no long-term contracts.</p>
         </div>
       </section>
 
