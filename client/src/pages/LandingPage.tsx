@@ -335,68 +335,151 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Feature boxes before From Scan to Profit */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-6 mb-16">
+            {/* Offline-First Engine */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                  OFFLINE-FIRST ENGINE
+                </Badge>
+                <h3 className="text-xl font-bold text-foreground">Scan anywhere.</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  SQLite on-device storage keeps your scans, profit estimates, and notes safe while you're offline. Work like usual, everything syncs to the cloud.
+                </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Offline scanning for barcode, cover, and spine.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Local profit calculations using cached pricing.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Auto-sync to PostgreSQL when connection restores.</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+
+            {/* Real-World Sourcing */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                  REAL-WORLD SOURCING
+                </Badge>
+                <h3 className="text-xl font-bold text-foreground">Made for UK book hunters.</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Built specifically for how UK resellers actually work: charity shops, car-boot sales, library clear-outs, and house clearances.
+                </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Offline banner so you always know your status.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>"Syncing..." indicator when data catches up.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Designed for one-handed use on mobile.</span>
+                  </li>
+                </ul>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
       {/* From Scan to Profit Section */}
       <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
-          <h2 className="text-3xl font-bold text-foreground text-center mb-12">
+          <h2 className="text-3xl font-bold text-foreground mb-3">
             From scan to profit, in one flow.
           </h2>
+          
+          <p className="text-base text-muted-foreground max-w-3xl mb-12">
+            ISBNScout combines live pricing, sales velocity, and automated repricing so you can decide quickly, list instantly, and stay competitive without manual price changes.
+          </p>
 
-          <div className="space-y-8">
-            <div className="grid md:grid-cols-4 gap-6">
-              {/* Step 1 */}
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Profit Engine */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
               <div className="space-y-4">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                  1
-                </div>
-                <h3 className="font-bold text-foreground">Scan</h3>
-                <p className="text-sm text-muted-foreground">
-                  Point your phone at a barcode, cover, or shelf spine. ISBNScout identifies the book in milliseconds.
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                  PROFIT ENGINE
+                </Badge>
+                <h3 className="text-lg font-bold text-foreground">Real profit, not guesswork.</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  See net profit after fees and postage, estimated ROI, and buyshop recommendations based on real sales data.
                 </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Amazon used price + eBay sold averages.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Sales velocity: how fast books actually move.</span>
+                  </li>
+                </ul>
               </div>
+            </Card>
 
-              {/* Arrow */}
-              <div className="hidden md:flex items-end pb-4 justify-center">
-                <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
-              </div>
-
-              {/* Step 2 */}
+            {/* Multi-Platform Listing */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
               <div className="space-y-4">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                  2
-                </div>
-                <h3 className="font-bold text-foreground">Analyze</h3>
-                <p className="text-sm text-muted-foreground">
-                  Instant profit calculations show net return after fees and postage. Sales velocity tells you demand.
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                  MULTI-PLATFORM LISTING
+                </Badge>
+                <h3 className="text-lg font-bold text-foreground">List directly from ISBNScout.</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Turn scans into live listings in a few taps—without bouncing between different apps and tabs.
                 </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Amazon FBM listing support.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>eBay UK listing with titles, prices, and details filled.</span>
+                  </li>
+                </ul>
               </div>
+            </Card>
 
-              {/* Arrow */}
-              <div className="hidden md:flex items-end pb-4 justify-center">
-                <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
-              </div>
-
-              {/* Step 3 */}
+            {/* Automated Repricing */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
               <div className="space-y-4">
-                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                  3
-                </div>
-                <h3 className="font-bold text-foreground">Decide</h3>
-                <p className="text-sm text-muted-foreground">
-                  Buy/don't-buy recommendation based on profit margins and historical sales data. You stay in control.
+                <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                  AUTOMATED REPRICING
+                </Badge>
+                <h3 className="text-lg font-bold text-foreground">Stay competitive on autopilot.</h3>
+                <p className="text-sm text-muted-foreground mb-3">
+                  Let ISBNScout monitor and update your prices automatically to protect margins and speed up sales.
                 </p>
+                <ul className="space-y-2 text-xs text-muted-foreground">
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Match lowest, beat by %, or beat by £.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Target-margin mode with min/max limits.</span>
+                  </li>
+                  <li className="flex gap-2">
+                    <span className="text-teal-600 font-bold">•</span>
+                    <span>Full repricing history per listing.</span>
+                  </li>
+                </ul>
               </div>
-            </div>
-
-            <div className="flex justify-center pt-4">
-              <Button 
-                size="lg"
-                onClick={() => setLocation("/auth")}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
-              >
-                Start Your First Scan
-              </Button>
-            </div>
+            </Card>
           </div>
         </div>
       </section>
