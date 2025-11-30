@@ -2246,7 +2246,251 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Affiliate program application
+  // ==================== AFFILIATE PROGRAM ROUTES ====================
+  
+  // Affiliate signup/registration
+  app.post("/api/affiliates/register", async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { name, email, password, website, socialMedia, audience } = req.body;
+
+      if (!name || !email || !password) {
+        return res.status(400).json({ message: "Name, email, and password are required" });
+      }
+
+      if (password.length < 8) {
+        return res.status(400).json({ message: "Password must be at least 8 characters" });
+      }
+
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please provide a valid email address" });
+      }
+
+      const affiliate = await AffiliateService.createAffiliate({
+        name,
+        email,
+        password,
+        website,
+        socialMedia,
+        audience,
+      });
+
+      console.log("[Affiliate Registration]", { id: affiliate.id, name: affiliate.name, email: affiliate.email });
+
+      res.json({ 
+        success: true, 
+        message: "Registration successful! Your application is pending approval. We'll email you once approved.",
+        referralCode: affiliate.referralCode
+      });
+    } catch (error: any) {
+      console.error("[Affiliate Registration] Error:", error);
+      if (error.message?.includes("unique constraint")) {
+        return res.status(400).json({ message: "An affiliate with this email already exists" });
+      }
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Affiliate login
+  app.post("/api/affiliates/login", async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { email, password } = req.body;
+
+      if (!email || !password) {
+        return res.status(400).json({ message: "Email and password are required" });
+      }
+
+      const result = await AffiliateService.authenticateAffiliate(email, password);
+
+      if (!result) {
+        return res.status(401).json({ message: "Invalid email or password" });
+      }
+
+      if ('error' in result && result.error === "pending") {
+        return res.status(403).json({ 
+          message: `Your account is ${result.affiliate.status}. Please wait for approval.`,
+          status: result.affiliate.status
+        });
+      }
+
+      const affiliateToken = crypto.randomBytes(32).toString('hex');
+      
+      res.json({ 
+        success: true,
+        affiliateToken,
+        affiliate: {
+          id: result.affiliate.id,
+          name: result.affiliate.name,
+          email: result.affiliate.email,
+          referralCode: result.affiliate.referralCode,
+          commissionRate: result.affiliate.commissionRate,
+        }
+      });
+    } catch (error: any) {
+      console.error("[Affiliate Login] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Track referral click (from ?ref=CODE on landing page)
+  app.post("/api/affiliates/track-click", async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { referralCode, landingPage } = req.body;
+
+      if (!referralCode) {
+        return res.status(400).json({ message: "Referral code is required" });
+      }
+
+      const affiliate = await AffiliateService.getAffiliateByReferralCode(referralCode);
+      if (!affiliate || affiliate.status !== "approved") {
+        return res.status(404).json({ message: "Invalid referral code" });
+      }
+
+      const click = await AffiliateService.trackReferralClick(affiliate.id, {
+        ipAddress: req.ip || req.socket.remoteAddress,
+        userAgent: req.headers['user-agent'],
+        referrer: req.headers.referer,
+        landingPage,
+      });
+
+      res.json({ 
+        success: true,
+        affiliateId: affiliate.id,
+        clickId: click.id
+      });
+    } catch (error: any) {
+      console.error("[Track Referral Click] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Get affiliate dashboard stats
+  app.get("/api/affiliates/dashboard", async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const affiliateId = req.headers['x-affiliate-id'] as string;
+
+      if (!affiliateId) {
+        return res.status(401).json({ message: "Affiliate ID required" });
+      }
+
+      const stats = await AffiliateService.getAffiliateStats(affiliateId);
+      if (!stats) {
+        return res.status(404).json({ message: "Affiliate not found" });
+      }
+
+      res.json(stats);
+    } catch (error: any) {
+      console.error("[Affiliate Dashboard] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Validate referral code (for cookie tracking)
+  app.get("/api/affiliates/validate/:code", async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { code } = req.params;
+
+      const affiliate = await AffiliateService.getAffiliateByReferralCode(code);
+      if (!affiliate || affiliate.status !== "approved") {
+        return res.status(404).json({ valid: false });
+      }
+
+      res.json({ 
+        valid: true,
+        affiliateId: affiliate.id,
+        referralCode: affiliate.referralCode
+      });
+    } catch (error: any) {
+      console.error("[Validate Referral Code] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Get all affiliates
+  app.get("/api/admin/affiliates", requireAuth, async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const affiliates = await AffiliateService.getAllAffiliates();
+      res.json(affiliates);
+    } catch (error: any) {
+      console.error("[Admin Get Affiliates] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Approve affiliate
+  app.post("/api/admin/affiliates/:id/approve", requireAuth, async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { id } = req.params;
+
+      const affiliate = await AffiliateService.approveAffiliate(id);
+      if (!affiliate) {
+        return res.status(404).json({ message: "Affiliate not found" });
+      }
+
+      res.json({ success: true, affiliate });
+    } catch (error: any) {
+      console.error("[Admin Approve Affiliate] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Reject affiliate
+  app.post("/api/admin/affiliates/:id/reject", requireAuth, async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { id } = req.params;
+
+      const affiliate = await AffiliateService.rejectAffiliate(id);
+      if (!affiliate) {
+        return res.status(404).json({ message: "Affiliate not found" });
+      }
+
+      res.json({ success: true, affiliate });
+    } catch (error: any) {
+      console.error("[Admin Reject Affiliate] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Get pending commissions
+  app.get("/api/admin/commissions/pending", requireAuth, async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const commissions = await AffiliateService.getPendingCommissions();
+      res.json(commissions);
+    } catch (error: any) {
+      console.error("[Admin Get Pending Commissions] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Admin: Mark commission as paid
+  app.post("/api/admin/commissions/:id/pay", requireAuth, async (req, res) => {
+    try {
+      const { AffiliateService } = await import("./affiliate-service");
+      const { id } = req.params;
+      const { paypalTransactionId } = req.body;
+
+      const commission = await AffiliateService.markCommissionPaid(id, paypalTransactionId);
+      if (!commission) {
+        return res.status(404).json({ message: "Commission not found" });
+      }
+
+      res.json({ success: true, commission });
+    } catch (error: any) {
+      console.error("[Admin Pay Commission] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
+  // Legacy affiliate application endpoint (for compatibility)
   app.post("/api/affiliates/apply", async (req, res) => {
     try {
       const { name, email, website, socialMedia, audience, howDidYouHear } = req.body;
@@ -2255,17 +2499,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ message: "Name, email, and audience description are required" });
       }
 
-      // Sanitize inputs - strip HTML tags and limit length
       const sanitize = (str: string | undefined, maxLen: number = 500): string => {
         if (!str) return '';
         return String(str)
-          .replace(/<[^>]*>/g, '') // Remove HTML tags
-          .replace(/[<>'"&]/g, '') // Remove potentially dangerous chars
+          .replace(/<[^>]*>/g, '')
+          .replace(/[<>'"&]/g, '')
           .trim()
           .slice(0, maxLen);
       };
 
-      // Validate email format
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         return res.status(400).json({ message: "Please provide a valid email address" });
@@ -2281,7 +2523,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
         appliedAt: new Date().toISOString(),
       };
 
-      // Log the application (in production, you'd store this in a database)
       console.log("[Affiliate Application]", sanitizedData);
 
       res.json({ 

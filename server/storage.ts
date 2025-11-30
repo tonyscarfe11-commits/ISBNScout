@@ -126,6 +126,7 @@ export class MemStorage implements IStorage {
       trialEndsAt: new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000),
       stripeCustomerId: null,
       stripeSubscriptionId: null,
+      referredByAffiliateId: null,
       createdAt: now,
       updatedAt: now,
     };
