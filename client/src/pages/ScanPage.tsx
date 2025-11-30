@@ -1,21 +1,27 @@
 import { useState, useEffect } from "react";
 import { ScannerInterface } from "@/components/ScannerInterface";
-import { BatchScanner } from "@/components/BatchScanner";
-import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AppHeader } from "@/components/AppHeader";
 import { ProfitVerdict, calculateVerdict, type ProfitVerdictData } from "@/components/ProfitVerdict";
 import { CostEditor, getUserCosts } from "@/components/CostEditor";
+import { OnboardingWizard, useOnboarding } from "@/components/OnboardingWizard";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
-import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
+import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap, Library, Camera, Settings2 } from "lucide-react";
-import { apiRequest } from "@/lib/queryClient";
+import { 
+  ChevronDown, 
+  ChevronUp, 
+  Loader2, 
+  Zap,
+  Crown,
+  Bluetooth,
+  Library
+} from "lucide-react";
 import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
 import { getScanQueue } from "@/lib/scan-queue";
 import { getOfflineDB } from "@/lib/offline-db";
@@ -26,6 +32,8 @@ export default function ScanPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { incrementScanCount } = useTrackScansForInstall();
+  const { showOnboarding, completeOnboarding } = useOnboarding();
+  
   const [offlineStatus, setOfflineStatus] = useState<OfflineStatus>({
     isOnline: navigator.onLine,
     pendingSync: 0,
@@ -33,68 +41,41 @@ export default function ScanPage() {
   });
   const [selectedBook, setSelectedBook] = useState<BookDetails | null>(null);
   const [detailsOpen, setDetailsOpen] = useState(false);
-
-  const [recentScans, setRecentScans] = useState<BookDetails[]>([]);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
-  const [recognitionResult, setRecognitionResult] = useState<any>(null);
-  const [bluetoothEnabled, setBluetoothEnabled] = useState(() => {
-    const saved = localStorage.getItem("bluetoothScannerEnabled");
-    return saved === "true";
-  });
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
-  // Shelf scanning mode state
-  const [scanMode, setScanMode] = useState<"single" | "shelf">("single");
-  const [shelfResults, setShelfResults] = useState<any[]>([]);
-  const [selectedBooks, setSelectedBooks] = useState<Set<number>>(new Set());
-
-  const [currentTier, setCurrentTier] = useState("trial");
-  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
-  
-  // Profit verdict state
   const [currentVerdict, setCurrentVerdict] = useState<ProfitVerdictData | null>(null);
   const [costEditorOpen, setCostEditorOpen] = useState(false);
   const [currentCost, setCurrentCost] = useState(() => getUserCosts().defaultPurchaseCost);
 
-  // Set up offline sync service
+  const { data: scanLimits } = useQuery<{
+    scansUsedToday: number;
+    scansUsedMonth: number;
+    dailyLimit: number;
+    monthlyLimit: number;
+    scansRemainingToday: number;
+    scansRemainingMonth: number;
+    percentUsedToday: number;
+    percentUsedMonth: number;
+    isUnlimited: boolean;
+    tier: string;
+  }>({
+    queryKey: ['/api/user/scan-limits'],
+    refetchInterval: 30000,
+  });
+
+  const { data: user } = useQuery({
+    queryKey: ['/api/user/me'],
+  });
+
   useEffect(() => {
     const syncService = getOfflineSyncService();
-
-    // Update status immediately
     setOfflineStatus(syncService.getStatus());
-
-    // Subscribe to status changes
-    const unsubscribe = syncService.onStatusChange((status) => {
-      setOfflineStatus(status);
-    });
-
-    // Cleanup on unmount
+    const unsubscribe = syncService.onStatusChange(setOfflineStatus);
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem("bluetoothScannerEnabled", bluetoothEnabled.toString());
-  }, [bluetoothEnabled]);
-
-  // Fetch user tier on mount
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const userResponse = await fetch("/api/user/me", { credentials: 'include' });
-        if (userResponse.ok) {
-          const user = await userResponse.json();
-          setCurrentTier(user.subscriptionTier || "trial");
-        }
-      } catch (error) {
-        console.error("Failed to fetch user:", error);
-      }
-    };
-
-    fetchUser();
-  }, []);
-
-  // Helper to save scan and handle subscription errors
   const saveScan = async (isbn: string, bookData: any) => {
-    // If offline, queue the scan instead
     if (!offlineStatus.isOnline) {
       const scanQueue = getScanQueue();
       scanQueue.enqueue({
@@ -102,17 +83,13 @@ export default function ScanPage() {
         title: bookData.title || `Book with ISBN ${isbn}`,
         author: bookData.author || "Unknown Author",
       });
-
       toast({
         title: "Scan Queued",
         description: "Will sync when back online",
       });
-
-      // Update offline status to reflect new queue count
       const syncService = getOfflineSyncService();
       setOfflineStatus(syncService.getStatus());
-
-      return true; // Return true so the UI updates
+      return true;
     }
 
     try {
@@ -120,13 +97,11 @@ export default function ScanPage() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ isbn, ...bookData }),
-        credentials: 'include', // Send cookies with request
+        credentials: 'include',
       });
 
       if (response.status === 403) {
-        // Scan limit reached
         const error = await response.json();
-        setUpgradeModalOpen(true);
         toast({
           title: "Scan Limit Reached",
           description: error.message || "Upgrade to continue scanning",
@@ -142,8 +117,7 @@ export default function ScanPage() {
       return true;
     } catch (error: any) {
       console.error("Save scan error:", error);
-
-      // If save failed due to network error, queue it instead
+      
       if (!navigator.onLine || error.message.includes('fetch')) {
         const scanQueue = getScanQueue();
         scanQueue.enqueue({
@@ -151,17 +125,13 @@ export default function ScanPage() {
           title: bookData.title || `Book with ISBN ${isbn}`,
           author: bookData.author || "Unknown Author",
         });
-
         toast({
           title: "Scan Queued",
           description: "Network error - will sync when connection restored",
         });
-
-        // Update offline status
         const syncService = getOfflineSyncService();
         setOfflineStatus(syncService.getStatus());
-
-        return true; // Return true so the UI updates
+        return true;
       }
 
       toast({
@@ -173,47 +143,19 @@ export default function ScanPage() {
     }
   };
 
-  const { isListening, lastScan } = useBluetoothScanner({
-    enabled: bluetoothEnabled,
-    onScan: (isbn) => {
-      handleIsbnScan(isbn);
-    },
-    validatePattern: /^\d{10,13}$/,
-  });
-
   const handleIsbnScan = async (isbn: string) => {
     console.log("Scanning ISBN:", isbn);
 
     try {
-      // 1. Fetch pricing data (works offline!)
       toast({
         title: "Looking up book...",
         description: offlineStatus.isOnline
-          ? "Fetching pricing from Amazon and eBay"
+          ? "Fetching pricing from marketplaces"
           : "Looking up from offline cache",
       });
 
       const pricingData = await lookupPricing(isbn);
 
-      // Show toast indicating data source
-      if (pricingData.source === 'estimate') {
-        toast({
-          title: "📊 Estimated Pricing",
-          description: "Based on offline price estimation",
-        });
-      } else if (pricingData.source === 'cache') {
-        toast({
-          title: "⚡ Cached Data",
-          description: `From offline cache (${pricingData.cacheAge?.toFixed(0)}h old)`,
-        });
-      } else if (pricingData.source === 'server-cache') {
-        toast({
-          title: "💾 Server Cache",
-          description: "Recent cached pricing data",
-        });
-      }
-
-      // 2. Calculate profit using user's cost settings
       const userCosts = getUserCosts();
       const yourCost = currentCost || userCosts.defaultPurchaseCost;
       const lowestPrice = pricingData.lowestPrice || pricingData.ebayPrice || pricingData.amazonPrice || 0;
@@ -222,12 +164,9 @@ export default function ScanPage() {
       const shipping = userCosts.estimatedShipping;
       const profit = lowestPrice - yourCost - fees - shipping;
       const roi = yourCost > 0 ? ((profit / yourCost) * 100) : 0;
-      const salesRank = 15000;
 
-      // Calculate verdict
       const { verdict, reason } = calculateVerdict(profit, roi, pricingData.confidence);
 
-      // Create verdict data for display
       const verdictData: ProfitVerdictData = {
         title: pricingData.title || `Book with ISBN ${isbn}`,
         author: pricingData.author || "Unknown Author",
@@ -248,108 +187,61 @@ export default function ScanPage() {
         source: pricingData.source,
       };
 
-      // Show the verdict immediately
       setCurrentVerdict(verdictData);
 
-      // Fetch velocity data in background
-      const velocityResponse = await fetch("/api/books/calculate-velocity", {
+      fetch("/api/books/calculate-velocity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          salesRank,
+          salesRank: 15000,
           profit,
           profitMargin: lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0,
           yourCost,
           category: "Books"
         }),
-      });
+      }).then(async (res) => {
+        if (res.ok) {
+          const velocityData = await res.json();
+          setCurrentVerdict(prev => prev ? {
+            ...prev,
+            velocity: velocityData.velocity.description,
+            timeToSell: velocityData.timeToSell,
+          } : null);
+        }
+      }).catch(() => {});
 
-      let velocityData;
-      if (velocityResponse.ok) {
-        velocityData = await velocityResponse.json();
-        // Update verdict with velocity data
-        setCurrentVerdict(prev => prev ? {
-          ...prev,
-          velocity: velocityData.velocity.description,
-          timeToSell: velocityData.timeToSell,
-        } : null);
-      } else {
-        velocityData = {
-          velocity: { rating: 'medium', description: 'Steady seller', estimatedSalesPerMonth: '3-10' },
-          timeToSell: '2-4 weeks',
-          buyRecommendation: { recommendation: 'buy', reason: 'Good profit potential' }
-        };
-      }
-
-      // 3. Build book object with REAL data
-      const book: BookDetails = {
-        id: Date.now().toString(),
-        isbn,
-        title: pricingData.title || `Book with ISBN ${isbn}`,
-        author: pricingData.author || "Unknown Author",
-        thumbnail: pricingData.thumbnail || undefined,
-        amazonPrice: pricingData.amazonPrice || null,
-        ebayPrice: pricingData.ebayPrice || null,
-        yourCost,
-        profit,
-        status: profit > 5 ? "profitable" : profit > 0 ? "break-even" : "loss",
-        description: pricingData.publisher ? `Published by ${pricingData.publisher}` : undefined,
-        salesRank,
-        velocity: velocityData.velocity.rating,
-        velocityDescription: velocityData.velocity.description,
-        estimatedSalesPerMonth: velocityData.velocity.estimatedSalesPerMonth,
-        timeToSell: velocityData.timeToSell,
-        buyRecommendation: velocityData.buyRecommendation.recommendation,
-        buyRecommendationReason: velocityData.buyRecommendation.reason,
-      };
-
-      // 4. Save scan and check limits
       const saved = await saveScan(isbn, {
-        title: book.title,
-        author: book.author,
+        title: pricingData.title,
+        author: pricingData.author,
       });
 
-      if (!saved) {
-        // Scan limit reached, modal will be shown
-        return;
-      }
+      if (!saved) return;
 
-      // 5. Save to IndexedDB for offline access
       try {
         const offlineDB = getOfflineDB();
         await offlineDB.saveBook({
-          id: book.id,
-          isbn: book.isbn,
-          title: book.title,
-          author: book.author,
-          thumbnail: book.thumbnail,
-          amazonPrice: book.amazonPrice,
-          ebayPrice: book.ebayPrice,
-          yourCost: book.yourCost,
-          profit: book.profit,
-          status: book.status,
+          id: Date.now().toString(),
+          isbn,
+          title: pricingData.title || `Book with ISBN ${isbn}`,
+          author: pricingData.author || "Unknown Author",
+          thumbnail: pricingData.thumbnail || undefined,
+          amazonPrice: pricingData.amazonPrice,
+          ebayPrice: pricingData.ebayPrice,
+          yourCost,
+          profit,
+          status: profit > 5 ? "profitable" : profit > 0 ? "break-even" : "loss",
           scannedAt: new Date().toISOString(),
-          salesRank: book.salesRank,
-          velocity: book.velocity,
-          velocityDescription: book.velocityDescription,
-          buyRecommendation: book.buyRecommendation,
+          salesRank: 15000,
+          velocity: "medium",
+          velocityDescription: "Steady seller",
+          buyRecommendation: verdict.toLowerCase(),
         });
-        console.log('[ScanPage] Saved to IndexedDB');
       } catch (dbError) {
         console.error('[ScanPage] Failed to save to IndexedDB:', dbError);
-        // Don't fail the scan if IndexedDB fails
       }
 
-      // 6. Update UI
-      setRecentScans([book, ...recentScans.slice(0, 2)]);
-
-      // Track scan count for install prompt
       incrementScanCount();
 
-      toast({
-        title: "Book scanned successfully",
-        description: `${book.title} - ${velocityData.velocity.description}`,
-      });
     } catch (error: any) {
       console.error("Book scan failed:", error);
       toast({
@@ -361,17 +253,11 @@ export default function ScanPage() {
   };
 
   const handleCoverScan = async (imageData: string) => {
-    // Route to shelf scanning if in shelf mode
-    if (scanMode === "shelf") {
-      return handleShelfScan(imageData);
-    }
-
     console.log("Scanning cover/spine photo");
     setIsProcessingImage(true);
-    setRecognitionResult(null);
 
     toast({
-      title: "🤖 AI Recognition Started",
+      title: "AI Recognition Started",
       description: "Analyzing cover or spine photo...",
     });
 
@@ -386,65 +272,15 @@ export default function ScanPage() {
         throw new Error("Failed to analyze image");
       }
 
-      const result = await response.json() as {
-        title?: string;
-        author?: string;
-        isbn?: string;
-        publisher?: string;
-        series?: string;
-        condition?: string;
-        description?: string;
-        keywords: string[];
-        imageType?: 'cover' | 'spine' | 'unknown';
-      };
-
-      setRecognitionResult(result);
-
-      const imageTypeLabel = result.imageType === 'spine' ? '📚 Spine' :
-                            result.imageType === 'cover' ? '📖 Cover' : '📄 Book';
+      const result = await response.json();
 
       toast({
-        title: `✨ ${imageTypeLabel} Recognized!`,
+        title: "Book Recognized!",
         description: result.title || "Book details extracted",
       });
 
-      // If we got an ISBN, fetch full pricing data
       if (result.isbn) {
         handleIsbnScan(result.isbn);
-      } else if (result.title) {
-        // No ISBN but we have title/author - save it anyway
-        console.log("No ISBN found, saving book with AI-extracted data only");
-
-        const book: BookDetails = {
-          id: Date.now().toString(),
-          isbn: "AI-" + Date.now(), // Fake ISBN for books without barcode
-          scannedAt: new Date().toISOString(),
-          title: result.title,
-          author: result.author || "Unknown Author",
-          amazonPrice: null,
-          ebayPrice: null,
-          yourCost: null,
-          profit: null,
-          status: "unknown",
-          description: result.description,
-          condition: result.condition,
-        };
-
-        // Save to database
-        const saved = await saveScan(book.isbn, {
-          title: book.title,
-          author: book.author,
-        });
-
-        if (saved) {
-          // Add to recent scans
-          setRecentScans([book, ...recentScans.slice(0, 2)]);
-
-          toast({
-            title: "Book Saved",
-            description: "Recognition saved to history (no pricing data without ISBN)",
-          });
-        }
       }
     } catch (error: any) {
       console.error("AI recognition failed:", error);
@@ -458,148 +294,6 @@ export default function ScanPage() {
     }
   };
 
-  const handleShelfScan = async (imageData: string) => {
-    console.log("Scanning shelf with multiple books");
-    setIsProcessingImage(true);
-    setShelfResults([]);
-    setSelectedBooks(new Set());
-
-    toast({
-      title: "📚 Shelf Scanning Started",
-      description: "Detecting multiple books from your photo...",
-    });
-
-    try {
-      const response = await fetch("/api/ai/analyze-shelf", {
-        method: "POST",
-        body: JSON.stringify({ imageUrl: imageData }),
-        headers: { "Content-Type": "application/json" },
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to analyze shelf");
-      }
-
-      const result = await response.json();
-      const books = result.books || [];
-
-      setShelfResults(books);
-
-      // Auto-select high confidence books
-      const highConfidenceIndices = new Set(
-        books
-          .map((book: any, idx: number) => ({ book, idx }))
-          .filter(({ book }: any) => book.confidence === "high")
-          .map(({ idx }: any) => idx)
-      );
-      setSelectedBooks(highConfidenceIndices);
-
-      toast({
-        title: `✨ Found ${books.length} Books!`,
-        description: `Detected ${books.length} book${books.length !== 1 ? 's' : ''} from your shelf photo`,
-      });
-    } catch (error: any) {
-      console.error("Shelf scanning failed:", error);
-      toast({
-        title: "Shelf Scan Failed",
-        description: error.message || "Could not detect books from the image. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessingImage(false);
-    }
-  };
-
-  const handleSaveSelectedBooks = async () => {
-    const booksToSave = shelfResults.filter((_, idx) => selectedBooks.has(idx));
-
-    if (booksToSave.length === 0) {
-      toast({
-        title: "No Books Selected",
-        description: "Please select at least one book to save",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    toast({
-      title: "Saving Books...",
-      description: `Saving ${booksToSave.length} book${booksToSave.length !== 1 ? 's' : ''}...`,
-    });
-
-    let savedCount = 0;
-    for (const book of booksToSave) {
-      const bookData: BookDetails = {
-        id: Date.now().toString() + Math.random(),
-        isbn: book.isbn || "AI-" + Date.now() + Math.random(),
-        scannedAt: new Date().toISOString(),
-        title: book.title,
-        author: book.author || "Unknown Author",
-        amazonPrice: null,
-        ebayPrice: null,
-        yourCost: null,
-        profit: null,
-        status: "unknown",
-        description: book.publisher ? `Published by ${book.publisher}` : undefined,
-        condition: book.condition,
-      };
-
-      const saved = await saveScan(bookData.isbn, {
-        title: bookData.title,
-        author: bookData.author,
-      });
-
-      if (saved) {
-        savedCount++;
-        setRecentScans(prev => [bookData, ...prev.slice(0, 2)]);
-      } else {
-        // Scan limit reached
-        break;
-      }
-    }
-
-    if (savedCount > 0) {
-      toast({
-        title: "Books Saved!",
-        description: `Successfully saved ${savedCount} book${savedCount !== 1 ? 's' : ''} to your library`,
-      });
-
-      // Clear shelf results
-      setShelfResults([]);
-      setSelectedBooks(new Set());
-    }
-  };
-
-  const toggleBookSelection = (index: number) => {
-    const newSelected = new Set(selectedBooks);
-    if (newSelected.has(index)) {
-      newSelected.delete(index);
-    } else {
-      newSelected.add(index);
-    }
-    setSelectedBooks(newSelected);
-  };
-
-  const handleViewDetails = (book: BookDetails) => {
-    setSelectedBook(book);
-    setDetailsOpen(true);
-  };
-
-  const handleQuickList = (book: BookDetails) => {
-    setSelectedBook(book);
-    setLocation("/listings/new");
-  };
-
-  const handleListFromModal = (platform: "amazon" | "ebay") => {
-    toast({
-      title: `Listing to ${platform}`,
-      description: "Redirecting to listing form...",
-    });
-    setDetailsOpen(false);
-    setLocation("/listings/new");
-  };
-
-  // Handle manual sync trigger
   const handleSync = async () => {
     const syncService = getOfflineSyncService();
     try {
@@ -617,6 +311,19 @@ export default function ScanPage() {
     }
   };
 
+  const handleListFromModal = (platform: "amazon" | "ebay") => {
+    toast({
+      title: `Listing to ${platform}`,
+      description: "Redirecting to listing form...",
+    });
+    setDetailsOpen(false);
+    setLocation("/listings/new");
+  };
+
+  const isFreeTier = !scanLimits?.isUnlimited && scanLimits?.tier === 'free';
+  const scansRemaining = scanLimits?.scansRemainingToday ?? Infinity;
+  const dailyLimit = scanLimits?.dailyLimit ?? Infinity;
+
   return (
     <div className="min-h-screen pb-20">
       <AppHeader />
@@ -626,103 +333,71 @@ export default function ScanPage() {
         onSync={handleSync}
       />
 
-      <div className="max-w-2xl mx-auto p-4 space-y-6">
-        <div className="flex items-start justify-between gap-4">
+      <OnboardingWizard 
+        open={showOnboarding} 
+        onComplete={completeOnboarding} 
+      />
+
+      <div className="max-w-2xl mx-auto p-4 space-y-4">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
+            <h1 className="text-2xl font-bold">Scan Books</h1>
             <p className="text-sm text-muted-foreground">
-              {scanMode === "single"
-                ? "Scan barcode, cover, or spine — we'll do the rest!"
-                : "Point at a shelf to scan multiple books at once"}
+              Point at barcode or take a photo
             </p>
           </div>
-          <div className="flex gap-2">
-            <Button
-              variant={scanMode === "shelf" ? "default" : "outline"}
-              size="sm"
-              onClick={() => {
-                setScanMode(scanMode === "single" ? "shelf" : "single");
-                setShelfResults([]);
-                setRecognitionResult(null);
-              }}
-              className={`gap-2 ${scanMode === "shelf" ? "bg-teal-600 hover:bg-teal-700" : ""}`}
-              data-testid="button-mode-toggle"
+          {!scanLimits?.isUnlimited && scansRemaining !== Infinity && (
+            <Badge 
+              variant={scansRemaining > 3 ? "secondary" : "destructive"}
+              className="gap-1"
             >
-              {scanMode === "shelf" ? (
-                <>
-                  <Library className="h-4 w-4" />
-                  <span className="hidden sm:inline">Shelf Mode</span>
-                </>
-              ) : (
-                <>
-                  <Camera className="h-4 w-4" />
-                  <span className="hidden sm:inline">Single</span>
-                </>
-              )}
-            </Button>
-            <Button
-              variant={bluetoothEnabled ? "default" : "outline"}
-              size="sm"
-              onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
-              className={`gap-2 ${bluetoothEnabled ? "bg-teal-600 hover:bg-teal-700" : ""}`}
-              data-testid="button-bluetooth-toggle"
-            >
-              {bluetoothEnabled ? (
-                <>
-                  <Bluetooth className="h-4 w-4" />
-                  <span className="hidden sm:inline">BT On</span>
-                </>
-              ) : (
-                <>
-                  <BluetoothOff className="h-4 w-4" />
-                  <span className="hidden sm:inline">BT Off</span>
-                </>
-              )}
-            </Button>
-          </div>
+              {scansRemaining}/{dailyLimit} scans left
+            </Badge>
+          )}
         </div>
 
-        {/* Quick Tips for New Users */}
-        {recentScans.length === 0 && !isProcessingImage && !recognitionResult && shelfResults.length === 0 && (
-          <Card className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 border-teal-200 dark:border-teal-800">
-            <div className="flex items-start gap-3">
-              <div className="p-2 rounded-xl bg-teal-500/10 shrink-0">
-                <Zap className="h-5 w-5 text-teal-600" />
+        {isFreeTier && scansRemaining <= 3 && scansRemaining > 0 && (
+          <Card className="p-3 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <Crown className="h-4 w-4 text-amber-600" />
+                <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                  {scansRemaining} free scans remaining today
+                </span>
               </div>
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Quick Tips</h3>
-                <ul className="text-xs text-muted-foreground space-y-1.5">
-                  <li className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">1</span>
-                    <span><strong>Barcode</strong> — Fastest! Just point at any ISBN barcode</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">2</span>
-                    <span><strong>Cover/Spine</strong> — Take a photo, AI finds the book</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">3</span>
-                    <span><strong>Shelf Mode</strong> — Scan a whole shelf in one photo!</span>
-                  </li>
-                </ul>
-              </div>
+              <Button
+                size="sm"
+                onClick={() => setLocation('/subscription')}
+                className="bg-amber-600 hover:bg-amber-700 text-white text-xs"
+                data-testid="button-upgrade"
+              >
+                Upgrade
+              </Button>
             </div>
           </Card>
         )}
 
-        {bluetoothEnabled && (
-          <div className="flex items-center gap-2 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
-            <Bluetooth className="h-4 w-4 text-teal-600" />
-            <span className="text-sm font-medium">
-              Bluetooth Scanner Ready
-            </span>
-            <Badge variant="outline" className="ml-auto text-xs">
-              {isListening ? "Listening..." : "Standby"}
-            </Badge>
-          </div>
+        {isFreeTier && scansRemaining === 0 && (
+          <Card className="p-4 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
+            <div className="text-center space-y-3">
+              <Crown className="h-8 w-8 text-red-600 mx-auto" />
+              <div>
+                <h3 className="font-semibold text-red-800 dark:text-red-200">Daily Limit Reached</h3>
+                <p className="text-sm text-red-600 dark:text-red-300">
+                  You've used all 10 free scans for today. Upgrade for unlimited scanning!
+                </p>
+              </div>
+              <Button
+                onClick={() => setLocation('/subscription')}
+                className="bg-red-600 hover:bg-red-700 text-white"
+                data-testid="button-upgrade-limit"
+              >
+                Upgrade Now
+              </Button>
+            </div>
+          </Card>
         )}
 
-        {/* Show verdict or scanner */}
         {currentVerdict ? (
           <ProfitVerdict
             data={currentVerdict}
@@ -738,26 +413,42 @@ export default function ScanPage() {
                 title: `Listing to ${platform}`,
                 description: "Redirecting to listing form...",
               });
-              setLocation("/listings/new");
+              setLocation("/app/listings/new");
             }}
             onDismiss={() => setCurrentVerdict(null)}
             onEditCost={() => setCostEditorOpen(true)}
           />
         ) : (
-          <ScannerInterface
-            onIsbnScan={handleIsbnScan}
-            onCoverScan={handleCoverScan}
-          />
+          <>
+            {isProcessingImage && (
+              <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-ai-processing">
+                <div className="flex items-center gap-3">
+                  <Loader2 className="h-5 w-5 animate-spin text-teal-600" />
+                  <div>
+                    <h3 className="font-semibold">AI Recognition in Progress</h3>
+                    <p className="text-sm text-muted-foreground">
+                      Analyzing image for title, author, and ISBN...
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            )}
+
+            {!isProcessingImage && (scansRemaining > 0 || scansRemaining === Infinity) && (
+              <ScannerInterface
+                onIsbnScan={handleIsbnScan}
+                onCoverScan={handleCoverScan}
+              />
+            )}
+          </>
         )}
 
-        {/* Cost Editor Modal */}
         <CostEditor
           open={costEditorOpen}
           onClose={() => setCostEditorOpen(false)}
           currentCost={currentCost}
           onCostChange={(newCost) => {
             setCurrentCost(newCost);
-            // Recalculate verdict with new cost
             if (currentVerdict) {
               const userCosts = getUserCosts();
               const bestPrice = currentVerdict.ebayPrice || currentVerdict.amazonPrice || 0;
@@ -779,271 +470,68 @@ export default function ScanPage() {
           }}
         />
 
-        {/* Batch Scanner - only show if no verdict */}
         {!currentVerdict && (
-          <BatchScanner
-            onComplete={(results) => {
-              const successfulBooks = results
-                .filter(r => r.status === 'success' && r.title)
-                .map(r => ({
-                  id: 0,
-                  isbn: r.isbn,
-                  title: r.title || 'Unknown',
-                  author: r.author || 'Unknown',
-                  ebayPrice: r.ebayPrice,
-                  amazonPrice: r.amazonPrice,
-                  status: 'pending' as const,
-                }));
+          <div className="pt-2">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowAdvanced(!showAdvanced)}
+              className="w-full justify-between text-muted-foreground"
+              data-testid="button-toggle-advanced"
+            >
+              <span className="flex items-center gap-2">
+                <Zap className="h-4 w-4" />
+                Advanced Tools
+              </span>
+              {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+            </Button>
 
-              if (successfulBooks.length > 0) {
-                setRecentScans(prev => [...successfulBooks, ...prev].slice(0, 10));
-
-                toast({
-                  title: "Batch scan complete",
-                  description: `Added ${successfulBooks.length} books to your library`,
-                });
-              }
-            }}
-          />
-        )}
-
-        {/* AI Recognition Status */}
-        {isProcessingImage && (
-          <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-ai-processing">
-            <div className="flex items-center gap-3">
-              <Loader2 className="h-5 w-5 animate-spin text-teal-600" />
-              <div>
-                <h3 className="font-semibold">AI Recognition in Progress</h3>
-                <p className="text-sm text-muted-foreground">
-                  Analyzing image for title, author, ISBN, and condition...
-                </p>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {/* AI Recognition Results */}
-        {recognitionResult && !isProcessingImage && (
-          <Card className="p-6 bg-green-500/5 border-green-500/20" data-testid="card-ai-result">
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-green-600" />
-                <h3 className="font-semibold">
-                  {recognitionResult.imageType === 'spine' ? '📚 Spine Recognized' :
-                   recognitionResult.imageType === 'cover' ? '📖 Cover Recognized' :
-                   '✨ Book Recognized'}
-                </h3>
-              </div>
-
-              <div className="grid gap-3">
-                {recognitionResult.title && (
-                  <div className="flex items-start gap-2">
-                    <BookOpen className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Title</p>
-                      <p className="font-medium" data-testid="text-recognized-title">{recognitionResult.title}</p>
-                    </div>
-                  </div>
-                )}
-
-                {recognitionResult.author && (
-                  <div className="flex items-start gap-2">
-                    <User className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Author</p>
-                      <p className="font-medium" data-testid="text-recognized-author">{recognitionResult.author}</p>
-                    </div>
-                  </div>
-                )}
-
-                {recognitionResult.isbn && (
-                  <div className="flex items-start gap-2">
-                    <Hash className="h-4 w-4 mt-0.5 text-muted-foreground" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">ISBN</p>
-                      <p className="font-mono text-sm" data-testid="text-recognized-isbn">{recognitionResult.isbn}</p>
-                    </div>
-                  </div>
-                )}
-
-                {recognitionResult.publisher && (
-                  <div className="flex items-start gap-2">
-                    <div className="h-4 w-4 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Publisher</p>
-                      <p className="text-sm" data-testid="text-recognized-publisher">{recognitionResult.publisher}</p>
-                    </div>
-                  </div>
-                )}
-
-                {recognitionResult.condition && (
-                  <div className="flex items-start gap-2">
-                    <div className="h-4 w-4 mt-0.5" />
-                    <div>
-                      <p className="text-xs text-muted-foreground">Condition</p>
-                      <Badge variant="secondary" data-testid="badge-recognized-condition">
-                        {recognitionResult.condition}
-                      </Badge>
-                    </div>
-                  </div>
-                )}
-
-                {recognitionResult.description && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-1">Physical Condition</p>
-                    <p className="text-sm text-muted-foreground" data-testid="text-recognized-description">
-                      {recognitionResult.description}
-                    </p>
-                  </div>
-                )}
-
-                {recognitionResult.keywords && recognitionResult.keywords.length > 0 && (
-                  <div>
-                    <p className="text-xs text-muted-foreground mb-2">Keywords</p>
-                    <div className="flex flex-wrap gap-1">
-                      {recognitionResult.keywords.map((keyword: string, i: number) => (
-                        <Badge key={i} variant="outline" className="text-xs" data-testid={`badge-keyword-${i}`}>
-                          {keyword}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <Button
-                onClick={() => setRecognitionResult(null)}
-                variant="outline"
-                size="sm"
-                className="w-full"
-                data-testid="button-clear-result"
-              >
-                Scan Another
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {/* Shelf Scanning Results */}
-        {shelfResults.length > 0 && !isProcessingImage && (
-          <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-shelf-results">
-            <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <Library className="h-5 w-5 text-teal-600" />
-                  <h3 className="font-semibold">
-                    Detected {shelfResults.length} Book{shelfResults.length !== 1 ? 's' : ''}
-                  </h3>
-                </div>
-                <Badge variant="secondary">
-                  {selectedBooks.size} selected
-                </Badge>
-              </div>
-
-              <p className="text-sm text-muted-foreground">
-                Select the books you want to save. High confidence books are pre-selected.
-              </p>
-
-              <div className="space-y-2 max-h-[400px] overflow-y-auto">
-                {shelfResults.map((book: any, index: number) => (
-                  <div
-                    key={index}
-                    className={`p-4 rounded-lg border cursor-pointer transition-colors ${
-                      selectedBooks.has(index)
-                        ? 'bg-teal-500/5 border-teal-500'
-                        : 'bg-background border-border hover:bg-muted/50'
-                    }`}
-                    onClick={() => toggleBookSelection(index)}
-                    data-testid={`shelf-book-${index}`}
+            {showAdvanced && (
+              <Card className="mt-2 p-4 space-y-3">
+                <p className="text-xs text-muted-foreground">Power user features</p>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setLocation('/app/history')}
+                    className="justify-start gap-2"
+                    data-testid="button-scan-history"
                   >
-                    <div className="flex items-start gap-3">
-                      <input
-                        type="checkbox"
-                        checked={selectedBooks.has(index)}
-                        onChange={() => toggleBookSelection(index)}
-                        className="mt-1"
-                        onClick={(e) => e.stopPropagation()}
-                      />
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-medium truncate" data-testid={`shelf-book-title-${index}`}>
-                              {book.title || "Unknown Title"}
-                            </p>
-                            {book.author && (
-                              <p className="text-sm text-muted-foreground truncate">
-                                {book.author}
-                              </p>
-                            )}
-                          </div>
-                          <div className="flex flex-col items-end gap-1">
-                            <Badge
-                              variant={
-                                book.confidence === "high"
-                                  ? "default"
-                                  : book.confidence === "medium"
-                                  ? "secondary"
-                                  : "outline"
-                              }
-                              className="text-xs"
-                            >
-                              {book.confidence || "low"}
-                            </Badge>
-                            {book.position && (
-                              <span className="text-xs text-muted-foreground">
-                                Pos #{book.position}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        {book.isbn && (
-                          <p className="text-xs text-muted-foreground font-mono mt-1">
-                            ISBN: {book.isbn}
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              <div className="flex gap-2">
-                <Button
-                  onClick={handleSaveSelectedBooks}
-                  disabled={selectedBooks.size === 0}
-                  className="flex-1"
-                  data-testid="button-save-selected"
-                >
-                  Save {selectedBooks.size} Book{selectedBooks.size !== 1 ? 's' : ''}
-                </Button>
-                <Button
-                  onClick={() => {
-                    setShelfResults([]);
-                    setSelectedBooks(new Set());
-                  }}
-                  variant="outline"
-                  data-testid="button-scan-another-shelf"
-                >
-                  Scan Again
-                </Button>
-              </div>
-            </div>
-          </Card>
-        )}
-
-        {recentScans.length > 0 && (
-          <div className="space-y-4">
-            <h2 className="text-lg font-semibold">Recent Scans</h2>
-            {recentScans.map((book) => (
-              <BookCard
-                key={book.id}
-                {...book}
-                onViewDetails={() => handleViewDetails(book)}
-                onQuickList={() => handleQuickList(book)}
-              />
-            ))}
+                    <Library className="h-4 w-4" />
+                    Scan History
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setCostEditorOpen(true)}
+                    className="justify-start gap-2"
+                    data-testid="button-edit-costs"
+                  >
+                    <Zap className="h-4 w-4" />
+                    Edit Costs
+                  </Button>
+                </div>
+                <p className="text-[10px] text-muted-foreground">
+                  Bluetooth scanner and batch mode coming soon
+                </p>
+              </Card>
+            )}
           </div>
         )}
+
+        <Card className="p-3 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 border-teal-200 dark:border-teal-800">
+          <div className="flex items-center gap-3">
+            <div className="p-2 rounded-xl bg-teal-500/10 shrink-0">
+              <Zap className="h-4 w-4 text-teal-600" />
+            </div>
+            <div className="text-xs">
+              <p className="font-medium">Quick tip</p>
+              <p className="text-muted-foreground">
+                Scan fast, decide fast. Speed is your competitive advantage!
+              </p>
+            </div>
+          </div>
+        </Card>
       </div>
 
       <BookDetailsModal
@@ -1053,7 +541,6 @@ export default function ScanPage() {
         onList={handleListFromModal}
       />
 
-      {/* PWA Install Prompt */}
       <InstallPrompt />
     </div>
   );

@@ -73,7 +73,8 @@ export function AppHeader() {
                     size="icon"
                     onClick={() => {
                       localStorage.removeItem('hasSeenWelcome');
-                      setLocation('/app/dashboard');
+                      localStorage.removeItem('onboardingCompleted');
+                      setLocation('/app/scan');
                       window.location.reload();
                     }}
                     className="text-slate-400 hover:text-teal-400 hover:bg-slate-800"

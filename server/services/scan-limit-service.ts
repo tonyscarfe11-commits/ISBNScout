@@ -1,5 +1,5 @@
 import type { IStorage } from "../storage";
-import { getSubscriptionLimits, hasReachedScanLimit } from "@shared/subscription-limits";
+import { getSubscriptionLimits, hasReachedScanLimit, hasReachedDailyLimit } from "@shared/subscription-limits";
 import type { User } from "@shared/schema";
 
 export class ScanLimitService {
@@ -20,43 +20,66 @@ export class ScanLimitService {
   }
 
   /**
-   * Check if user can scan (hasn't reached limit)
+   * Count scans for a user today
+   */
+  async getScansToday(userId: string): Promise<number> {
+    const books = await this.storage.getBooks(userId);
+
+    const now = new Date();
+    const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+
+    return books.filter(book =>
+      new Date(book.scannedAt) >= startOfDay
+    ).length;
+  }
+
+  /**
+   * Check if user can scan (hasn't reached daily or monthly limit)
    */
   async canScan(user: Omit<User, 'password'>): Promise<{
     allowed: boolean;
-    scansUsed: number;
-    scansLimit: number;
+    scansUsedToday: number;
+    scansUsedMonth: number;
+    dailyLimit: number;
+    monthlyLimit: number;
     message?: string;
   }> {
-    const scansUsed = await this.getScansThisMonth(user.id);
+    const scansUsedToday = await this.getScansToday(user.id);
+    const scansUsedMonth = await this.getScansThisMonth(user.id);
     const limits = getSubscriptionLimits(user.subscriptionTier);
-    const scansLimit = limits.scansPerMonth;
+    const dailyLimit = limits.scansPerDay;
+    const monthlyLimit = limits.scansPerMonth;
 
-    // Check if unlimited
-    if (scansLimit === -1) {
+    // Check daily limit first (more restrictive for free tier)
+    if (dailyLimit !== -1 && hasReachedDailyLimit(scansUsedToday, user.subscriptionTier)) {
       return {
-        allowed: true,
-        scansUsed,
-        scansLimit: Infinity,
+        allowed: false,
+        scansUsedToday,
+        scansUsedMonth,
+        dailyLimit,
+        monthlyLimit,
+        message: `You've used all ${dailyLimit} free scans for today. Upgrade for unlimited scans!`,
       };
     }
 
-    // Check if limit reached
-    const hasReachedLimit = hasReachedScanLimit(scansUsed, user.subscriptionTier);
-
-    if (hasReachedLimit) {
+    // Check monthly limit
+    if (monthlyLimit !== -1 && hasReachedScanLimit(scansUsedMonth, user.subscriptionTier)) {
       return {
         allowed: false,
-        scansUsed,
-        scansLimit,
-        message: `You've reached your ${scansLimit} scans/month limit. Upgrade to continue scanning.`,
+        scansUsedToday,
+        scansUsedMonth,
+        dailyLimit,
+        monthlyLimit,
+        message: `You've reached your ${monthlyLimit} scans/month limit. Upgrade to continue scanning.`,
       };
     }
 
     return {
       allowed: true,
-      scansUsed,
-      scansLimit,
+      scansUsedToday,
+      scansUsedMonth,
+      dailyLimit: dailyLimit === -1 ? Infinity : dailyLimit,
+      monthlyLimit: monthlyLimit === -1 ? Infinity : monthlyLimit,
     };
   }
 
@@ -64,35 +87,56 @@ export class ScanLimitService {
    * Get scan limit info for dashboard display
    */
   async getScanLimitInfo(user: Omit<User, 'password'>): Promise<{
-    scansUsed: number;
-    scansLimit: number;
-    scansRemaining: number;
-    percentUsed: number;
+    scansUsedToday: number;
+    scansUsedMonth: number;
+    dailyLimit: number;
+    monthlyLimit: number;
+    scansRemainingToday: number;
+    scansRemainingMonth: number;
+    percentUsedToday: number;
+    percentUsedMonth: number;
     isUnlimited: boolean;
+    tier: string;
   }> {
-    const scansUsed = await this.getScansThisMonth(user.id);
+    const scansUsedToday = await this.getScansToday(user.id);
+    const scansUsedMonth = await this.getScansThisMonth(user.id);
     const limits = getSubscriptionLimits(user.subscriptionTier);
-    const scansLimit = limits.scansPerMonth;
+    const dailyLimit = limits.scansPerDay;
+    const monthlyLimit = limits.scansPerMonth;
 
-    if (scansLimit === -1) {
+    const isUnlimited = dailyLimit === -1 && monthlyLimit === -1;
+
+    if (isUnlimited) {
       return {
-        scansUsed,
-        scansLimit: Infinity,
-        scansRemaining: Infinity,
-        percentUsed: 0,
+        scansUsedToday,
+        scansUsedMonth,
+        dailyLimit: Infinity,
+        monthlyLimit: Infinity,
+        scansRemainingToday: Infinity,
+        scansRemainingMonth: Infinity,
+        percentUsedToday: 0,
+        percentUsedMonth: 0,
         isUnlimited: true,
+        tier: user.subscriptionTier,
       };
     }
 
-    const scansRemaining = Math.max(0, scansLimit - scansUsed);
-    const percentUsed = Math.min(100, Math.round((scansUsed / scansLimit) * 100));
+    const scansRemainingToday = dailyLimit === -1 ? Infinity : Math.max(0, dailyLimit - scansUsedToday);
+    const scansRemainingMonth = monthlyLimit === -1 ? Infinity : Math.max(0, monthlyLimit - scansUsedMonth);
+    const percentUsedToday = dailyLimit === -1 ? 0 : Math.min(100, Math.round((scansUsedToday / dailyLimit) * 100));
+    const percentUsedMonth = monthlyLimit === -1 ? 0 : Math.min(100, Math.round((scansUsedMonth / monthlyLimit) * 100));
 
     return {
-      scansUsed,
-      scansLimit,
-      scansRemaining,
-      percentUsed,
+      scansUsedToday,
+      scansUsedMonth,
+      dailyLimit: dailyLimit === -1 ? Infinity : dailyLimit,
+      monthlyLimit: monthlyLimit === -1 ? Infinity : monthlyLimit,
+      scansRemainingToday,
+      scansRemainingMonth,
+      percentUsedToday,
+      percentUsedMonth,
       isUnlimited: false,
+      tier: user.subscriptionTier,
     };
   }
 }

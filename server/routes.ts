@@ -1059,6 +1059,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post("/api/books", requireAuth, requireActiveSubscription, async (req, res) => {
     try {
       const userId = getUserId(req);
+      
+      // Check scan limits before allowing the scan
+      const user = await authService.getUserById(userId);
+      if (user) {
+        const limitService = scanLimitService(storage);
+        const canScanResult = await limitService.canScan(user);
+        
+        if (!canScanResult.allowed) {
+          return res.status(403).json({ 
+            message: canScanResult.message,
+            scansUsedToday: canScanResult.scansUsedToday,
+            dailyLimit: canScanResult.dailyLimit,
+          });
+        }
+      }
+      
       const { isbn, title, author, ...otherData } = req.body;
 
       if (!isbn) {
@@ -1304,10 +1320,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get books as scan history
       const books = await storage.getBooks(userId);
 
-      // Sort by creation date (most recent first) and paginate
+      // Sort by scan date (most recent first) and paginate
       const sortedBooks = books.sort((a, b) => {
-        const dateA = new Date(a.createdAt || 0).getTime();
-        const dateB = new Date(b.createdAt || 0).getTime();
+        const dateA = new Date(a.scannedAt || 0).getTime();
+        const dateB = new Date(b.scannedAt || 0).getTime();
         return dateB - dateA;
       });
 
