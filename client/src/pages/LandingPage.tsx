@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import { Barcode, Camera, Eye, Check, Play, ChevronDown, Menu, X, Star, Wifi, WifiOff, Zap } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
-import demoVideo from "@assets/generated_videos/book_scanning_app_demo.mp4";
+import demoVideo from "@assets/generated_videos/uk_book_scanning_app.mp4";
 import { useState, useRef } from "react";
 
 const faqItems = [
