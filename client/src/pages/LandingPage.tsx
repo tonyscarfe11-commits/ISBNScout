@@ -131,48 +131,69 @@ export default function LandingPage() {
                     </div>
                   </div>
 
-                  {/* Fees Breakdown */}
-                  <div className="space-y-2 text-xs">
-                    <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon Breakdown</div>
-                    <div className="space-y-1 pl-2 border-l border-slate-700">
-                      <div className="flex justify-between text-slate-400">
-                        <span>List Price</span>
-                        <span className="text-slate-300">£12.90</span>
+                  {/* Fees Breakdown - Both Platforms */}
+                  <div className="grid grid-cols-2 gap-3 text-xs">
+                    {/* Amazon Breakdown */}
+                    <div className="space-y-1">
+                      <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon Breakdown</div>
+                      <div className="space-y-1 pl-2 border-l border-slate-700">
+                        <div className="flex justify-between text-slate-400">
+                          <span>List Price</span>
+                          <span className="text-slate-300">£12.90</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>Referral (15.3%)</span>
+                          <span className="text-slate-300">-£1.97</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>Closing Fee</span>
+                          <span className="text-slate-300">-£0.75</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>Postage</span>
+                          <span className="text-slate-300">-£2.80</span>
+                        </div>
+                        <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-teal-400">
+                          <span>Net</span>
+                          <span>£4.88</span>
+                        </div>
                       </div>
-                      <div className="flex justify-between text-slate-400">
-                        <span>Referral Fee (15.3%)</span>
-                        <span className="text-slate-300">-£1.97</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400">
-                        <span>Closing Fee</span>
-                        <span className="text-slate-300">-£0.75</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400">
-                        <span>Royal Mail Large Letter</span>
-                        <span className="text-slate-300">-£2.80</span>
-                      </div>
-                      <div className="flex justify-between text-slate-400">
-                        <span>Your Cost</span>
-                        <span className="text-slate-300">-£2.50</span>
-                      </div>
-                      <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-teal-400">
-                        <span>Net</span>
-                        <span>£4.88</span>
+                    </div>
+
+                    {/* eBay Breakdown */}
+                    <div className="space-y-1">
+                      <div className="text-slate-500 uppercase tracking-wide font-semibold">eBay Breakdown</div>
+                      <div className="space-y-1 pl-2 border-l border-slate-700">
+                        <div className="flex justify-between text-slate-400">
+                          <span>Avg Sold</span>
+                          <span className="text-slate-300">£11.50</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>Final Value (12.8%)</span>
+                          <span className="text-slate-300">-£1.47</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>PayPal Fee (3.4%)</span>
+                          <span className="text-slate-300">-£0.39</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
+                          <span>Postage</span>
+                          <span className="text-slate-300">-£2.80</span>
+                        </div>
+                        <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-teal-400">
+                          <span>Net</span>
+                          <span>£4.34</span>
+                        </div>
                       </div>
                     </div>
                   </div>
 
                   {/* Decision */}
-                  <div className="pt-3 border-t border-slate-700 space-y-2">
+                  <div className="pt-3 border-t border-slate-700">
                     <div className="flex items-center gap-2">
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Decision</div>
-                      <div className="flex items-center gap-1">
-                        <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <span className="text-xs font-semibold text-green-400">Strong buy - high demand</span>
-                      </div>
+                      <div className="w-2 h-2 bg-green-500 rounded-full" />
+                      <span className="text-xs font-semibold text-green-400">Strong buy - high demand</span>
                     </div>
-                    <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Action</div>
-                    <Button size="sm" variant="outline" className="w-full text-xs" data-testid="button-list-to-amazon">List to Amazon →</Button>
                   </div>
                 </div>
               </Card>
