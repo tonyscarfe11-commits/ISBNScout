@@ -49,14 +49,12 @@ export interface BookDetailsModalProps {
   book: BookDetails | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onList: (platform: "amazon" | "ebay") => void;
 }
 
 export function BookDetailsModal({
   book,
   open,
   onOpenChange,
-  onList,
 }: BookDetailsModalProps) {
   const [yourCost, setYourCost] = useState(book?.yourCost?.toString() || "");
   const [selectedPlatform, setSelectedPlatform] = useState<Platform>("amazon-fbm");
@@ -345,21 +343,13 @@ export function BookDetailsModal({
             </div>
           )}
 
-          <div className="flex gap-2">
+          <div className="flex justify-end">
             <Button
               variant="outline"
-              className="flex-1"
-              onClick={() => onList("amazon")}
-              data-testid="button-list-amazon"
+              onClick={() => onOpenChange(false)}
+              data-testid="button-close-details"
             >
-              List to Amazon
-            </Button>
-            <Button
-              className="flex-1"
-              onClick={() => onList("ebay")}
-              data-testid="button-list-ebay"
-            >
-              List to eBay
+              Close
             </Button>
           </div>
         </div>

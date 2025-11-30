@@ -332,14 +332,6 @@ export default function ScanPage() {
     }
   };
 
-  const handleListFromModal = (platform: "amazon" | "ebay") => {
-    toast({
-      title: `Listing to ${platform}`,
-      description: "Redirecting to listing form...",
-    });
-    setDetailsOpen(false);
-    setLocation("/listings/new");
-  };
 
   const isFreeTier = !scanLimits?.isUnlimited && scanLimits?.tier === 'free';
   const scansRemaining = scanLimits?.scansRemainingToday ?? Infinity;
@@ -360,64 +352,12 @@ export default function ScanPage() {
       />
 
       <div className="max-w-2xl mx-auto p-4 space-y-4">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold">Scan Books</h1>
-            <p className="text-sm text-muted-foreground">
-              Point at barcode or take a photo
-            </p>
-          </div>
-          {!scanLimits?.isUnlimited && scansRemaining !== Infinity && (
-            <Badge 
-              variant={scansRemaining > 3 ? "secondary" : "destructive"}
-              className="gap-1"
-            >
-              {scansRemaining}/{dailyLimit} scans left
-            </Badge>
-          )}
+        <div>
+          <h1 className="text-2xl font-bold">Scan Books</h1>
+          <p className="text-sm text-muted-foreground">
+            Point at barcode or take a photo
+          </p>
         </div>
-
-        {isFreeTier && scansRemaining <= 3 && scansRemaining > 0 && (
-          <Card className="p-3 bg-amber-50 dark:bg-amber-950/30 border-amber-200 dark:border-amber-800">
-            <div className="flex items-center justify-between gap-3">
-              <div className="flex items-center gap-2">
-                <Crown className="h-4 w-4 text-amber-600" />
-                <span className="text-sm font-medium text-amber-800 dark:text-amber-200">
-                  {scansRemaining} free scans remaining today
-                </span>
-              </div>
-              <Button
-                size="sm"
-                onClick={() => setLocation('/subscription')}
-                className="bg-amber-600 hover:bg-amber-700 text-white text-xs"
-                data-testid="button-upgrade"
-              >
-                Upgrade
-              </Button>
-            </div>
-          </Card>
-        )}
-
-        {isFreeTier && scansRemaining === 0 && (
-          <Card className="p-4 bg-red-50 dark:bg-red-950/30 border-red-200 dark:border-red-800">
-            <div className="text-center space-y-3">
-              <Crown className="h-8 w-8 text-red-600 mx-auto" />
-              <div>
-                <h3 className="font-semibold text-red-800 dark:text-red-200">Daily Limit Reached</h3>
-                <p className="text-sm text-red-600 dark:text-red-300">
-                  You've used all 10 free scans for today. Upgrade for unlimited scanning!
-                </p>
-              </div>
-              <Button
-                onClick={() => setLocation('/subscription')}
-                className="bg-red-600 hover:bg-red-700 text-white"
-                data-testid="button-upgrade-limit"
-              >
-                Upgrade Now
-              </Button>
-            </div>
-          </Card>
-        )}
 
         {currentVerdict ? (
           <ProfitVerdict
@@ -428,13 +368,6 @@ export default function ScanPage() {
                 description: `${currentVerdict.title} saved successfully`,
               });
               setCurrentVerdict(null);
-            }}
-            onList={(platform) => {
-              toast({
-                title: `Listing to ${platform}`,
-                description: "Redirecting to listing form...",
-              });
-              setLocation("/app/listings/new");
             }}
             onDismiss={() => setCurrentVerdict(null)}
             onEditCost={() => setCostEditorOpen(true)}
@@ -559,7 +492,6 @@ export default function ScanPage() {
         book={selectedBook}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
-        onList={handleListFromModal}
       />
 
       <InstallPrompt />

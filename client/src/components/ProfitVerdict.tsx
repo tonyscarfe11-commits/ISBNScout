@@ -39,7 +39,6 @@ export interface ProfitVerdictData {
 interface ProfitVerdictProps {
   data: ProfitVerdictData;
   onSave: () => void;
-  onList: (platform: "ebay" | "amazon") => void;
   onDismiss: () => void;
   onEditCost: () => void;
 }
@@ -51,7 +50,7 @@ function getAmazonSearchUrl(isbn: string, title: string): string {
   return `/api/amazon/redirect?isbn=${encodeURIComponent(searchTerm)}&title=${encodeURIComponent(title)}`;
 }
 
-export function ProfitVerdict({ data, onSave, onList, onDismiss, onEditCost }: ProfitVerdictProps) {
+export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVerdictProps) {
   const verdictConfig = {
     BUY: {
       icon: ThumbsUp,
@@ -225,7 +224,7 @@ export function ProfitVerdict({ data, onSave, onList, onDismiss, onEditCost }: P
 
       {/* Actions */}
       <div className="p-4 bg-muted/30 border-t space-y-2">
-        {/* Amazon Affiliate Link - Prominent */}
+        {/* Amazon Affiliate Link - For research/price checking */}
         <Button
           asChild
           className="w-full bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-2"
@@ -242,26 +241,6 @@ export function ProfitVerdict({ data, onSave, onList, onDismiss, onEditCost }: P
           </a>
         </Button>
         
-        <div className="grid grid-cols-2 gap-2">
-          <Button 
-            onClick={() => onList("ebay")}
-            variant="outline"
-            className="gap-2"
-            data-testid="button-list-ebay"
-          >
-            List on eBay
-            <ExternalLink className="h-3 w-3" />
-          </Button>
-          <Button 
-            onClick={() => onList("amazon")}
-            variant="outline"
-            className="gap-2"
-            data-testid="button-list-amazon"
-          >
-            List on Amazon
-            <ExternalLink className="h-3 w-3" />
-          </Button>
-        </div>
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={onSave}
