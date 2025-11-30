@@ -60,13 +60,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Auth routes
   app.post("/api/auth/signup", async (req, res) => {
     try {
-      const { username, email, password } = req.body;
+      const { username, email, password, affiliateId } = req.body;
 
       if (!username || !email || !password) {
         return res.status(400).json({ message: "Username, email and password are required" });
       }
 
       const user = await authService.signup(username, email, password);
+
+      // Link to affiliate if referred
+      if (affiliateId) {
+        try {
+          const { AffiliateService } = await import("./affiliate-service");
+          await AffiliateService.linkUserToAffiliate(user.id, affiliateId);
+          console.log(`[Signup] Linked user ${user.id} to affiliate ${affiliateId}`);
+        } catch (error) {
+          console.error('[Signup] Failed to link affiliate:', error);
+        }
+      }
 
       // Set session
       req.session.userId = user.id;
@@ -363,6 +374,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
               stripeCustomerId: customerId,
             });
             console.log(`[Stripe Webhook] Updated user ${user.id} subscription to ${planId}`);
+
+            // Track affiliate commission if user was referred
+            if (user.referredByAffiliateId) {
+              try {
+                const { AffiliateService } = await import("./affiliate-service");
+                const subscriptionAmount = planId?.includes('elite') ? 19.99 : 14.99;
+                
+                await AffiliateService.createCommission({
+                  affiliateId: user.referredByAffiliateId,
+                  userId: user.id,
+                  subscriptionTier: planId || 'pro_monthly',
+                  subscriptionAmount,
+                });
+                console.log(`[Affiliate Commission] Created commission for affiliate ${user.referredByAffiliateId} from user ${user.id}`);
+              } catch (error) {
+                console.error('[Affiliate Commission] Failed to create commission:', error);
+              }
+            }
           }
           break;
         }

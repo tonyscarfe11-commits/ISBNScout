@@ -10,6 +10,15 @@ import { BrandText } from "@/components/icons";
 import { Mail, Lock, User } from "lucide-react";
 import { setAuthToken } from "@/lib/queryClient";
 
+function getReferralCookie(): { affiliateId: string; referralCode: string } | null {
+  const match = document.cookie.match(/(^| )isbn_ref=([^;]+)/);
+  if (match) {
+    const [affiliateId, referralCode] = match[2].split(':');
+    return { affiliateId, referralCode };
+  }
+  return null;
+}
+
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
@@ -97,6 +106,7 @@ export default function AuthPage() {
     setIsLoading(true);
 
     try {
+      const referral = getReferralCookie();
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -104,6 +114,7 @@ export default function AuthPage() {
           username: signupUsername,
           email: signupEmail,
           password: signupPassword,
+          affiliateId: referral?.affiliateId || undefined,
         }),
         credentials: 'include', // Send/receive cookies
       });
