@@ -2,11 +2,40 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Barcode, Camera, Eye, Check, Play, Zap, Crown } from "lucide-react";
+import { Barcode, Camera, Eye, Check, Play, Zap, Crown, ChevronDown } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
+import { useState } from "react";
+
+const faqItems = [
+  {
+    question: "Does ISBNScout work without WiFi or mobile data?",
+    answer: "Yes, that's the core feature! ISBNScout is built from the ground up for offline-first scouting. Scan ISBNs with your phone's camera, and all profitability data syncs to your device when you're connected. You can scan hundreds of books at a charity shop or car-boot sale without any signal, then sync everything when you get back online.",
+  },
+  {
+    question: "Is this built for Amazon UK sellers?",
+    answer: "Absolutely. ISBNScout is specifically designed for UK book resellers. All pricing, fees, and postage calculations are calibrated for the UK market. We use Royal Mail Large Letter postage (£2.80) in our profit calculations, support Amazon MFN with correct UK fees, and focus on charity shops and UK car-boot sales.",
+  },
+  {
+    question: "Does it support eBay UK?",
+    answer: "Yes. ISBNScout supports both Amazon MFN and eBay UK. When you scan a book, you'll see profitability forecasts for both platforms side-by-side, including all applicable fees. This helps you make better buy/don't-buy decisions knowing your best-case profit on either channel.",
+  },
+  {
+    question: "Is the AI spine recognition real?",
+    answer: "We're building it. Currently, ISBNScout excels at barcode scanning (fastest method) and cover image recognition. AI spine recognition is in development—it's genuinely useful when you encounter books without visible barcodes or covers that are too worn.",
+  },
+  {
+    question: "Can I export my inventory or scan history?",
+    answer: "Yes. Your scan history and inventory data is yours. You can export your data in CSV format for spreadsheet analysis, accounting, or importing into other tools. This is a Pro and Elite feature, ensuring you're never locked into ISBNScout.",
+  },
+  {
+    question: "Who is ISBNScout for?",
+    answer: "ISBNScout is built for UK book resellers: casual scouts hitting charity shops on weekends, professional pickers sourcing full-time, and anyone who wants to make better buy/don't-buy decisions at the point of sale. You don't need to be a power seller—the app works just as well for side-hustlers as it does for established shops.",
+  },
+];
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
   const scrollToSection = (sectionId: string) => {
     const element = document.getElementById(sectionId);
@@ -678,24 +707,29 @@ export default function LandingPage() {
             </h2>
             
             <div className="space-y-3">
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Does ISBNScout work without WiFi or mobile data?
-              </div>
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Is this built for Amazon UK sellers?
-              </div>
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Does it support eBay UK?
-              </div>
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Is the AI spine recognition real?
-              </div>
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Can I export my inventory or scan history?
-              </div>
-              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
-                Who is ISBNScout for?
-              </div>
+              {faqItems.map((item, index) => (
+                <div key={index}>
+                  <button
+                    onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
+                    className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-teal-600 dark:hover:border-teal-600 transition-colors flex items-center justify-between"
+                    data-testid={`button-landing-faq-${index}`}
+                  >
+                    <h3 className="font-semibold text-foreground pr-4">{item.question}</h3>
+                    <ChevronDown 
+                      className={`w-5 h-5 text-teal-600 flex-shrink-0 transition-transform ${
+                        expandedIndex === index ? "rotate-180" : ""
+                      }`}
+                    />
+                  </button>
+                  {expandedIndex === index && (
+                    <div className="mt-2 p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg border border-slate-200 dark:border-slate-700 border-t-0 rounded-t-none">
+                      <p className="text-muted-foreground leading-relaxed text-sm">
+                        {item.answer}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
 
