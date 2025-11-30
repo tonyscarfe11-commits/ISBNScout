@@ -2217,6 +2217,27 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Amazon affiliate redirect - adds partner tag securely
+  app.get("/api/amazon/redirect", (req, res) => {
+    const { isbn, title } = req.query;
+    const partnerTag = process.env.AMAZON_PARTNER_TAG;
+    
+    // Use ISBN if available, otherwise use title for search
+    const searchTerm = isbn || title || '';
+    
+    // Build Amazon UK search URL with affiliate tag
+    let amazonUrl = `https://www.amazon.co.uk/s?k=${encodeURIComponent(String(searchTerm))}`;
+    
+    if (partnerTag) {
+      amazonUrl += `&tag=${partnerTag}`;
+      console.log(`[Amazon Redirect] Redirecting with affiliate tag: ${partnerTag}`);
+    } else {
+      console.log('[Amazon Redirect] No partner tag configured');
+    }
+    
+    res.redirect(amazonUrl);
+  });
+
   const httpServer = createServer(app);
 
   return httpServer;

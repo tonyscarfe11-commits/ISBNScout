@@ -11,8 +11,10 @@ import {
   ShoppingCart,
   Package,
   ExternalLink,
-  BookOpen
+  BookOpen,
+  Search
 } from "lucide-react";
+import { SiAmazon } from "react-icons/si";
 
 export interface ProfitVerdictData {
   title: string;
@@ -40,6 +42,13 @@ interface ProfitVerdictProps {
   onList: (platform: "ebay" | "amazon") => void;
   onDismiss: () => void;
   onEditCost: () => void;
+}
+
+function getAmazonSearchUrl(isbn: string, title: string): string {
+  // Use ISBN for search, fallback to title
+  const searchTerm = isbn.startsWith('AI-') ? encodeURIComponent(title) : isbn;
+  // Affiliate tag is added server-side via redirect for security
+  return `/api/amazon/redirect?isbn=${encodeURIComponent(searchTerm)}&title=${encodeURIComponent(title)}`;
 }
 
 export function ProfitVerdict({ data, onSave, onList, onDismiss, onEditCost }: ProfitVerdictProps) {
@@ -216,6 +225,23 @@ export function ProfitVerdict({ data, onSave, onList, onDismiss, onEditCost }: P
 
       {/* Actions */}
       <div className="p-4 bg-muted/30 border-t space-y-2">
+        {/* Amazon Affiliate Link - Prominent */}
+        <Button
+          asChild
+          className="w-full bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-2"
+          data-testid="button-amazon-affiliate"
+        >
+          <a 
+            href={getAmazonSearchUrl(data.isbn, data.title)} 
+            target="_blank" 
+            rel="noopener noreferrer"
+          >
+            <SiAmazon className="h-4 w-4" />
+            View on Amazon UK
+            <ExternalLink className="h-3 w-3" />
+          </a>
+        </Button>
+        
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={() => onList("ebay")}
