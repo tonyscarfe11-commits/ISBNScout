@@ -1,8 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { useLocation } from "wouter";
 import { useEffect } from "react";
-import { BookOpen, ArrowLeft, Users, Target, Heart } from "lucide-react";
+import { Play } from "lucide-react";
+import { AppHeader } from "@/components/AppHeader";
 
 export default function AboutPage() {
   const [, setLocation] = useLocation();
@@ -13,85 +13,79 @@ export default function AboutPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="border-b bg-background">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => setLocation("/")} className="flex items-center gap-2">
-            <ArrowLeft className="h-5 w-5" />
-            <div className="flex items-center gap-2">
-              <div className="h-8 w-8 bg-primary rounded-lg flex items-center justify-center">
-                <BookOpen className="h-5 w-5 text-primary-foreground" />
-              </div>
-              <span className="text-xl font-bold">ISBNScout</span>
-            </div>
-          </button>
-        </div>
-      </nav>
+      <AppHeader />
 
-      <div className="max-w-4xl mx-auto px-4 py-16">
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold mb-4">About ISBNScout</h1>
-          <p className="text-xl text-muted-foreground">
-            Building the future of online book selling
+      <div className="max-w-7xl mx-auto px-4 py-16">
+        {/* Video Section */}
+        <section className="mb-16">
+          <div className="text-center mb-8">
+            <h1 className="text-3xl font-bold text-foreground mb-3">
+              See ISBNScout in action.
+            </h1>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+              A quick 20-30 second walkthrough: shelf scan, spine recognition, profit preview, and listing pushed live.
+            </p>
+          </div>
+
+          {/* Video Placeholder */}
+          <div className="bg-slate-900 rounded-lg aspect-video flex items-center justify-center mb-4">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-4 bg-white/10 rounded-full">
+                  <Play className="h-8 w-8 text-white fill-white" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">
+                Embed your Capcut / YouTube demo here.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* CTA to Pricing */}
+        <section className="text-center py-8">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
+            Ready to get started?
+          </h2>
+          <p className="text-muted-foreground mb-6 max-w-2xl mx-auto">
+            Start your 14-day free trial today. No credit card required.
           </p>
-        </div>
+          <Button
+            size="lg"
+            onClick={() => setLocation("/subscription")}
+            className="bg-teal-600 hover:bg-teal-700 text-white"
+            data-testid="button-features-trial"
+          >
+            Start Free Trial
+          </Button>
+        </section>
+      </div>
 
-        <div className="space-y-8">
-          <Card className="p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Target className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Our Mission</h2>
+      {/* Footer */}
+      <footer className="mt-16 border-t border-slate-200 dark:border-slate-700 py-8 bg-slate-50 dark:bg-slate-900/50">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center text-xs text-muted-foreground space-y-2">
+            <p>© 2025 ISBNScout. All rights reserved.</p>
+            <div className="flex justify-center gap-6">
+              <button onClick={() => setLocation("/subscription")} className="hover:text-teal-600" data-testid="link-footer-pricing">
+                Pricing
+              </button>
+              <button onClick={() => setLocation("/blog")} className="hover:text-teal-600" data-testid="link-footer-docs">
+                Docs
+              </button>
+              <button onClick={() => setLocation("/faq")} className="hover:text-teal-600" data-testid="link-footer-contact">
+                Contact
+              </button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-600" data-testid="link-footer-privacy">
+                Privacy
+              </button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-teal-600" data-testid="link-footer-terms">
+                Terms
+              </button>
             </div>
-            <p className="text-muted-foreground leading-relaxed">
-              ISBNScout was founded with a simple mission: to empower book sellers of all sizes with professional-grade tools that were previously only accessible to large enterprises. We believe that every seller, whether you're scouting at car boot sales or running a full-time Amazon FBA/FBM or eBay business, deserves access to powerful AI technology that makes your work easier and more profitable.
-            </p>
-          </Card>
-
-          <Card className="p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Heart className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Our Story</h2>
-            </div>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              ISBNScout was born from the frustration of spending hours manually listing books online. Our founder, a part-time book seller, was tired of typing ISBNs, researching prices across multiple platforms, and writing descriptions for hundreds of books each week.
-            </p>
-            <p className="text-muted-foreground leading-relaxed">
-              What started as a simple scanning tool has evolved into a comprehensive platform trusted by hundreds of sellers across the UK. We've processed over 10,000 books daily and helped our users generate millions in revenue. But we're just getting started.
-            </p>
-          </Card>
-
-          <Card className="p-8">
-            <div className="flex items-center gap-3 mb-4">
-              <Users className="h-6 w-6 text-primary" />
-              <h2 className="text-2xl font-bold">Built for Book Sellers, By Book Sellers</h2>
-            </div>
-            <p className="text-muted-foreground leading-relaxed mb-4">
-              Every feature in ISBNScout comes from real feedback from our community of sellers. We're not just building software – we're solving the daily challenges we face ourselves in the book selling business.
-            </p>
-            <div className="grid md:grid-cols-3 gap-4 mt-6">
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-primary mb-1">500+</div>
-                <div className="text-sm text-muted-foreground">Active Sellers</div>
-              </div>
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-primary mb-1">10K+</div>
-                <div className="text-sm text-muted-foreground">Books Scanned Daily</div>
-              </div>
-              <div className="bg-primary/5 p-4 rounded-lg">
-                <div className="text-2xl font-bold text-primary mb-1">£2M+</div>
-                <div className="text-sm text-muted-foreground">Revenue Generated</div>
-              </div>
-            </div>
-          </Card>
-
-          <div className="text-center pt-8">
-            <h3 className="text-xl font-semibold mb-4">Ready to join us?</h3>
-            <Button size="lg" onClick={() => setLocation("/auth")}>
-              Start Your Free Trial
-            </Button>
           </div>
         </div>
-      </div>
+      </footer>
     </div>
   );
 }
