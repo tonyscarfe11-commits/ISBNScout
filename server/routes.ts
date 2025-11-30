@@ -2246,6 +2246,54 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Affiliate program application
+  app.post("/api/affiliates/apply", async (req, res) => {
+    try {
+      const { name, email, website, socialMedia, audience, howDidYouHear } = req.body;
+
+      if (!name || !email || !audience) {
+        return res.status(400).json({ message: "Name, email, and audience description are required" });
+      }
+
+      // Sanitize inputs - strip HTML tags and limit length
+      const sanitize = (str: string | undefined, maxLen: number = 500): string => {
+        if (!str) return '';
+        return String(str)
+          .replace(/<[^>]*>/g, '') // Remove HTML tags
+          .replace(/[<>'"&]/g, '') // Remove potentially dangerous chars
+          .trim()
+          .slice(0, maxLen);
+      };
+
+      // Validate email format
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(email)) {
+        return res.status(400).json({ message: "Please provide a valid email address" });
+      }
+
+      const sanitizedData = {
+        name: sanitize(name, 100),
+        email: sanitize(email, 255),
+        website: sanitize(website, 255),
+        socialMedia: sanitize(socialMedia, 255),
+        audience: sanitize(audience, 1000),
+        howDidYouHear: sanitize(howDidYouHear, 255),
+        appliedAt: new Date().toISOString(),
+      };
+
+      // Log the application (in production, you'd store this in a database)
+      console.log("[Affiliate Application]", sanitizedData);
+
+      res.json({ 
+        success: true, 
+        message: "Application received! We'll be in touch within 48 hours." 
+      });
+    } catch (error: any) {
+      console.error("[Affiliate Application] Error:", error);
+      res.status(500).json({ message: error.message });
+    }
+  });
+
   // Amazon affiliate redirect - adds partner tag securely
   app.get("/api/amazon/redirect", (req, res) => {
     const { isbn, title } = req.query;
