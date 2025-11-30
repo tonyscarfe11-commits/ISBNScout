@@ -36,26 +36,26 @@ export default function TermsPage() {
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4 text-foreground">Terms of Service</h1>
+        <h1 className="text-4xl font-bold mb-4 text-slate-700 dark:text-slate-200">Terms of Service</h1>
         <p className="text-sm text-muted-foreground mb-8">Last updated: January 2025</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">1. Acceptance of Terms</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">1. Acceptance of Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
               By accessing and using ISBNScout, you accept and agree to be bound by the terms and provision of this agreement. If you do not agree to these terms, please do not use our service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">2. Description of Service</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">2. Description of Service</h2>
             <p className="text-muted-foreground leading-relaxed">
               ISBNScout provides tools for book sellers to scan, price, and list books on various e-commerce platforms including Amazon (FBA & FBM) and eBay. We offer AI-powered features including photo recognition, keyword optimization, and automated listing creation.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">3. Account Registration</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">3. Account Registration</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               To use ISBNScout, you must:
             </p>
@@ -68,7 +68,7 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">4. Subscription and Billing</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">4. Subscription and Billing</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               Paid subscriptions are billed monthly or annually in advance. You agree to:
             </p>
@@ -84,14 +84,14 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">5. Platform Integration</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">5. Platform Integration</h2>
             <p className="text-muted-foreground leading-relaxed">
               When connecting your Amazon (FBA or FBM) or eBay accounts, you authorize ISBNScout to access these platforms on your behalf to create and manage listings. You remain responsible for all listings created through our service and must comply with each platform's terms of service.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">6. Acceptable Use</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">6. Acceptable Use</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               You agree not to:
             </p>
@@ -105,42 +105,42 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">7. Intellectual Property</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">7. Intellectual Property</h2>
             <p className="text-muted-foreground leading-relaxed">
               The ISBNScout service, including its original content, features, and functionality, is owned by ISBNScout and protected by international copyright, trademark, and other intellectual property laws.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">8. Limitation of Liability</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">8. Limitation of Liability</h2>
             <p className="text-muted-foreground leading-relaxed">
               ISBNScout is provided "as is" without warranties of any kind. We are not responsible for any losses, including lost profits, that result from using our service. Our AI-generated content should be reviewed before use, and pricing data should be verified independently.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">9. Termination</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">9. Termination</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may terminate or suspend your account immediately, without prior notice, for any breach of these Terms. Upon termination, your right to use the service will immediately cease.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">10. Changes to Terms</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">10. Changes to Terms</h2>
             <p className="text-muted-foreground leading-relaxed">
               We reserve the right to modify these terms at any time. We will notify users of any material changes via email. Continued use of the service after changes constitutes acceptance of the new terms.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">11. Governing Law</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">11. Governing Law</h2>
             <p className="text-muted-foreground leading-relaxed">
               These Terms shall be governed by the laws of England and Wales, without regard to its conflict of law provisions.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">12. Contact Information</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">12. Contact Information</h2>
             <p className="text-muted-foreground leading-relaxed">
               For questions about these Terms, please contact us at{" "}
               <a href="mailto:legal@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">

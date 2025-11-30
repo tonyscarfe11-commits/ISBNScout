@@ -142,7 +142,7 @@ export default function SubscriptionPage() {
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
         <div className="text-center mb-12 space-y-3">
-          <h1 className="text-4xl font-bold text-foreground">
+          <h1 className="text-4xl font-bold text-slate-700 dark:text-slate-200">
             Simple pricing for serious UK book flippers
           </h1>
           <p className="text-base text-muted-foreground max-w-2xl mx-auto">
@@ -158,7 +158,7 @@ export default function SubscriptionPage() {
               <Badge className="bg-teal-100 text-teal-800 border-teal-200 mb-3">
                 14-DAY FREE TRIAL
               </Badge>
-              <h2 className="text-2xl font-bold text-foreground mb-3">
+              <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-3">
                 Test it during sourcing runs
               </h2>
               <p className="text-sm text-muted-foreground">
@@ -170,7 +170,7 @@ export default function SubscriptionPage() {
               {trialFeatures.map((feature, index) => (
                 <li key={index} className="flex items-start gap-2">
                   <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
-                  <span className="text-sm text-foreground">{feature}</span>
+                  <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                 </li>
               ))}
             </ul>
@@ -189,7 +189,7 @@ export default function SubscriptionPage() {
               >
                 <div className="mb-4">
                   <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold text-foreground">
+                    <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">
                       {plan.name}
                     </h3>
                     {plan.highlighted && (
@@ -203,7 +203,7 @@ export default function SubscriptionPage() {
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-foreground">
+                    <span className="text-3xl font-bold text-slate-700 dark:text-slate-200">
                       {plan.price}
                     </span>
                     <span className="text-sm text-muted-foreground">
@@ -216,7 +216,7 @@ export default function SubscriptionPage() {
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                     </li>
                   ))}
                 </ul>

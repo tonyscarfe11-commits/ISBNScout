@@ -198,7 +198,7 @@ export default function LandingPage() {
                 UK BOOK SCOUTING APP
               </Badge>
               
-              <h1 className="text-4xl md:text-5xl font-bold text-foreground leading-tight">
+              <h1 className="text-4xl md:text-5xl font-bold text-slate-700 dark:text-slate-200 leading-tight">
                 Scan books.<br/><span className="text-teal-600">Even offline.</span>
               </h1>
               
@@ -360,7 +360,7 @@ export default function LandingPage() {
       <section id="features" className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-3">
               Three ways to identify books
             </h2>
             <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -376,7 +376,7 @@ export default function LandingPage() {
                   <Barcode className="h-6 w-6 text-teal-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Barcode Scanner</h3>
+                  <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">Barcode Scanner</h3>
                   <p className="text-sm text-muted-foreground">
                     Point and scan. Instant ISBN lookup with profit calculations. The fastest method for high-volume sessions.
                   </p>
@@ -391,7 +391,7 @@ export default function LandingPage() {
                   <Camera className="h-6 w-6 text-teal-600" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">Cover Recognition</h3>
+                  <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">Cover Recognition</h3>
                   <p className="text-sm text-muted-foreground">
                     Snap the front cover. AI extracts title, author, and edition—perfect for older books or damaged barcodes.
                   </p>
@@ -409,7 +409,7 @@ export default function LandingPage() {
                   <Badge className="bg-teal-600 text-white text-xs">EXCLUSIVE</Badge>
                 </div>
                 <div>
-                  <h3 className="text-lg font-bold text-foreground mb-2">AI Spine Recognition</h3>
+                  <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">AI Spine Recognition</h3>
                   <p className="text-sm text-muted-foreground">
                     Photograph entire shelves. ISBNScout reads the spines for you. No other scouting app offers this.
                   </p>
@@ -453,7 +453,7 @@ export default function LandingPage() {
       <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-3">
               What UK sellers are saying
             </h2>
           </div>
@@ -467,9 +467,9 @@ export default function LandingPage() {
                       <Star key={i} className="h-4 w-4 fill-yellow-400 text-yellow-400" />
                     ))}
                   </div>
-                  <p className="text-foreground italic">"{testimonial.quote}"</p>
+                  <p className="text-slate-700 dark:text-slate-200 italic">"{testimonial.quote}"</p>
                   <div>
-                    <div className="font-semibold text-foreground">{testimonial.name}</div>
+                    <div className="font-semibold text-slate-700 dark:text-slate-200">{testimonial.name}</div>
                     <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                   </div>
                 </div>
@@ -483,7 +483,7 @@ export default function LandingPage() {
       <section id="demo" className="py-16 bg-background">
         <div className="max-w-4xl mx-auto px-4">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-3">
               See it in action
             </h2>
             <p className="text-muted-foreground">
@@ -522,7 +522,7 @@ export default function LandingPage() {
       <section id="pricing" className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-5xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-3">
               Simple, honest pricing
             </h2>
             <p className="text-muted-foreground">
@@ -535,13 +535,13 @@ export default function LandingPage() {
             <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xl font-bold text-foreground">Pro</h3>
+                  <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">Pro</h3>
                   <Badge className="bg-teal-600 text-white">POPULAR</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">For weekly sourcing in charity shops and car-boots.</p>
                 <div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">£14.99</span>
+                    <span className="text-4xl font-bold text-slate-700 dark:text-slate-200">£14.99</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">or £149/year (save 2 months)</p>
@@ -550,7 +550,7 @@ export default function LandingPage() {
                   {["Unlimited scans", "Offline mode", "Barcode, cover & AI spine", "Amazon + eBay profit calculator", "Scan history"].map((feature) => (
                     <li key={feature} className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-teal-600 shrink-0" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -568,11 +568,11 @@ export default function LandingPage() {
             {/* Elite Plan */}
             <Card className="p-6">
               <div className="space-y-4">
-                <h3 className="text-xl font-bold text-foreground">Elite</h3>
+                <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">Elite</h3>
                 <p className="text-sm text-muted-foreground">For high-volume sellers needing advanced tools.</p>
                 <div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold text-foreground">£19.99</span>
+                    <span className="text-4xl font-bold text-slate-700 dark:text-slate-200">£19.99</span>
                     <span className="text-muted-foreground">/month</span>
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">or £199/year (save 2 months)</p>
@@ -581,7 +581,7 @@ export default function LandingPage() {
                   {["Everything in Pro", "Buy/Don't Buy triggers", "Custom profit rules", "CSV export", "Multi-device access"].map((feature) => (
                     <li key={feature} className="flex items-center gap-2">
                       <Check className="h-4 w-4 text-teal-600 shrink-0" />
-                      <span className="text-sm text-foreground">{feature}</span>
+                      <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                     </li>
                   ))}
                 </ul>
@@ -603,7 +603,7 @@ export default function LandingPage() {
       <section id="faq" className="py-16 bg-background">
         <div className="max-w-3xl mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
+            <h2 className="text-3xl font-bold text-slate-700 dark:text-slate-200 mb-3">
               Common questions
             </h2>
           </div>
@@ -616,7 +616,7 @@ export default function LandingPage() {
                   className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-teal-600 dark:hover:border-teal-600 transition-colors flex items-center justify-between gap-4"
                   data-testid={`button-faq-${index}`}
                 >
-                  <h3 className="font-semibold text-foreground">{item.question}</h3>
+                  <h3 className="font-semibold text-slate-700 dark:text-slate-200">{item.question}</h3>
                   <ChevronDown 
                     className={`w-5 h-5 text-teal-600 flex-shrink-0 transition-transform ${
                       expandedIndex === index ? "rotate-180" : ""

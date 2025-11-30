@@ -35,19 +35,19 @@ export default function CookiePolicyPage() {
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4 text-foreground">Cookie Policy</h1>
+        <h1 className="text-4xl font-bold mb-4 text-slate-700 dark:text-slate-200">Cookie Policy</h1>
         <p className="text-sm text-muted-foreground mb-8">Last updated: January 2025</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">1. What Are Cookies?</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">1. What Are Cookies?</h2>
             <p className="text-muted-foreground leading-relaxed">
               Cookies are small text files that are stored on your device when you visit a website. They help websites remember your preferences, login status, and other information to improve your browsing experience.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">2. How We Use Cookies</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">2. How We Use Cookies</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               ISBNScout uses cookies for the following purposes:
             </p>
@@ -60,25 +60,25 @@ export default function CookiePolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">3. Types of Cookies We Use</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">3. Types of Cookies We Use</h2>
             
             <div className="space-y-4 mt-4">
               <div className="bg-muted/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-foreground mb-2">Session Cookies</h3>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Session Cookies</h3>
                 <p className="text-muted-foreground text-sm">
                   These are temporary cookies that expire when you close your browser. We use these to maintain your login session while you use ISBNScout.
                 </p>
               </div>
               
               <div className="bg-muted/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-foreground mb-2">Persistent Cookies</h3>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Persistent Cookies</h3>
                 <p className="text-muted-foreground text-sm">
                   These cookies remain on your device for a set period. We use these to remember your preferences and for affiliate tracking (30-day duration).
                 </p>
               </div>
               
               <div className="bg-muted/30 p-4 rounded-lg">
-                <h3 className="font-semibold text-foreground mb-2">Third-Party Cookies</h3>
+                <h3 className="font-semibold text-slate-700 dark:text-slate-200 mb-2">Third-Party Cookies</h3>
                 <p className="text-muted-foreground text-sm">
                   Some cookies are placed by third-party services we use, such as Stripe for payment processing. These are governed by the respective third party's privacy policy.
                 </p>
@@ -87,14 +87,14 @@ export default function CookiePolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">4. Specific Cookies We Use</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">4. Specific Cookies We Use</h2>
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-muted-foreground mt-4">
                 <thead>
                   <tr className="border-b border-muted">
-                    <th className="text-left py-2 font-semibold text-foreground">Cookie Name</th>
-                    <th className="text-left py-2 font-semibold text-foreground">Purpose</th>
-                    <th className="text-left py-2 font-semibold text-foreground">Duration</th>
+                    <th className="text-left py-2 font-semibold text-slate-700 dark:text-slate-200">Cookie Name</th>
+                    <th className="text-left py-2 font-semibold text-slate-700 dark:text-slate-200">Purpose</th>
+                    <th className="text-left py-2 font-semibold text-slate-700 dark:text-slate-200">Duration</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -119,7 +119,7 @@ export default function CookiePolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">5. Managing Cookies</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">5. Managing Cookies</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               You can control and manage cookies in several ways:
             </p>
@@ -134,14 +134,14 @@ export default function CookiePolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">6. Updates to This Policy</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">6. Updates to This Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may update this Cookie Policy from time to time to reflect changes in our practices or for legal reasons. We will notify you of any significant changes by posting a notice on our website.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">7. Contact Us</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">7. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about our use of cookies, please contact us at{" "}
               <a href="mailto:privacy@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">

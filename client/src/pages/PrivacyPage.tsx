@@ -36,19 +36,19 @@ export default function PrivacyPage() {
       </nav>
 
       <div className="max-w-4xl mx-auto px-4 py-16">
-        <h1 className="text-4xl font-bold mb-4 text-foreground">Privacy Policy</h1>
+        <h1 className="text-4xl font-bold mb-4 text-slate-700 dark:text-slate-200">Privacy Policy</h1>
         <p className="text-sm text-muted-foreground mb-8">Last updated: January 2025</p>
 
         <div className="prose prose-slate dark:prose-invert max-w-none space-y-8">
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">1. Information We Collect</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">1. Information We Collect</h2>
             <p className="text-muted-foreground leading-relaxed">
               We collect information you provide directly to us, including your name, email address, and payment information when you create an account. We also collect data about your usage of ISBNScout, including books you scan, listings you create, and platform interactions.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">2. How We Use Your Information</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">2. How We Use Your Information</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               We use the information we collect to:
             </p>
@@ -62,21 +62,21 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">3. Data Security</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">3. Data Security</h2>
             <p className="text-muted-foreground leading-relaxed">
               We implement appropriate security measures to protect your personal information. All payment processing is handled by secure third-party providers (Stripe). We never store your full credit card details on our servers.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">4. Third-Party Services</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">4. Third-Party Services</h2>
             <p className="text-muted-foreground leading-relaxed">
               ISBNScout integrates with Amazon (FBA & FBM) and eBay to provide listing services. When you connect these accounts, we access only the information necessary to create and manage your listings. We do not share your data with these platforms beyond what's required for the integration.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">5. Your Rights</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">5. Your Rights</h2>
             <p className="text-muted-foreground leading-relaxed mb-3">
               You have the right to:
             </p>
@@ -90,21 +90,21 @@ export default function PrivacyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">6. Cookies</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">6. Cookies</h2>
             <p className="text-muted-foreground leading-relaxed">
               We use cookies and similar technologies to maintain your session, remember your preferences, and analyze how you use our service. You can control cookies through your browser settings.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">7. Changes to This Policy</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">7. Changes to This Policy</h2>
             <p className="text-muted-foreground leading-relaxed">
               We may update this privacy policy from time to time. We will notify you of any changes by posting the new policy on this page and updating the "Last updated" date.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-foreground">8. Contact Us</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">8. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about this Privacy Policy, please contact us at{" "}
               <a href="mailto:privacy@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">
