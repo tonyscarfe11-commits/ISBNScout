@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AppHeader } from "@/components/AppHeader";
+import { WelcomeGuide, useFirstTimeUser } from "@/components/WelcomeGuide";
 import { useLocation } from "wouter";
 import {
   TrendingUp,
@@ -45,6 +46,7 @@ export default function DashboardPage() {
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState(true);
   const [userPlan, setUserPlan] = useState("trial");
+  const { isFirstTime, dismissWelcome } = useFirstTimeUser();
   const [stats, setStats] = useState<DashboardStats>({
     scansThisMonth: 0,
     totalInventory: 0,
@@ -231,6 +233,17 @@ export default function DashboardPage() {
             Scan Books
           </Button>
         </div>
+
+        {/* First-time User Welcome */}
+        {isFirstTime && stats.scansThisMonth === 0 && (
+          <WelcomeGuide 
+            onDismiss={dismissWelcome}
+            onStartScanning={() => {
+              dismissWelcome();
+              setLocation("/app/scan");
+            }}
+          />
+        )}
 
         {/* Stats Grid - Teal Color Scheme */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">

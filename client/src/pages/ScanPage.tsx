@@ -588,8 +588,8 @@ export default function ScanPage() {
             <h1 className="text-2xl font-bold mb-1">Scan Books</h1>
             <p className="text-sm text-muted-foreground">
               {scanMode === "single"
-                ? "Scan ISBN or capture book cover/spine to get started"
-                : "Capture multiple books from your shelf at once"}
+                ? "Scan barcode, cover, or spine — we'll do the rest!"
+                : "Point at a shelf to scan multiple books at once"}
             </p>
           </div>
           <div className="flex gap-2">
@@ -601,13 +601,13 @@ export default function ScanPage() {
                 setShelfResults([]);
                 setRecognitionResult(null);
               }}
-              className="gap-2"
+              className={`gap-2 ${scanMode === "shelf" ? "bg-teal-600 hover:bg-teal-700" : ""}`}
               data-testid="button-mode-toggle"
             >
               {scanMode === "shelf" ? (
                 <>
                   <Library className="h-4 w-4" />
-                  <span className="hidden sm:inline">Shelf</span>
+                  <span className="hidden sm:inline">Shelf Mode</span>
                 </>
               ) : (
                 <>
@@ -620,32 +620,60 @@ export default function ScanPage() {
               variant={bluetoothEnabled ? "default" : "outline"}
               size="sm"
               onClick={() => setBluetoothEnabled(!bluetoothEnabled)}
-              className="gap-2"
+              className={`gap-2 ${bluetoothEnabled ? "bg-teal-600 hover:bg-teal-700" : ""}`}
               data-testid="button-bluetooth-toggle"
             >
               {bluetoothEnabled ? (
                 <>
                   <Bluetooth className="h-4 w-4" />
-                  <span className="hidden sm:inline">Bluetooth</span>
+                  <span className="hidden sm:inline">BT On</span>
                 </>
               ) : (
                 <>
                   <BluetoothOff className="h-4 w-4" />
-                  <span className="hidden sm:inline">Bluetooth</span>
+                  <span className="hidden sm:inline">BT Off</span>
                 </>
               )}
             </Button>
           </div>
         </div>
 
+        {/* Quick Tips for New Users */}
+        {recentScans.length === 0 && !isProcessingImage && !recognitionResult && shelfResults.length === 0 && (
+          <Card className="p-4 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 border-teal-200 dark:border-teal-800">
+            <div className="flex items-start gap-3">
+              <div className="p-2 rounded-xl bg-teal-500/10 shrink-0">
+                <Zap className="h-5 w-5 text-teal-600" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="font-semibold text-sm">Quick Tips</h3>
+                <ul className="text-xs text-muted-foreground space-y-1.5">
+                  <li className="flex items-start gap-2">
+                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">1</span>
+                    <span><strong>Barcode</strong> — Fastest! Just point at any ISBN barcode</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">2</span>
+                    <span><strong>Cover/Spine</strong> — Take a photo, AI finds the book</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <span className="w-4 h-4 rounded-full bg-teal-100 dark:bg-teal-900 flex items-center justify-center text-[10px] font-bold text-teal-700 dark:text-teal-300 shrink-0 mt-0.5">3</span>
+                    <span><strong>Shelf Mode</strong> — Scan a whole shelf in one photo!</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </Card>
+        )}
+
         {bluetoothEnabled && (
-          <div className="flex items-center gap-2 p-3 rounded-md bg-teal-500/10 border border-teal-500/20">
+          <div className="flex items-center gap-2 p-3 rounded-xl bg-teal-500/10 border border-teal-500/20">
             <Bluetooth className="h-4 w-4 text-teal-600" />
             <span className="text-sm font-medium">
-              Bluetooth Scanner Active
+              Bluetooth Scanner Ready
             </span>
-            <Badge variant="outline" className="ml-auto">
-              {isListening ? "Listening" : "Standby"}
+            <Badge variant="outline" className="ml-auto text-xs">
+              {isListening ? "Listening..." : "Standby"}
             </Badge>
           </div>
         )}
