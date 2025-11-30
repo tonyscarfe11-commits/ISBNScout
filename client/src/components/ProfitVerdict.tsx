@@ -14,7 +14,7 @@ import {
   BookOpen,
   Search
 } from "lucide-react";
-import { SiAmazon } from "react-icons/si";
+import { SiAmazon, SiEbay } from "react-icons/si";
 
 export interface ProfitVerdictData {
   title: string;
@@ -48,6 +48,13 @@ function getAmazonSearchUrl(isbn: string, title: string): string {
   const searchTerm = isbn.startsWith('AI-') ? encodeURIComponent(title) : isbn;
   // Affiliate tag is added server-side via redirect for security
   return `/api/amazon/redirect?isbn=${encodeURIComponent(searchTerm)}&title=${encodeURIComponent(title)}`;
+}
+
+function getEbaySearchUrl(isbn: string, title: string): string {
+  // Use ISBN for search, fallback to title
+  const searchTerm = isbn.startsWith('AI-') ? title : isbn;
+  // Search on eBay UK
+  return `https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(searchTerm)}&_sacat=267`;
 }
 
 export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVerdictProps) {
@@ -224,22 +231,39 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
 
       {/* Actions */}
       <div className="p-4 bg-muted/30 border-t space-y-2">
-        {/* Amazon Affiliate Link - For research/price checking */}
-        <Button
-          asChild
-          className="w-full bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-2"
-          data-testid="button-amazon-affiliate"
-        >
-          <a 
-            href={getAmazonSearchUrl(data.isbn, data.title)} 
-            target="_blank" 
-            rel="noopener noreferrer"
+        {/* Research Links - Amazon & eBay */}
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            asChild
+            className="bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-1"
+            data-testid="button-amazon-affiliate"
           >
-            <SiAmazon className="h-4 w-4" />
-            View on Amazon UK
-            <ExternalLink className="h-3 w-3" />
-          </a>
-        </Button>
+            <a 
+              href={getAmazonSearchUrl(data.isbn, data.title)} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <SiAmazon className="h-4 w-4" />
+              Amazon UK
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </Button>
+          <Button
+            asChild
+            className="bg-[#E53238] hover:bg-[#c92a2f] text-white font-semibold gap-1"
+            data-testid="button-ebay-view"
+          >
+            <a 
+              href={getEbaySearchUrl(data.isbn, data.title)} 
+              target="_blank" 
+              rel="noopener noreferrer"
+            >
+              <SiEbay className="h-4 w-4" />
+              eBay UK
+              <ExternalLink className="h-3 w-3" />
+            </a>
+          </Button>
+        </div>
         
         <div className="grid grid-cols-2 gap-2">
           <Button 
