@@ -681,6 +681,7 @@ export default function LandingPage() {
               <button onClick={() => scrollToSection("features")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-features">Features</button>
               <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-pricing">Pricing</button>
               <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-faq">FAQ</button>
+              <button onClick={() => setLocation("/blog")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-blog">Blog</button>
               <a href="mailto:support@isbnscout.com" className="hover:text-teal-400 transition-colors">Support</a>
               <button onClick={() => setLocation("/affiliates")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-affiliates">Affiliates</button>
               <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-privacy">Privacy</button>
