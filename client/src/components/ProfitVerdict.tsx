@@ -25,8 +25,12 @@ export interface ProfitVerdictData {
   ebayPrice: number | null;
   amazonPrice: number | null;
   fees: number;
+  ebayFees: number;
+  amazonFees: number;
   shipping: number;
   profit: number;
+  ebayProfit: number;
+  amazonProfit: number;
   roi: number;
   verdict: "BUY" | "SKIP" | "MARGINAL";
   reason: string;
@@ -175,17 +179,6 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
             </div>
           </button>
 
-          {/* Fees */}
-          <div className="bg-background/80 rounded-lg p-3">
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <PoundSterling className="h-3 w-3" />
-              Fees (15%)
-            </div>
-            <div className="text-lg font-bold font-data text-orange-600">
-              -£{data.fees.toFixed(2)}
-            </div>
-          </div>
-
           {/* Shipping */}
           <div className="bg-background/80 rounded-lg p-3">
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
@@ -196,6 +189,41 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
               -£{data.shipping.toFixed(2)}
             </div>
           </div>
+        </div>
+
+        {/* Platform-Specific Profits */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* eBay Profit */}
+          {data.ebayPrice && (
+            <div className="bg-background/80 rounded-lg p-3 border-l-2 border-[#0064D2]">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <SiEbay className="h-3 w-3 text-[#0064D2]" />
+                eBay (12.8% fee)
+              </div>
+              <div className={`text-lg font-bold font-data ${data.ebayProfit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                £{data.ebayProfit.toFixed(2)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                Price: £{data.ebayPrice.toFixed(2)}
+              </div>
+            </div>
+          )}
+
+          {/* Amazon Profit */}
+          {data.amazonPrice && (
+            <div className="bg-background/80 rounded-lg p-3 border-l-2 border-[#FF9900]">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <SiAmazon className="h-3 w-3 text-[#FF9900]" />
+                Amazon (15.3% fee)
+              </div>
+              <div className={`text-lg font-bold font-data ${data.amazonProfit >= 0 ? "text-emerald-600" : "text-red-600"}`}>
+                £{data.amazonProfit.toFixed(2)}
+              </div>
+              <div className="text-[10px] text-muted-foreground">
+                Price: £{data.amazonPrice.toFixed(2)}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Velocity Info */}

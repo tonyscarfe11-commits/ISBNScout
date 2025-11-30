@@ -193,11 +193,26 @@ export default function ScanPage() {
 
       const userCosts = getUserCosts();
       const yourCost = currentCost || userCosts.defaultPurchaseCost;
+      const shipping = userCosts.estimatedShipping;
+      
+      // Calculate eBay profit (12.8% fee)
+      const ebayFeePercent = userCosts.ebayFeePercentage || 12.8;
+      const ebayPrice = pricingData.ebayPrice || 0;
+      const ebayFees = ebayPrice * (ebayFeePercent / 100);
+      const ebayProfit = ebayPrice > 0 ? ebayPrice - yourCost - ebayFees - shipping : 0;
+      
+      // Calculate Amazon profit (15.3% fee)
+      const amazonFeePercent = userCosts.amazonFeePercentage || 15.3;
+      const amazonPrice = pricingData.amazonPrice || 0;
+      const amazonFees = amazonPrice * (amazonFeePercent / 100);
+      const amazonProfit = amazonPrice > 0 ? amazonPrice - yourCost - amazonFees - shipping : 0;
+      
+      // Best profit for verdict calculation
+      const bestProfit = Math.max(ebayProfit, amazonProfit);
       const lowestPrice = pricingData.lowestPrice || pricingData.ebayPrice || pricingData.amazonPrice || 0;
       const feePercentage = userCosts.feePercentage / 100;
       const fees = lowestPrice * feePercentage;
-      const shipping = userCosts.estimatedShipping;
-      const profit = lowestPrice - yourCost - fees - shipping;
+      const profit = bestProfit;
       const roi = yourCost > 0 ? ((profit / yourCost) * 100) : 0;
 
       const { verdict, reason } = calculateVerdict(profit, roi, pricingData.confidence);
@@ -211,8 +226,12 @@ export default function ScanPage() {
         ebayPrice: pricingData.ebayPrice,
         amazonPrice: pricingData.amazonPrice,
         fees,
+        ebayFees,
+        amazonFees,
         shipping,
         profit,
+        ebayProfit,
+        amazonProfit,
         roi,
         verdict,
         reason,
@@ -443,17 +462,35 @@ export default function ScanPage() {
             setCurrentCost(newCost);
             if (currentVerdict) {
               const userCosts = getUserCosts();
+              const shipping = userCosts.estimatedShipping;
+              
+              // Recalculate eBay profit
+              const ebayFeePercent = userCosts.ebayFeePercentage || 12.8;
+              const ebayPrice = currentVerdict.ebayPrice || 0;
+              const ebayFees = ebayPrice * (ebayFeePercent / 100);
+              const ebayProfit = ebayPrice > 0 ? ebayPrice - newCost - ebayFees - shipping : 0;
+              
+              // Recalculate Amazon profit
+              const amazonFeePercent = userCosts.amazonFeePercentage || 15.3;
+              const amazonPrice = currentVerdict.amazonPrice || 0;
+              const amazonFees = amazonPrice * (amazonFeePercent / 100);
+              const amazonProfit = amazonPrice > 0 ? amazonPrice - newCost - amazonFees - shipping : 0;
+              
+              const bestProfit = Math.max(ebayProfit, amazonProfit);
               const bestPrice = currentVerdict.ebayPrice || currentVerdict.amazonPrice || 0;
               const fees = bestPrice * (userCosts.feePercentage / 100);
-              const profit = bestPrice - newCost - fees - userCosts.estimatedShipping;
-              const roi = newCost > 0 ? ((profit / newCost) * 100) : 0;
-              const { verdict, reason } = calculateVerdict(profit, roi, currentVerdict.confidence);
+              const roi = newCost > 0 ? ((bestProfit / newCost) * 100) : 0;
+              const { verdict, reason } = calculateVerdict(bestProfit, roi, currentVerdict.confidence);
               
               setCurrentVerdict({
                 ...currentVerdict,
                 yourCost: newCost,
                 fees,
-                profit,
+                ebayFees,
+                amazonFees,
+                profit: bestProfit,
+                ebayProfit,
+                amazonProfit,
                 roi,
                 verdict,
                 reason,

@@ -18,6 +18,8 @@ const DEFAULT_COSTS = {
   onlineCost: 3.00,
   estimatedShipping: 2.85,
   feePercentage: 15,
+  ebayFeePercentage: 12.8,
+  amazonFeePercentage: 15.3,
 };
 
 export interface UserCosts {
@@ -27,6 +29,8 @@ export interface UserCosts {
   onlineCost: number;
   estimatedShipping: number;
   feePercentage: number;
+  ebayFeePercentage: number;
+  amazonFeePercentage: number;
 }
 
 export function getUserCosts(): UserCosts {
@@ -196,8 +200,12 @@ export function CostEditor({ open, onClose, currentCost, onCostChange }: CostEdi
                 <span className="font-data">£{costs.estimatedShipping.toFixed(2)}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Fees:</span>
-                <span className="font-data">{costs.feePercentage}%</span>
+                <span className="text-muted-foreground">eBay fees:</span>
+                <span className="font-data">{costs.ebayFeePercentage}%</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span className="text-muted-foreground">Amazon fees:</span>
+                <span className="font-data">{costs.amazonFeePercentage}%</span>
               </div>
             </div>
           </Card>
