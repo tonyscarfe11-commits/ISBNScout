@@ -339,13 +339,23 @@ export class HybridStorage implements IStorage {
 
   // Books (offline-first - most important for scanner!)
   async createBook(book: InsertBook): Promise<Book> {
-    // ALWAYS save locally first (works offline)
-    const created = await this.local.createBook(book);
+    try {
+      // Try to save locally first (works offline)
+      const created = await this.local.createBook(book);
 
-    // Queue for sync
-    await this.queueSync("create", "book", book);
+      // Queue for sync
+      await this.queueSync("create", "book", book);
 
-    return created;
+      return created;
+    } catch (localError: any) {
+      // If local save fails (e.g., foreign key constraint), save directly to remote
+      if (localError?.code === 'SQLITE_CONSTRAINT_FOREIGNKEY' && this.remote && this.isOnline) {
+        console.log('[HybridStorage] Local save failed (FK constraint), saving to remote directly');
+        const created = await this.remote.createBook(book);
+        return created;
+      }
+      throw localError;
+    }
   }
 
   async getBooks(userId: string): Promise<Book[]> {
