@@ -6,53 +6,50 @@ import { Check, Zap, Crown } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 
-type BillingPeriod = 'monthly' | 'yearly';
-
 const plans = [
+  {
+    id: "trial",
+    name: "Free Trial",
+    price: "£0",
+    period: "14 days",
+    icon: Zap,
+    description: "Full access for 14 days. No credit card required.",
+    features: [
+      "Unlimited book scans",
+      "Offline mode",
+      "Barcode & AI recognition",
+      "Real-time profit calculations",
+      "Both Amazon MFN & eBay support",
+      "Full feature access",
+    ],
+    buttonText: "Start Free Trial",
+    highlighted: false,
+    badge: null,
+  },
   {
     id: "pro",
     name: "Pro",
-    monthlyPrice: "£14.99",
-    yearlyPrice: "£149",
-    icon: Zap,
-    description: "Perfect for UK sellers sourcing weekly in charity shops",
+    price: "£4.99",
+    period: "/month",
+    icon: Crown,
+    description: "Unlimited scouting after trial. Best for serious scouts.",
     features: [
-      "Unlimited scans",
+      "Everything in Free Trial",
+      "Daily data updates",
+      "Both Amazon MFN & eBay support",
       "Offline mode",
-      "Barcode, cover & AI spine recognition",
-      "Amazon + eBay UK profit calculator",
-      "Royal Mail & Evri postage estimates",
-      "Scan history",
+      "Scan history & analytics",
+      "Priority support",
     ],
-    buttonText: "Start 14-Day Pro Trial",
+    buttonText: "Subscribe Now",
     highlighted: true,
     badge: "Most Popular",
-    yearlySavings: "Save ~2 months",
-  },
-  {
-    id: "elite",
-    name: "Elite",
-    monthlyPrice: "£19.99",
-    yearlyPrice: "£199",
-    icon: Crown,
-    description: "For professional scouts who need advanced automation and analytics",
-    features: [
-      "Everything in Pro",
-      "Buy / Don't Buy triggers",
-      "Custom profit rules",
-      "CSV export",
-      "Multi-device access",
-    ],
-    buttonText: "Start 14-Day Elite Trial",
-    highlighted: false,
-    yearlySavings: "Save ~2½ months",
   },
 ];
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -80,15 +77,14 @@ export default function SubscriptionPage() {
     }
   }, [toast]);
 
-  const handleSubscribe = async (planId: string, period: BillingPeriod) => {
-    const fullPlanId = `${planId}_${period}`;
-    setIsLoading(fullPlanId);
+  const handleSubscribe = async (planId: string) => {
+    setIsLoading(planId);
 
     try {
       const response = await fetch("/api/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: fullPlanId }),
+        body: JSON.stringify({ planId }),
       });
 
       if (!response.ok) {
@@ -103,7 +99,7 @@ export default function SubscriptionPage() {
       } else {
         toast({
           title: "Success",
-          description: `Started 14-day trial for ${planId}!`,
+          description: `Started ${planId === 'trial' ? 'free trial' : 'subscription'}!`,
         });
       }
     } catch (error: any) {
@@ -123,109 +119,80 @@ export default function SubscriptionPage() {
       <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
         <div className="text-center space-y-4">
           <Badge variant="secondary" className="mb-4">
-            14-Day Free Trial - No Card Required
+            Simple, Transparent Pricing
           </Badge>
           <h1 className="text-4xl font-bold">
-            Simple pricing for serious UK book flippers
+            Start free. Pay only if you love it.
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
+            Try ISBNScout completely free for 14 days. Full access, no credit card required. Then just £4.99/month if you want to keep scouting smarter.
           </p>
-        </div>
-
-        {/* Billing Period Toggle */}
-        <div className="flex justify-center items-center gap-3 mt-8">
-          <span className={`text-sm ${billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}`}>
-            Monthly
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-            className="relative w-14 h-8 rounded-full p-0"
-          >
-            <div className={`absolute w-6 h-6 bg-primary rounded-full transition-transform ${
-              billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-1'
-            }`} />
-          </Button>
-          <span className={`text-sm ${billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}`}>
-            Yearly
-          </span>
-          {billingPeriod === 'yearly' && (
-            <Badge variant="secondary" className="ml-2">
-              Save up to £40/year
-            </Badge>
-          )}
         </div>
 
         <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
           {plans.map((plan) => {
             const Icon = plan.icon;
-            const currentPrice = billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
-            const fullPlanId = `${plan.id}_${billingPeriod}`;
 
             return (
               <Card
                 key={plan.id}
-                className={`relative p-6 flex flex-col ${
+                className={`relative p-8 flex flex-col ${
                   plan.highlighted
-                    ? "border-primary shadow-lg scale-105"
-                    : ""
+                    ? "border-teal-600 border-2 bg-teal-50 dark:bg-teal-950"
+                    : "border-teal-200 dark:border-teal-700"
                 }`}
               >
                 {plan.badge && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
+                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2 bg-teal-600 text-white">
                     {plan.badge}
                   </Badge>
                 )}
 
                 <div className="flex items-center gap-3 mb-4">
                   <div className={`p-2 rounded-lg ${
-                    plan.highlighted ? "bg-primary text-primary-foreground" : "bg-primary/10"
+                    plan.highlighted ? "bg-teal-600 text-white" : "bg-teal-100 dark:bg-teal-900"
                   }`}>
                     <Icon className="h-6 w-6" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
+                    <h3 className="text-2xl font-bold text-foreground">{plan.name}</h3>
                   </div>
                 </div>
 
-                <p className="text-sm text-muted-foreground mb-4">
+                <p className="text-sm text-muted-foreground mb-6">
                   {plan.description}
                 </p>
 
-                <div className="mb-6">
+                <div className="mb-8">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{currentPrice}</span>
-                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+                    <span className="text-4xl font-bold text-foreground">{plan.price}</span>
+                    <span className="text-muted-foreground">{plan.period}</span>
                   </div>
-                  {billingPeriod === 'yearly' && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {plan.yearlySavings}
-                    </p>
-                  )}
                 </div>
 
-                <ul className="space-y-3 mb-6 flex-1">
+                <ul className="space-y-3 mb-8 flex-1">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                      <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  onClick={() => handleSubscribe(plan.id, billingPeriod)}
-                  disabled={isLoading === fullPlanId}
-                  variant={plan.highlighted ? "default" : "outline"}
-                  className="w-full"
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={isLoading === plan.id}
+                  className={`w-full ${
+                    plan.highlighted
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
+                      : "bg-teal-600 hover:bg-teal-700 text-white"
+                  }`}
                 >
-                  {isLoading === fullPlanId ? "Processing..." : plan.buttonText}
+                  {isLoading === plan.id ? "Processing..." : plan.buttonText}
                 </Button>
 
-                <p className="text-xs text-center text-muted-foreground mt-3">
-                  14-day free trial • No card required • Cancel anytime
+                <p className="text-xs text-center text-muted-foreground mt-4">
+                  {plan.id === 'trial' ? 'No card required • Cancel anytime' : 'Cancel anytime • No long-term contracts'}
                 </p>
               </Card>
             );
@@ -266,9 +233,9 @@ export default function SubscriptionPage() {
           </Card>
         </div>
 
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>All prices in GBP. Try free for 14 days with full access. Cancel anytime during trial.</p>
-          <p className="mt-2">After trial: Subscribe to continue scanning or your account will be paused.</p>
+        <div className="text-center text-sm text-muted-foreground mt-12">
+          <p>All prices in GBP. No long-term contracts. Cancel anytime, even during your free trial.</p>
+          <p className="mt-2">After your 14-day trial ends, subscribe to keep using ISBNScout or your account will be paused.</p>
         </div>
       </div>
     </div>
