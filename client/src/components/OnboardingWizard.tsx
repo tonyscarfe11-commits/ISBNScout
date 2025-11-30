@@ -6,7 +6,10 @@ import { Progress } from "@/components/ui/progress";
 import {
   Dialog,
   DialogContent,
+  DialogTitle,
+  DialogDescription,
 } from "@/components/ui/dialog";
+import { VisuallyHidden } from "@radix-ui/react-visually-hidden";
 import { 
   BookOpen, 
   PoundSterling, 
@@ -60,6 +63,10 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent className="max-w-md p-0 gap-0 overflow-hidden [&>button]:hidden">
+        <VisuallyHidden>
+          <DialogTitle>Welcome to ISBNScout</DialogTitle>
+          <DialogDescription>Set up your book scouting preferences</DialogDescription>
+        </VisuallyHidden>
         <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-4">
           <div className="flex items-center justify-between text-white mb-3">
             <span className="text-sm font-medium">Step {step} of {STEPS.length}</span>
