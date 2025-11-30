@@ -24,63 +24,63 @@ export default function LandingPage() {
 
   const features = [
     {
-      icon: Camera,
-      title: "AI-Powered Photo Recognition",
-      description: "Photograph any book cover or spine - our AI instantly identifies the title, author, and ISBN. No more manual typing.",
+      icon: ScanLine,
+      title: "Scan Any Book Spine",
+      description: "Point your phone at a shelf. Our AI reads spines instantly. The only app that can do this.",
     },
     {
-      icon: ScanLine,
-      title: "Revolutionary Spine Scanning",
-      description: "The only app that can read book spines. Scan entire shelves by photographing spines - no competitor can do this.",
+      icon: Camera,
+      title: "Cover & Spine AI",
+      description: "Can't see the spine clearly? Photograph the cover. AI identifies ISBNs, titles, and authors instantly.",
     },
     {
       icon: TrendingUp,
-      title: "Sales Velocity Data",
-      description: "Know how fast books sell before you buy. See Amazon BSR rankings translated into real sales estimates.",
-    },
-    {
-      icon: Zap,
-      title: "Multi-Platform Listing",
-      description: "List to Amazon FBA, Amazon MFN, and eBay from one interface. AI generates optimized descriptions.",
-    },
-    {
-      icon: BarChart3,
-      title: "Automated Repricing",
-      description: "Built-in repricing engine keeps your prices competitive. Set strategies and let the system work for you.",
+      title: "Real Sales Velocity",
+      description: "Know exactly how fast books sell. See Amazon BSR data. Only scout books worth your time.",
     },
     {
       icon: WifiOff,
-      title: "Works Offline",
-      description: "Scout anywhere without internet. Local database stores your scans and syncs when you're back online.",
+      title: "Works Without Signal",
+      description: "Car boots, charity shops, friend's houses – scout anywhere offline. Auto-syncs when online.",
+    },
+    {
+      icon: BarChart3,
+      title: "Quick Profit Calculator",
+      description: "See your profit margin instantly. Know your costs, market price, and profit before you buy.",
+    },
+    {
+      icon: Zap,
+      title: "Lightning Fast Workflow",
+      description: "Scan → See profitability → Make decision. One-handed operation. Built for speed.",
     },
   ];
 
   const testimonials = [
     {
       name: "Sarah Johnson",
-      role: "Full-Time Amazon FBA Seller",
-      content: "The spine scanning feature is incredible. I can scan an entire shelf in seconds. My sourcing speed has tripled.",
+      role: "Car Boot & Charity Shop Scout",
+      content: "Spine scanning is a game-changer. I used to manually check every ISBN. Now I scan shelves in seconds.",
       rating: 5,
     },
     {
       name: "Michael Chen",
-      role: "Part-Time Reseller",
-      content: "Finally an app that works in charity shops with no signal. The offline mode is a game-changer.",
+      role: "Independent Book Scout",
+      content: "Finally an app that works offline in the actual places I scout. No more network anxiety.",
       rating: 5,
     },
     {
       name: "Emma Williams",
-      role: "Professional Book Scout",
-      content: "The sales velocity data helps me make better buying decisions. I only pick up books that actually sell.",
+      role: "Full-Time Scouter",
+      content: "Knowing real sales velocity before I buy means I don't waste time on books that won't move.",
       rating: 5,
     },
   ];
 
   const stats = [
-    { value: "10K+", label: "Books Scanned Daily" },
-    { value: "500+", label: "Active Sellers" },
-    { value: "99%", label: "AI Accuracy" },
-    { value: "3x", label: "Faster Sourcing" },
+    { value: "Scan", label: "Book Spines Instantly" },
+    { value: "Check", label: "Profitability in Seconds" },
+    { value: "Decide", label: "Before You Buy" },
+    { value: "Offline", label: "Works Everywhere" },
   ];
 
   return (
@@ -126,13 +126,13 @@ export default function LandingPage() {
             </Badge>
             
             <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              The book scouting app that{" "}
-              <span className="text-primary">works without signal</span>
+              Scout smarter,{" "}
+              <span className="text-primary">offline</span>
             </h1>
             
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Scan book spines with AI, check profitability with sales velocity data, 
-              and list to Amazon & eBay - all from your phone, even offline.
+              AI scans book spines instantly. Check profitability with real sales data. 
+              Works in car boots, charity shops, anywhere – no internet required.
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
@@ -184,10 +184,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
             <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Everything you need to scout profitably
+              The fastest scouting workflow
             </h2>
             <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Built by book sellers, for book sellers. Every feature designed to save time and increase profits.
+              Designed for UK book scouts. Offline-first. AI-powered. Lightning fast.
             </p>
           </div>
 
@@ -242,10 +242,10 @@ export default function LandingPage() {
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Ready to scout smarter?
+            Start scouting smarter today
           </h2>
           <p className="text-xl opacity-90 mb-8">
-            Start your free trial today. No credit card required.
+            Free trial. No credit card needed. Works offline from day one.
           </p>
           <Button 
             size="lg" 
