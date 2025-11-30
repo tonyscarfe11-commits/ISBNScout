@@ -32,6 +32,7 @@ import FAQPage from "@/pages/FAQPage";
 import OfflineModePage from "@/pages/OfflineModePage";
 import AmazonRedirectPage from "@/pages/AmazonRedirectPage";
 import AffiliatePage from "@/pages/AffiliatePage";
+import AffiliateDashboard from "@/pages/AffiliateDashboard";
 import NotFound from "@/pages/not-found";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/privacy" component={PrivacyPage} />
         <Route path="/terms" component={TermsPage} />
         <Route path="/affiliates" component={AffiliatePage} />
+        <Route path="/affiliate-dashboard" component={AffiliateDashboard} />
         
         {/* Amazon affiliate redirect - shareable link */}
         <Route path="/shop" component={AmazonRedirectPage} />
