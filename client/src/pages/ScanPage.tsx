@@ -27,6 +27,7 @@ import { getScanQueue } from "@/lib/scan-queue";
 import { getOfflineDB } from "@/lib/offline-db";
 import { lookupPricing } from "@/lib/offline-pricing";
 import { InstallPrompt, useTrackScansForInstall } from "@/components/InstallPrompt";
+import { getAuthToken } from "@/lib/queryClient";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
@@ -93,9 +94,15 @@ export default function ScanPage() {
     }
 
     try {
+      const token = getAuthToken();
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       const response = await fetch("/api/books", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers,
         body: JSON.stringify({ isbn, ...bookData }),
         credentials: 'include',
       });
@@ -189,9 +196,16 @@ export default function ScanPage() {
 
       setCurrentVerdict(verdictData);
 
+      const velocityToken = getAuthToken();
+      const velocityHeaders: HeadersInit = { "Content-Type": "application/json" };
+      if (velocityToken) {
+        velocityHeaders['Authorization'] = `Bearer ${velocityToken}`;
+      }
+      
       fetch("/api/books/calculate-velocity", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: velocityHeaders,
+        credentials: 'include',
         body: JSON.stringify({
           salesRank: 15000,
           profit,
@@ -262,10 +276,17 @@ export default function ScanPage() {
     });
 
     try {
+      const aiToken = getAuthToken();
+      const aiHeaders: HeadersInit = { "Content-Type": "application/json" };
+      if (aiToken) {
+        aiHeaders['Authorization'] = `Bearer ${aiToken}`;
+      }
+      
       const response = await fetch("/api/ai/analyze-image", {
         method: "POST",
         body: JSON.stringify({ imageUrl: imageData }),
-        headers: { "Content-Type": "application/json" },
+        headers: aiHeaders,
+        credentials: 'include',
       });
 
       if (!response.ok) {
