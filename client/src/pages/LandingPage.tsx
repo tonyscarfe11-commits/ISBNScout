@@ -426,9 +426,56 @@ export default function LandingPage() {
           <h2 className="text-3xl font-bold text-foreground mb-3">
             Works even when your signal doesn't.
           </h2>
-          <p className="text-base text-muted-foreground max-w-2xl">
+          <p className="text-base text-muted-foreground max-w-2xl mb-12">
             Most scouting apps stop the moment your phone loses reception. ISBNScout is built as offline-first, so you keep working in basements, back rooms, and concrete warehouses.
           </p>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Offline Scanning */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                  <Barcode className="h-6 w-6 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Scan offline</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Barcode, cover, and spine scanning work completely offline. Every scan is stored locally on your device until you sync.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Offline Calculations */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                  <Zap className="h-6 w-6 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Instant calculations</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Profit estimates, fee breakdowns, and buy/don't-buy decisions all happen instantly—no network needed.
+                  </p>
+                </div>
+              </div>
+            </Card>
+
+            {/* Sync when ready */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                  <Crown className="h-6 w-6 text-teal-600" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-foreground mb-2">Sync when you're ready</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Head back online and sync your scans in seconds. No data loss, no friction—just continuous scouting.
+                  </p>
+                </div>
+              </div>
+            </Card>
+          </div>
         </div>
       </section>
 
