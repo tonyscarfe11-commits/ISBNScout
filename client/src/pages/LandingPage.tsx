@@ -8,6 +8,13 @@ import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 export default function LandingPage() {
   const [, setLocation] = useLocation();
 
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Dark Navy Header */}
@@ -28,12 +35,14 @@ export default function LandingPage() {
                 variant="ghost"
                 onClick={() => setLocation("/auth")}
                 className="text-slate-300 hover:text-white hover:bg-slate-800"
+                data-testid="button-login"
               >
                 Log In
               </Button>
               <Button 
-                onClick={() => setLocation("/auth")}
+                onClick={() => scrollToSection("pricing")}
                 className="bg-teal-600 hover:bg-teal-700 text-white"
+                data-testid="button-header-trial"
               >
                 Start Free Trial
               </Button>
@@ -62,7 +71,7 @@ export default function LandingPage() {
               
               <Button 
                 size="lg" 
-                onClick={() => setLocation("/auth")}
+                onClick={() => scrollToSection("pricing")}
                 className="bg-teal-600 hover:bg-teal-700 text-white w-fit"
               >
                 Start 14-Day Free Trial
@@ -513,7 +522,7 @@ export default function LandingPage() {
       </section>
 
       {/* Pricing Section */}
-      <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
+      <section id="pricing" className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-foreground mb-3">
             Simple pricing for serious UK book flippers
@@ -660,7 +669,7 @@ export default function LandingPage() {
       </section>
 
       {/* FAQ & Contact Section */}
-      <section className="py-16 bg-background">
+      <section id="faq" className="py-16 bg-background">
         <div className="max-w-7xl mx-auto px-4">
           {/* FAQ */}
           <div className="mb-16">
@@ -790,7 +799,7 @@ export default function LandingPage() {
           <div className="flex gap-3 justify-center">
             <Button 
               size="lg"
-              onClick={() => setLocation("/auth")}
+              onClick={() => scrollToSection("pricing")}
               className="bg-teal-600 hover:bg-teal-700 text-white"
             >
               Start 14-Day Free Trial
