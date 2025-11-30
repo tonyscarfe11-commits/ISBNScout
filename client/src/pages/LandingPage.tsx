@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
+import { useState } from "react";
 import {
   ScanLine,
   Camera,
@@ -12,6 +13,7 @@ import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
+  const [platform, setPlatform] = useState<"amazon" | "ebay">("amazon");
 
   return (
     <div className="min-h-screen bg-background">
@@ -92,9 +94,20 @@ export default function LandingPage() {
                       <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse" />
                       <span className="font-semibold text-sm">LIVE SCAN</span>
                     </div>
-                    <Badge className="bg-teal-600/20 text-teal-400 border-teal-600/50 text-xs">
-                      OFFLINE READY
-                    </Badge>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => setPlatform("amazon")}
+                        className={`text-xs px-2 py-1 rounded ${platform === "amazon" ? "bg-teal-600/40 text-teal-400" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}
+                      >
+                        Amazon MFN
+                      </button>
+                      <button
+                        onClick={() => setPlatform("ebay")}
+                        className={`text-xs px-2 py-1 rounded ${platform === "ebay" ? "bg-teal-600/40 text-teal-400" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}
+                      >
+                        eBay
+                      </button>
+                    </div>
                   </div>
 
                   {/* Book Details */}
@@ -113,27 +126,55 @@ export default function LandingPage() {
                       </Badge>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN Price</div>
-                        <div className="font-semibold text-slate-300">£12.90</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Referral Fee (15.3%)</div>
-                        <div className="font-semibold text-slate-300">-£1.97</div>
-                      </div>
-                    </div>
+                    {platform === "amazon" ? (
+                      <>
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN Price</div>
+                            <div className="font-semibold text-slate-300">£12.90</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Referral Fee (15.3%)</div>
+                            <div className="font-semibold text-slate-300">-£1.97</div>
+                          </div>
+                        </div>
 
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Closing Fee</div>
-                        <div className="font-semibold text-slate-300">-£0.75</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
-                        <div className="font-semibold text-teal-400">£10.18</div>
-                      </div>
-                    </div>
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Closing Fee</div>
+                            <div className="font-semibold text-slate-300">-£0.75</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
+                            <div className="font-semibold text-teal-400">£10.18</div>
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">eBay Sold Avg</div>
+                            <div className="font-semibold text-slate-300">£11.50</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Final Value Fee (12.8%)</div>
+                            <div className="font-semibold text-slate-300">-£1.47</div>
+                          </div>
+                        </div>
+
+                        <div className="grid grid-cols-2 gap-3 pt-2">
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">PayPal Fee (3.4%)</div>
+                            <div className="font-semibold text-slate-300">-£0.39</div>
+                          </div>
+                          <div>
+                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
+                            <div className="font-semibold text-teal-400">£9.64</div>
+                          </div>
+                        </div>
+                      </>
+                    )}
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div>
@@ -148,7 +189,7 @@ export default function LandingPage() {
 
                     <div className="pt-2 border-t border-slate-700">
                       <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit</div>
-                      <div className="text-2xl font-bold text-teal-400">£4.88</div>
+                      <div className="text-2xl font-bold text-teal-400">{platform === "amazon" ? "£4.88" : "£4.34"}</div>
                     </div>
 
                     <div className="pt-2">
