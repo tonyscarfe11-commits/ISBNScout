@@ -68,6 +68,17 @@ export default function LandingPage() {
               <p className="text-lg text-muted-foreground max-w-xl">
                 Scout books with AI instantly. Know profit before you buy. Works offline in charity shops, car-boots, and friend's houses – no signal needed.
               </p>
+
+              <div className="flex gap-6 text-sm">
+                <div>
+                  <div className="text-2xl font-bold text-teal-600">1,000+</div>
+                  <div className="text-muted-foreground">Active Scouts</div>
+                </div>
+                <div>
+                  <div className="text-2xl font-bold text-teal-600">50,000+</div>
+                  <div className="text-muted-foreground">Books Scanned</div>
+                </div>
+              </div>
               
               <Button 
                 size="lg" 
@@ -203,6 +214,61 @@ export default function LandingPage() {
                 </Card>
               </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Comparison Table Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-12">How ISBNScout Compares</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-700">
+                  <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
+                  <th className="text-center py-3 px-4 font-semibold text-muted-foreground">Manual Scouting</th>
+                  <th className="text-center py-3 px-4 font-semibold text-teal-600">ISBNScout</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">Instant profit calculation</td>
+                  <td className="text-center py-3 px-4">❌</td>
+                  <td className="text-center py-3 px-4 text-green-500">✓</td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">Sales velocity data</td>
+                  <td className="text-center py-3 px-4">❌</td>
+                  <td className="text-center py-3 px-4 text-green-500">✓</td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">Works offline (no WiFi needed)</td>
+                  <td className="text-center py-3 px-4">❌</td>
+                  <td className="text-center py-3 px-4 text-green-500">✓</td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">AI spine recognition</td>
+                  <td className="text-center py-3 px-4">❌</td>
+                  <td className="text-center py-3 px-4 text-green-500">✓</td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">AI cover recognition</td>
+                  <td className="text-center py-3 px-4">❌</td>
+                  <td className="text-center py-3 px-4 text-green-500">✓</td>
+                </tr>
+                <tr className="border-b border-slate-700/50">
+                  <td className="py-3 px-4 text-foreground">Time per book scouted</td>
+                  <td className="text-center py-3 px-4 text-muted-foreground">2-5 mins</td>
+                  <td className="text-center py-3 px-4 text-teal-600">5-10 secs</td>
+                </tr>
+                <tr>
+                  <td className="py-3 px-4 text-foreground">Monthly cost</td>
+                  <td className="text-center py-3 px-4 text-muted-foreground">£0</td>
+                  <td className="text-center py-3 px-4 text-teal-600">£4.99</td>
+                </tr>
+              </tbody>
+            </table>
           </div>
         </div>
       </section>
@@ -416,6 +482,90 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Pricing Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-12">Simple, Transparent Pricing</h2>
+          <div className="grid md:grid-cols-2 gap-6">
+            {/* Free Trial Card */}
+            <Card className="p-8 border-teal-200 dark:border-teal-700">
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Free Trial</h3>
+                  <p className="text-muted-foreground text-sm">14 days, full access</p>
+                </div>
+                <div className="text-4xl font-bold text-foreground">£0<span className="text-lg text-muted-foreground">/trial</span></div>
+                <ul className="space-y-3">
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Full access to all features</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Unlimited book scans</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Offline mode included</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">No credit card required</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-pricing-trial"
+                >
+                  Start Free Trial
+                </Button>
+              </div>
+            </Card>
+
+            {/* Pro Card */}
+            <Card className="p-8 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950">
+              <div className="space-y-6">
+                <div>
+                  <Badge className="bg-teal-600 text-white mb-3">RECOMMENDED</Badge>
+                  <h3 className="text-2xl font-bold text-foreground mb-2">Pro</h3>
+                  <p className="text-muted-foreground text-sm">Unlimited scouting, forever</p>
+                </div>
+                <div className="text-4xl font-bold text-foreground">£4.99<span className="text-lg text-muted-foreground">/month</span></div>
+                <ul className="space-y-3">
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Everything in Free Trial</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Daily data updates</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Both Amazon & eBay support</span>
+                  </li>
+                  <li className="flex gap-2 text-sm">
+                    <span className="text-teal-600 font-bold">✓</span>
+                    <span className="text-foreground">Priority support</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  data-testid="button-pricing-pro"
+                >
+                  Subscribe Now
+                </Button>
+              </div>
+            </Card>
+          </div>
+          <p className="text-center text-sm text-muted-foreground mt-8">Cancel anytime. No long-term contracts.</p>
+        </div>
+      </section>
+
       {/* CTA Footer */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
@@ -423,7 +573,7 @@ export default function LandingPage() {
             Ready to scout smarter?
           </h2>
           <p className="text-lg opacity-90 mb-8">
-            Start your free trial today. No credit card required.
+            Start your 14-day free trial today. No credit card required.
           </p>
           <Button 
             size="lg" 
