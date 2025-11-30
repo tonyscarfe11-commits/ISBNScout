@@ -15,6 +15,7 @@ export const users = pgTable("users", {
   trialEndsAt: timestamp("trial_ends_at"),
   stripeCustomerId: text("stripe_customer_id"),
   stripeSubscriptionId: text("stripe_subscription_id"),
+  referredByAffiliateId: text("referred_by_affiliate_id"), // Affiliate who referred this user
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
@@ -218,3 +219,106 @@ export const insertRepricingHistorySchema = createInsertSchema(repricingHistory)
 
 export type InsertRepricingHistory = z.infer<typeof insertRepricingHistorySchema>;
 export type RepricingHistory = typeof repricingHistory.$inferSelect;
+
+// Affiliates - Track affiliate partners
+export const affiliates = pgTable("affiliates", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  name: text("name").notNull(),
+  email: text("email").notNull().unique(),
+  password: text("password").notNull(),
+  referralCode: text("referral_code").notNull().unique(), // Unique code like "JOHN25"
+  website: text("website"),
+  socialMedia: text("social_media"),
+  audience: text("audience"),
+  
+  // Stats
+  totalClicks: text("total_clicks").notNull().default("0"),
+  totalConversions: text("total_conversions").notNull().default("0"),
+  totalEarnings: decimal("total_earnings", { precision: 10, scale: 2 }).notNull().default("0"),
+  pendingPayout: decimal("pending_payout", { precision: 10, scale: 2 }).notNull().default("0"),
+  
+  // Commission settings
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull().default("25"), // 25% default
+  
+  // Status
+  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'rejected', 'suspended'
+  approvedAt: timestamp("approved_at"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+}, (table) => ({
+  emailIdx: index("affiliates_email_idx").on(table.email),
+  referralCodeIdx: index("affiliates_referral_code_idx").on(table.referralCode),
+  statusIdx: index("affiliates_status_idx").on(table.status),
+}));
+
+export const insertAffiliateSchema = createInsertSchema(affiliates).omit({
+  id: true,
+  totalClicks: true,
+  totalConversions: true,
+  totalEarnings: true,
+  pendingPayout: true,
+  approvedAt: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export type InsertAffiliate = z.infer<typeof insertAffiliateSchema>;
+export type Affiliate = typeof affiliates.$inferSelect;
+
+// Referral Clicks - Track when someone clicks an affiliate link
+export const referralClicks = pgTable("referral_clicks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  affiliateId: varchar("affiliate_id").notNull().references(() => affiliates.id, { onDelete: "cascade" }),
+  ipAddress: text("ip_address"),
+  userAgent: text("user_agent"),
+  referrer: text("referrer"),
+  landingPage: text("landing_page"),
+  clickedAt: timestamp("clicked_at").notNull().defaultNow(),
+}, (table) => ({
+  affiliateIdIdx: index("referral_clicks_affiliate_id_idx").on(table.affiliateId),
+  clickedAtIdx: index("referral_clicks_clicked_at_idx").on(table.clickedAt),
+}));
+
+export const insertReferralClickSchema = createInsertSchema(referralClicks).omit({
+  id: true,
+  clickedAt: true,
+});
+
+export type InsertReferralClick = z.infer<typeof insertReferralClickSchema>;
+export type ReferralClick = typeof referralClicks.$inferSelect;
+
+// Commissions - Track affiliate earnings from conversions
+export const commissions = pgTable("commissions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  affiliateId: varchar("affiliate_id").notNull().references(() => affiliates.id, { onDelete: "cascade" }),
+  userId: varchar("user_id").notNull().references(() => users.id, { onDelete: "cascade" }), // The user who signed up
+  
+  // Subscription info
+  subscriptionTier: text("subscription_tier").notNull(), // 'pro_monthly', 'elite_monthly', etc.
+  subscriptionAmount: decimal("subscription_amount", { precision: 10, scale: 2 }).notNull(), // Amount user paid
+  commissionRate: decimal("commission_rate", { precision: 5, scale: 2 }).notNull(), // Rate at time of conversion
+  commissionAmount: decimal("commission_amount", { precision: 10, scale: 2 }).notNull(), // Actual commission earned
+  
+  // Status
+  status: text("status").notNull().default("pending"), // 'pending', 'approved', 'paid', 'cancelled'
+  paidAt: timestamp("paid_at"),
+  paypalTransactionId: text("paypal_transaction_id"),
+  
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+}, (table) => ({
+  affiliateIdIdx: index("commissions_affiliate_id_idx").on(table.affiliateId),
+  userIdIdx: index("commissions_user_id_idx").on(table.userId),
+  statusIdx: index("commissions_status_idx").on(table.status),
+  createdAtIdx: index("commissions_created_at_idx").on(table.createdAt),
+}));
+
+export const insertCommissionSchema = createInsertSchema(commissions).omit({
+  id: true,
+  paidAt: true,
+  paypalTransactionId: true,
+  createdAt: true,
+});
+
+export type InsertCommission = z.infer<typeof insertCommissionSchema>;
+export type Commission = typeof commissions.$inferSelect;
