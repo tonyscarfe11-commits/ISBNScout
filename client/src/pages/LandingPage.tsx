@@ -342,48 +342,60 @@ export default function LandingPage() {
             From scan to profit, in one flow.
           </h2>
 
-          <div className="grid md:grid-cols-4 gap-6">
-            {/* Step 1 */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                1
+          <div className="space-y-8">
+            <div className="grid md:grid-cols-4 gap-6">
+              {/* Step 1 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
+                  1
+                </div>
+                <h3 className="font-bold text-foreground">Scan</h3>
+                <p className="text-sm text-muted-foreground">
+                  Point your phone at a barcode, cover, or shelf spine. ISBNScout identifies the book in milliseconds.
+                </p>
               </div>
-              <h3 className="font-bold text-foreground">Scan</h3>
-              <p className="text-sm text-muted-foreground">
-                Point your phone at a barcode, cover, or shelf spine. ISBNScout identifies the book in milliseconds.
-              </p>
-            </div>
 
-            {/* Arrow */}
-            <div className="hidden md:flex items-end pb-4 justify-center">
-              <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
-            </div>
-
-            {/* Step 2 */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                2
+              {/* Arrow */}
+              <div className="hidden md:flex items-end pb-4 justify-center">
+                <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
               </div>
-              <h3 className="font-bold text-foreground">Analyze</h3>
-              <p className="text-sm text-muted-foreground">
-                Instant profit calculations show net return after fees and postage. Sales velocity tells you demand.
-              </p>
-            </div>
 
-            {/* Arrow */}
-            <div className="hidden md:flex items-end pb-4 justify-center">
-              <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
-            </div>
-
-            {/* Step 3 */}
-            <div className="space-y-4">
-              <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
-                3
+              {/* Step 2 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
+                  2
+                </div>
+                <h3 className="font-bold text-foreground">Analyze</h3>
+                <p className="text-sm text-muted-foreground">
+                  Instant profit calculations show net return after fees and postage. Sales velocity tells you demand.
+                </p>
               </div>
-              <h3 className="font-bold text-foreground">Decide</h3>
-              <p className="text-sm text-muted-foreground">
-                Buy/don't-buy recommendation based on profit margins and historical sales data. You stay in control.
-              </p>
+
+              {/* Arrow */}
+              <div className="hidden md:flex items-end pb-4 justify-center">
+                <div className="text-3xl text-slate-300 dark:text-slate-600">→</div>
+              </div>
+
+              {/* Step 3 */}
+              <div className="space-y-4">
+                <div className="flex items-center justify-center h-12 w-12 rounded-full bg-teal-600 text-white font-bold text-lg">
+                  3
+                </div>
+                <h3 className="font-bold text-foreground">Decide</h3>
+                <p className="text-sm text-muted-foreground">
+                  Buy/don't-buy recommendation based on profit margins and historical sales data. You stay in control.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-center pt-4">
+              <Button 
+                size="lg"
+                onClick={() => setLocation("/auth")}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+              >
+                Start Your First Scan
+              </Button>
             </div>
           </div>
         </div>
