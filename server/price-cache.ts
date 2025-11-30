@@ -13,6 +13,7 @@ export interface CachedPrice {
   title: string | null;
   author: string | null;
   publisher: string | null;
+  thumbnail: string | null;
   ebayPrice: number | null;
   amazonPrice: number | null;
   cachedAt: Date;
@@ -104,6 +105,7 @@ export class PriceCache {
         title TEXT,
         author TEXT,
         publisher TEXT,
+        thumbnail TEXT,
         ebayPrice REAL,
         amazonPrice REAL,
         cachedAt TEXT NOT NULL,
@@ -111,6 +113,13 @@ export class PriceCache {
         source TEXT NOT NULL
       )
     `);
+    
+    // Add thumbnail column if it doesn't exist (migration for existing DBs)
+    try {
+      this.db.exec(`ALTER TABLE price_cache ADD COLUMN thumbnail TEXT`);
+    } catch (e) {
+      // Column already exists, ignore
+    }
 
     // Index for faster lookups
     this.db.exec(`
@@ -128,6 +137,7 @@ export class PriceCache {
     title: string | null;
     author: string | null;
     publisher: string | null;
+    thumbnail?: string | null;
     ebayPrice: number | null;
     amazonPrice: number | null;
     source?: "api" | "estimate" | "heuristic";
@@ -138,14 +148,15 @@ export class PriceCache {
     this.db
       .prepare(
         `INSERT OR REPLACE INTO price_cache
-         (isbn, title, author, publisher, ebayPrice, amazonPrice, cachedAt, confidence, source)
-         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`
+         (isbn, title, author, publisher, thumbnail, ebayPrice, amazonPrice, cachedAt, confidence, source)
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
       )
       .run(
         data.isbn,
         data.title,
         data.author,
         data.publisher,
+        data.thumbnail || null,
         data.ebayPrice,
         data.amazonPrice,
         now,
@@ -171,6 +182,7 @@ export class PriceCache {
       title: row.title,
       author: row.author,
       publisher: row.publisher,
+      thumbnail: row.thumbnail || null,
       ebayPrice: row.ebayPrice,
       amazonPrice: row.amazonPrice,
       cachedAt: new Date(row.cachedAt),
