@@ -1,11 +1,11 @@
 /**
  * UK Shipping Cost Calculator
- * Royal Mail and Evri pricing for book shipments
+ * Royal Mail pricing for book shipments
  *
  * Rates accurate as of 2025
  */
 
-export type ShippingCarrier = 'royal-mail-2nd' | 'royal-mail-1st' | 'royal-mail-signed' | 'evri';
+export type ShippingCarrier = 'royal-mail-2nd' | 'royal-mail-1st' | 'royal-mail-signed';
 
 export interface ShippingRate {
   carrier: string;
@@ -125,38 +125,6 @@ function calculateRoyalMailSigned(weightKg: number): ShippingRate {
 }
 
 /**
- * Evri (formerly Hermes) - Budget courier option
- * https://www.evri.com/send
- */
-function calculateEvri(weightKg: number): ShippingRate {
-  let cost: number;
-
-  // Evri pricing is typically cheaper but less reliable
-  if (weightKg <= 1.0) {
-    cost = 2.95; // Up to 1kg
-  } else if (weightKg <= 2.0) {
-    cost = 3.20; // Up to 2kg
-  } else if (weightKg <= 5.0) {
-    cost = 4.50; // Up to 5kg
-  } else if (weightKg <= 10.0) {
-    cost = 6.99; // Up to 10kg
-  } else if (weightKg <= 15.0) {
-    cost = 9.99; // Up to 15kg
-  } else {
-    cost = 14.99; // Up to 20kg
-  }
-
-  return {
-    carrier: 'Evri',
-    service: 'Standard',
-    cost,
-    maxWeight: weightKg,
-    estimatedDays: '3-5 working days',
-    tracked: true, // Evri includes basic tracking
-  };
-}
-
-/**
  * Calculate shipping cost for a given carrier and weight
  */
 export function calculateShippingCost(
@@ -170,8 +138,6 @@ export function calculateShippingCost(
       return calculateRoyalMail1stClass(weightKg);
     case 'royal-mail-signed':
       return calculateRoyalMailSigned(weightKg);
-    case 'evri':
-      return calculateEvri(weightKg);
     default:
       return calculateRoyalMail2ndClass(weightKg);
   }
@@ -185,7 +151,6 @@ export function getAllShippingOptions(weightKg: number): ShippingRate[] {
     'royal-mail-2nd',
     'royal-mail-1st',
     'royal-mail-signed',
-    'evri',
   ];
 
   return carriers
@@ -209,20 +174,11 @@ export function getRecommendedShipping(
   weightKg: number,
   itemValue: number
 ): ShippingRate {
-  // For items over £20, recommend tracked shipping
+  // For items over £20, recommend Royal Mail Signed shipping (tracked)
   if (itemValue > 20) {
-    // Choose between Evri (cheaper) or Royal Mail Signed (more reliable)
-    const evri = calculateEvri(weightKg);
-    const signed = calculateRoyalMailSigned(weightKg);
-
-    // If Evri is significantly cheaper (>£1), use it, otherwise use Royal Mail
-    return (signed.cost - evri.cost > 1.00) ? evri : signed;
+    return calculateRoyalMailSigned(weightKg);
   }
 
-  // For cheaper items, use economical shipping
-  const rmSecond = calculateRoyalMail2ndClass(weightKg);
-  const evri = calculateEvri(weightKg);
-
-  // Choose cheapest option
-  return rmSecond.cost <= evri.cost ? rmSecond : evri;
+  // For cheaper items, use economical 2nd class shipping
+  return calculateRoyalMail2ndClass(weightKg);
 }

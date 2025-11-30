@@ -18,7 +18,7 @@ const plans = [
       "Offline mode",
       "Barcode, cover & AI spine recognition",
       "Amazon + eBay UK profit calculator",
-      "Royal Mail & Evri postage estimates",
+      "Royal Mail postage estimates",
       "Scan history",
     ],
     buttonText: "Start 14-Day Pro Trial",

@@ -585,7 +585,7 @@ export default function LandingPage() {
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                      <span className="text-sm text-foreground">Royal Mail & Evri postage estimates</span>
+                      <span className="text-sm text-foreground">Royal Mail postage estimates</span>
                     </li>
                     <li className="flex items-start gap-2">
                       <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
