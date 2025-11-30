@@ -108,6 +108,26 @@ Built a complete automated repricing system for managing listing prices across A
 - Error handling with user-friendly messages
 - Logging for observability
 
+## Environment Configuration
+
+### Critical: .npmrc File
+The `.npmrc` file at the project root is essential - it ensures dev dependencies (vite, tsx, esbuild) are installed properly:
+```
+production=false
+legacy-peer-deps=true
+```
+**DO NOT DELETE THIS FILE** - without it, npm will skip dev dependencies and the app won't build.
+
+### Required API Credentials
+The app requires these secrets for full functionality:
+- **eBay Browse API**: Client ID configured and working (EBAY_CLIENT_ID, EBAY_CLIENT_SECRET)
+- **Amazon PA-API 5.0**: Not yet configured - requires:
+  - AMAZON_ACCESS_KEY
+  - AMAZON_SECRET_KEY  
+  - AMAZON_PARTNER_TAG (Amazon Associates Partner Tag)
+
+Note: Amazon Associates account requires 3 qualifying sales within 90 days or the account deactivates.
+
 ## Future Roadmap
 1. Keepa integration for historical pricing data
 2. Branding and logo design
