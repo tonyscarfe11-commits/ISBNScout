@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { AppHeader } from "@/components/AppHeader";
-import { Check } from "lucide-react";
+import { Check, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
+import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 const plans = [
   {
@@ -23,7 +24,7 @@ const plans = [
     ],
     buttonText: "Start 14-Day Pro Trial",
     highlighted: true,
-    yearlyInfo: "Prefer yearly? £189/year (save ~2 months)",
+    yearlyInfo: "Prefer yearly? £149/year (save 2 months)",
   },
   {
     id: "elite",
@@ -40,7 +41,7 @@ const plans = [
     ],
     buttonText: "Start 14-Day Elite Trial",
     highlighted: false,
-    yearlyInfo: "Prefer yearly? £199/year (save ~2½ months)",
+    yearlyInfo: "Prefer yearly? £199/year (save 2 months)",
   },
 ];
 
@@ -52,12 +53,12 @@ const trialFeatures = [
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
+  const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
   useEffect(() => {
     window.scrollTo(0, 0);
 
-    // Check if redirected from successful Stripe checkout
     const urlParams = new URLSearchParams(window.location.search);
     const sessionId = urlParams.get('session_id');
     const cancelled = urlParams.get('cancelled');
@@ -115,7 +116,28 @@ export default function SubscriptionPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AppHeader />
+      {/* Navigation - Matching Landing Page */}
+      <nav className="sticky top-0 bg-slate-900 border-b border-slate-800 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
+          <button 
+            onClick={() => setLocation("/")} 
+            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            data-testid="button-back-home"
+          >
+            <ArrowLeft className="h-5 w-5" />
+            <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
+            <span className="text-lg font-bold">ISBNScout</span>
+          </button>
+          <Button 
+            variant="ghost"
+            onClick={() => setLocation("/auth")}
+            className="text-slate-300 hover:text-white hover:bg-slate-800"
+            data-testid="button-login"
+          >
+            Log In
+          </Button>
+        </div>
+      </nav>
       
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 py-12">
@@ -166,10 +188,15 @@ export default function SubscriptionPage() {
                 }`}
               >
                 <div className="mb-4">
-                  <h3 className="text-xl font-bold text-foreground mb-1">
-                    {plan.name}
-                  </h3>
-                  <p className="text-xs text-muted-foreground">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-foreground">
+                      {plan.name}
+                    </h3>
+                    {plan.highlighted && (
+                      <Badge className="bg-teal-600 text-white">POPULAR</Badge>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground mt-1">
                     {plan.description}
                   </p>
                 </div>
@@ -222,7 +249,7 @@ export default function SubscriptionPage() {
           <h2 className="text-3xl font-bold">
             Ready to find profitable books faster?
           </h2>
-          <p className="text-base opacity-90">
+          <p className="text-base text-slate-300">
             Scan shelves, see real profit, and list to Amazon and eBay — even when your phone has no signal.
           </p>
           <div className="flex gap-3 justify-center">
@@ -235,11 +262,32 @@ export default function SubscriptionPage() {
               Start 14-Day Free Trial
             </Button>
           </div>
-          <p className="text-xs opacity-75">
+          <p className="text-xs text-slate-400">
             No credit card required. Designed for UK sellers.
           </p>
         </div>
       </section>
+
+      {/* Footer - Matching Landing Page */}
+      <footer className="bg-slate-950 text-slate-400 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
+              <span className="text-white font-semibold">ISBNScout</span>
+            </div>
+            <div className="flex flex-wrap justify-center gap-6 text-sm">
+              <button onClick={() => setLocation("/")} className="hover:text-teal-400">Home</button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400">Terms</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
+            </div>
+          </div>
+          <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">
+            <p>© 2025 ISBNScout. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
