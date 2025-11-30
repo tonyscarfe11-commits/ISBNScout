@@ -659,6 +659,127 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* FAQ & Contact Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          {/* FAQ */}
+          <div className="mb-16">
+            <h2 className="text-3xl font-bold text-foreground mb-8">
+              Frequently asked questions.
+            </h2>
+            
+            <div className="space-y-3">
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Does ISBNScout work without WiFi or mobile data?
+              </div>
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Is this built for Amazon UK sellers?
+              </div>
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Does it support eBay UK?
+              </div>
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Is the AI spine recognition real?
+              </div>
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Can I export my inventory or scan history?
+              </div>
+              <div className="text-sm font-semibold text-foreground cursor-pointer hover:text-teal-600">
+                Who is ISBNScout for?
+              </div>
+            </div>
+          </div>
+
+          {/* Get in Touch */}
+          <div>
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              Get in touch.
+            </h2>
+            <p className="text-base text-muted-foreground max-w-2xl mb-12">
+              Have questions about ISBNScout? Need help getting started? We're here to help.
+            </p>
+
+            <div className="grid md:grid-cols-3 gap-6">
+              {/* Support Card */}
+              <Card className="p-6 border-slate-200 dark:border-slate-700">
+                <div className="space-y-4">
+                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                    <div className="w-6 h-6 text-teal-600">
+                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8zm3.5-9c.83 0 1.5-.67 1.5-1.5S16.33 8 15.5 8 14 8.67 14 9.5s.67 1.5 1.5 1.5zm-7 0c.83 0 1.5-.67 1.5-1.5S9.33 8 8.5 8 7 8.67 7 9.5 7.67 11 8.5 11zm3.5 6.5c2.33 0 4.31-1.46 5.11-3.5H6.89c.8 2.04 2.78 3.5 5.11 3.5z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Support</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Questions about your account, technical issues, or how to use ISBNScout.
+                  </p>
+                  <a href="mailto:support@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
+                    support@isbnscout.com
+                  </a>
+                </div>
+              </Card>
+
+              {/* General Inquiries Card */}
+              <Card className="p-6 border-slate-200 dark:border-slate-700">
+                <div className="space-y-4">
+                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                    <div className="w-6 h-6 text-teal-600">
+                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">General Inquiries</h3>
+                  <p className="text-sm text-muted-foreground">
+                    General questions, partnerships, or business inquiries.
+                  </p>
+                  <a href="mailto:contact@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
+                    contact@isbnscout.com
+                  </a>
+                </div>
+              </Card>
+
+              {/* Information Card */}
+              <Card className="p-6 border-slate-200 dark:border-slate-700">
+                <div className="space-y-4">
+                  <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
+                    <div className="w-6 h-6 text-teal-600">
+                      <svg fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <h3 className="text-lg font-bold text-foreground">Information</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Learn more about ISBNScout, features, and pricing options.
+                  </p>
+                  <a href="mailto:info@isbnscout.com" className="text-sm font-semibold text-teal-600 hover:text-teal-700">
+                    info@isbnscout.com
+                  </a>
+                </div>
+              </Card>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-slate-900 text-slate-300 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
+            <p>© 2025 ISBNScout. All rights reserved.</p>
+            <div className="flex gap-6 text-slate-300 hover:text-white">
+              <a href="/pricing" className="hover:text-teal-400">Pricing</a>
+              <a href="/faq" className="hover:text-teal-400">Docs</a>
+              <a href="#contact" className="hover:text-teal-400">Contact</a>
+              <a href="#privacy" className="hover:text-teal-400">Privacy</a>
+              <a href="#terms" className="hover:text-teal-400">Terms</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+
       {/* CTA Section */}
       <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
