@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
-import { Barcode, Camera, Eye } from "lucide-react";
+import { Barcode, Camera, Eye, Check, Play, Zap, Crown } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 export default function LandingPage() {
@@ -103,34 +103,26 @@ export default function LandingPage() {
 
                   {/* Metrics Grid */}
                   <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-700">
-                    {/* Net Profit */}
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit (after fees & postage)</div>
                       <div className="text-xl font-bold text-teal-400">£7.90</div>
                     </div>
-
-                    {/* Sales Velocity */}
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Sales Velocity</div>
                       <div className="text-sm font-semibold text-slate-300">10 sales / 30 days</div>
                     </div>
-
-                    {/* Amazon Used */}
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Amazon Used</div>
                       <div className="text-sm font-semibold text-slate-300">£12.90</div>
                     </div>
-
-                    {/* eBay Sold Avg */}
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">eBay Sold Avg</div>
                       <div className="text-sm font-semibold text-slate-300">£11.50</div>
                     </div>
                   </div>
 
-                  {/* Fees Breakdown - Both Platforms */}
+                  {/* Fees Breakdown */}
                   <div className="grid grid-cols-2 gap-3 text-xs">
-                    {/* Amazon Breakdown */}
                     <div className="space-y-1">
                       <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon Breakdown</div>
                       <div className="space-y-1 pl-2 border-l border-slate-700">
@@ -156,8 +148,6 @@ export default function LandingPage() {
                         </div>
                       </div>
                     </div>
-
-                    {/* eBay Breakdown */}
                     <div className="space-y-1">
                       <div className="text-slate-500 uppercase tracking-wide font-semibold">eBay Breakdown</div>
                       <div className="space-y-1 pl-2 border-l border-slate-700">
@@ -280,6 +270,150 @@ export default function LandingPage() {
                     </li>
                   </ul>
                 </div>
+              </div>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Video Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-8">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              See ISBNScout in action.
+            </h2>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+              A quick 20-30 second walkthrough: shelf scan, spine recognition, profit preview, and listing pushed live.
+            </p>
+          </div>
+
+          {/* Video Placeholder */}
+          <div className="bg-slate-900 rounded-lg aspect-video flex items-center justify-center mb-8">
+            <div className="text-center space-y-4">
+              <div className="flex justify-center">
+                <div className="p-4 bg-white/10 rounded-full">
+                  <Play className="h-8 w-8 text-white fill-white" />
+                </div>
+              </div>
+              <p className="text-sm text-slate-400">
+                Embed your Capcut / YouTube demo here.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl font-bold text-foreground mb-3">
+              Simple pricing for serious UK book flippers
+            </h2>
+            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
+              Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
+            {/* Pro Plan */}
+            <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
+                  <p className="text-sm text-muted-foreground">Perfect for UK sellers sourcing weekly in charity shops</p>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-foreground">£14.99</span>
+                    <span className="text-sm text-muted-foreground">/month</span>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Unlimited scans</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Offline mode</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Barcode, cover & AI spine recognition</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Amazon + eBay UK profit calculator</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Royal Mail & Evri postage estimates</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Scan history</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                >
+                  Start 14-Day Pro Trial
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Prefer yearly? £189/year (save ~2 months)
+                </p>
+              </div>
+            </Card>
+
+            {/* Elite Plan */}
+            <Card className="p-6 border-slate-200 dark:border-slate-700">
+              <div className="space-y-4">
+                <div>
+                  <h3 className="text-xl font-bold text-foreground mb-1">Elite</h3>
+                  <p className="text-sm text-muted-foreground">For high-volume sellers who need automation and advanced tools</p>
+                </div>
+                <div>
+                  <div className="flex items-baseline gap-1">
+                    <span className="text-3xl font-bold text-foreground">£19.99</span>
+                    <span className="text-sm text-muted-foreground">/month</span>
+                  </div>
+                </div>
+                <ul className="space-y-2">
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Everything in Pro</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Buy / Don't Buy triggers</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Custom profit rules</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">CSV export</span>
+                  </li>
+                  <li className="flex items-start gap-2">
+                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                    <span className="text-sm text-foreground">Multi-device access</span>
+                  </li>
+                </ul>
+                <Button 
+                  size="lg" 
+                  onClick={() => setLocation("/auth")}
+                  className="w-full"
+                >
+                  Start 14-Day Elite Trial
+                </Button>
+                <p className="text-xs text-center text-muted-foreground">
+                  Prefer yearly? £199/year (save ~2½ months)
+                </p>
               </div>
             </Card>
           </div>
