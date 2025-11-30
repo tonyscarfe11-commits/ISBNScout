@@ -22,7 +22,7 @@ export default function LandingPage() {
             <button onClick={() => setLocation("/offline-mode")} className="text-slate-300 hover:text-white text-sm">Offline Mode</button>
             <button onClick={() => setLocation("/subscription")} className="text-slate-300 hover:text-white text-sm">Pricing</button>
             <button onClick={() => setLocation("/faq")} className="text-slate-300 hover:text-white text-sm">FAQ</button>
-            <button onClick={() => setLocation("/faq")} className="text-slate-300 hover:text-white text-sm">Contact</button>
+            <button onClick={() => setLocation("/contact")} className="text-slate-300 hover:text-white text-sm">Contact</button>
             <div className="flex gap-2 ml-4">
               <Button 
                 variant="ghost"
@@ -769,12 +769,12 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 text-sm">
             <p>© 2025 ISBNScout. All rights reserved.</p>
-            <div className="flex gap-6 text-slate-300 hover:text-white">
-              <a href="/pricing" className="hover:text-teal-400">Pricing</a>
-              <a href="/faq" className="hover:text-teal-400">Docs</a>
-              <a href="#contact" className="hover:text-teal-400">Contact</a>
-              <a href="#privacy" className="hover:text-teal-400">Privacy</a>
-              <a href="#terms" className="hover:text-teal-400">Terms</a>
+            <div className="flex gap-6 text-slate-300">
+              <button onClick={() => setLocation("/subscription")} className="hover:text-teal-400">Pricing</button>
+              <button onClick={() => setLocation("/blog")} className="hover:text-teal-400">Docs</button>
+              <button onClick={() => setLocation("/contact")} className="hover:text-teal-400">Contact</button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400">Terms</button>
             </div>
           </div>
         </div>
