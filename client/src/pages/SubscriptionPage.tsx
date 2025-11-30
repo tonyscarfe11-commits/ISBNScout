@@ -2,19 +2,16 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AppHeader } from "@/components/AppHeader";
-import { Check, Zap, Crown } from "lucide-react";
+import { Check } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
-
-type BillingPeriod = 'monthly' | 'yearly';
 
 const plans = [
   {
     id: "pro",
     name: "Pro",
-    monthlyPrice: "£14.99",
-    yearlyPrice: "£149",
-    icon: Zap,
+    price: "£14.99",
+    period: "/month",
     description: "Perfect for UK sellers sourcing weekly in charity shops",
     features: [
       "Unlimited scans",
@@ -26,16 +23,14 @@ const plans = [
     ],
     buttonText: "Start 14-Day Pro Trial",
     highlighted: true,
-    badge: "Most Popular",
-    yearlySavings: "Save ~2 months",
+    yearlyInfo: "Prefer yearly? £189/year (save ~2 months)",
   },
   {
     id: "elite",
     name: "Elite",
-    monthlyPrice: "£19.99",
-    yearlyPrice: "£199",
-    icon: Crown,
-    description: "For professional scouts who need advanced automation and analytics",
+    price: "£19.99",
+    period: "/month",
+    description: "For high-volume sellers who need automation and analytics",
     features: [
       "Everything in Pro",
       "Buy / Don't Buy triggers",
@@ -45,14 +40,19 @@ const plans = [
     ],
     buttonText: "Start 14-Day Elite Trial",
     highlighted: false,
-    yearlySavings: "Save ~2½ months",
+    yearlyInfo: "Prefer yearly? £199/year (save ~2½ months)",
   },
+];
+
+const trialFeatures = [
+  "Full Pro & Elite access",
+  "No card required",
+  "Cancel anytime",
 ];
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState<string | null>(null);
-  const [billingPeriod, setBillingPeriod] = useState<BillingPeriod>('monthly');
 
   useEffect(() => {
     window.scrollTo(0, 0);
@@ -64,10 +64,9 @@ export default function SubscriptionPage() {
 
     if (sessionId) {
       toast({
-        title: "Payment Successful! 🎉",
+        title: "Payment Successful!",
         description: "Your 14-day free trial has started. Welcome aboard!",
       });
-      // Clean up URL
       window.history.replaceState({}, '', '/subscription');
     } else if (cancelled) {
       toast({
@@ -75,20 +74,18 @@ export default function SubscriptionPage() {
         description: "Your payment was cancelled. You can try again anytime.",
         variant: "destructive",
       });
-      // Clean up URL
       window.history.replaceState({}, '', '/subscription');
     }
   }, [toast]);
 
-  const handleSubscribe = async (planId: string, period: BillingPeriod) => {
-    const fullPlanId = `${planId}_${period}`;
-    setIsLoading(fullPlanId);
+  const handleSubscribe = async (planId: string) => {
+    setIsLoading(planId);
 
     try {
       const response = await fetch("/api/subscription/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ planId: fullPlanId }),
+        body: JSON.stringify({ planId: `${planId}_monthly` }),
       });
 
       if (!response.ok) {
@@ -97,7 +94,6 @@ export default function SubscriptionPage() {
 
       const data = await response.json();
 
-      // Redirect to Stripe checkout
       if (data.checkoutUrl) {
         window.location.href = data.checkoutUrl;
       } else {
@@ -118,159 +114,132 @@ export default function SubscriptionPage() {
   };
 
   return (
-    <div className="min-h-screen pb-20 bg-gradient-to-br from-primary/5 via-background to-primary/10">
+    <div className="min-h-screen bg-background">
       <AppHeader />
-      <div className="max-w-7xl mx-auto p-4 pt-8 space-y-8">
-        <div className="text-center space-y-4">
-          <Badge variant="secondary" className="mb-4">
-            14-Day Free Trial - No Card Required
-          </Badge>
-          <h1 className="text-4xl font-bold">
+      
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-12">
+        <div className="text-center mb-12 space-y-3">
+          <h1 className="text-4xl font-bold text-foreground">
             Simple pricing for serious UK book flippers
           </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base text-muted-foreground max-w-2xl mx-auto">
             Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
           </p>
         </div>
 
-        {/* Billing Period Toggle */}
-        <div className="flex justify-center items-center gap-3 mt-8">
-          <span className={`text-sm ${billingPeriod === 'monthly' ? 'font-semibold' : 'text-muted-foreground'}`}>
-            Monthly
-          </span>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setBillingPeriod(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-            className="relative w-14 h-8 rounded-full p-0"
-          >
-            <div className={`absolute w-6 h-6 bg-primary rounded-full transition-transform ${
-              billingPeriod === 'yearly' ? 'translate-x-6' : 'translate-x-1'
-            }`} />
-          </Button>
-          <span className={`text-sm ${billingPeriod === 'yearly' ? 'font-semibold' : 'text-muted-foreground'}`}>
-            Yearly
-          </span>
-          {billingPeriod === 'yearly' && (
-            <Badge variant="secondary" className="ml-2">
-              Save up to £40/year
-            </Badge>
-          )}
-        </div>
+        {/* Main Layout */}
+        <div className="grid lg:grid-cols-3 gap-8 items-start">
+          {/* Left Column - Trial Info */}
+          <div className="space-y-6">
+            <div>
+              <Badge className="bg-teal-100 text-teal-800 border-teal-200 mb-3">
+                14-DAY FREE TRIAL
+              </Badge>
+              <h2 className="text-2xl font-bold text-foreground mb-3">
+                Test it during sourcing runs
+              </h2>
+              <p className="text-sm text-muted-foreground">
+                Scan books in charity shops, car-boots, and bargain bins with full features enabled.
+              </p>
+            </div>
 
-        <div className="grid md:grid-cols-2 gap-6 mt-12 max-w-4xl mx-auto">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
-            const currentPrice = billingPeriod === 'monthly' ? plan.monthlyPrice : plan.yearlyPrice;
-            const fullPlanId = `${plan.id}_${billingPeriod}`;
+            <ul className="space-y-2">
+              {trialFeatures.map((feature, index) => (
+                <li key={index} className="flex items-start gap-2">
+                  <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                  <span className="text-sm text-foreground">{feature}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
 
-            return (
+          {/* Right Column - Pricing Cards */}
+          <div className="lg:col-span-2 grid md:grid-cols-2 gap-6">
+            {plans.map((plan) => (
               <Card
                 key={plan.id}
-                className={`relative p-6 flex flex-col ${
+                className={`p-6 flex flex-col ${
                   plan.highlighted
-                    ? "border-primary shadow-lg scale-105"
-                    : ""
+                    ? "border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30"
+                    : "border-slate-200 dark:border-slate-700"
                 }`}
               >
-                {plan.badge && (
-                  <Badge className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    {plan.badge}
-                  </Badge>
-                )}
-
-                <div className="flex items-center gap-3 mb-4">
-                  <div className={`p-2 rounded-lg ${
-                    plan.highlighted ? "bg-primary text-primary-foreground" : "bg-primary/10"
-                  }`}>
-                    <Icon className="h-6 w-6" />
-                  </div>
-                  <div>
-                    <h3 className="text-xl font-bold">{plan.name}</h3>
-                  </div>
+                <div className="mb-4">
+                  <h3 className="text-xl font-bold text-foreground mb-1">
+                    {plan.name}
+                  </h3>
+                  <p className="text-xs text-muted-foreground">
+                    {plan.description}
+                  </p>
                 </div>
-
-                <p className="text-sm text-muted-foreground mb-4">
-                  {plan.description}
-                </p>
 
                 <div className="mb-6">
                   <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">{currentPrice}</span>
-                    <span className="text-muted-foreground">/{billingPeriod === 'monthly' ? 'month' : 'year'}</span>
+                    <span className="text-3xl font-bold text-foreground">
+                      {plan.price}
+                    </span>
+                    <span className="text-sm text-muted-foreground">
+                      {plan.period}
+                    </span>
                   </div>
-                  {billingPeriod === 'yearly' && (
-                    <p className="text-sm text-muted-foreground mt-1">
-                      {plan.yearlySavings}
-                    </p>
-                  )}
                 </div>
 
-                <ul className="space-y-3 mb-6 flex-1">
+                <ul className="space-y-2 mb-6 flex-1">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                      <span className="text-sm">{feature}</span>
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">{feature}</span>
                     </li>
                   ))}
                 </ul>
 
                 <Button
-                  onClick={() => handleSubscribe(plan.id, billingPeriod)}
-                  disabled={isLoading === fullPlanId}
-                  variant={plan.highlighted ? "default" : "outline"}
-                  className="w-full"
+                  onClick={() => handleSubscribe(plan.id)}
+                  disabled={isLoading === plan.id}
+                  className={`w-full mb-3 ${
+                    plan.highlighted
+                      ? "bg-teal-600 hover:bg-teal-700 text-white"
+                      : ""
+                  }`}
+                  data-testid={`button-subscribe-${plan.id}`}
                 >
-                  {isLoading === fullPlanId ? "Processing..." : plan.buttonText}
+                  {isLoading === plan.id ? "Processing..." : plan.buttonText}
                 </Button>
 
-                <p className="text-xs text-center text-muted-foreground mt-3">
-                  14-day free trial • No card required • Cancel anytime
+                <p className="text-xs text-center text-muted-foreground">
+                  {plan.yearlyInfo}
                 </p>
               </Card>
-            );
-          })}
-        </div>
-
-        <div className="mt-12 text-center">
-          <Card className="p-6 max-w-2xl mx-auto">
-            <h3 className="text-lg font-semibold mb-2">
-              All plans include
-            </h3>
-            <div className="grid md:grid-cols-3 gap-4 mt-4 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>Real-time pricing</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>Mobile app</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>Offline mode</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>Multi-platform</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>Regular updates</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Check className="h-4 w-4 text-primary" />
-                <span>UK-specific features</span>
-              </div>
-            </div>
-          </Card>
-        </div>
-
-        <div className="text-center text-sm text-muted-foreground mt-8">
-          <p>All prices in GBP. Try free for 14 days with full access. Cancel anytime during trial.</p>
-          <p className="mt-2">After trial: Subscribe to continue scanning or your account will be paused.</p>
+            ))}
+          </div>
         </div>
       </div>
+
+      {/* Footer CTA */}
+      <section className="mt-16 bg-slate-900 text-white py-12">
+        <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
+          <h2 className="text-3xl font-bold">
+            Ready to find profitable books faster?
+          </h2>
+          <p className="text-base opacity-90">
+            Scan shelves, see real profit, and list to Amazon and eBay — even when your phone has no signal.
+          </p>
+          <div className="flex gap-3 justify-center">
+            <Button 
+              size="lg"
+              onClick={() => handleSubscribe("pro")}
+              className="bg-teal-600 hover:bg-teal-700 text-white"
+              data-testid="button-footer-trial"
+            >
+              Start 14-Day Free Trial
+            </Button>
+          </div>
+          <p className="text-xs opacity-75">
+            No credit card required. Designed for UK sellers.
+          </p>
+        </div>
+      </section>
     </div>
   );
 }
