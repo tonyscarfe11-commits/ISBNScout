@@ -30,6 +30,7 @@ import TermsPage from "@/pages/TermsPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import FAQPage from "@/pages/FAQPage";
 import OfflineModePage from "@/pages/OfflineModePage";
+import AmazonRedirectPage from "@/pages/AmazonRedirectPage";
 import NotFound from "@/pages/not-found";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -62,6 +63,10 @@ function Router() {
         <Route path="/offline-mode" component={OfflineModePage} />
         <Route path="/privacy" component={PrivacyPage} />
         <Route path="/terms" component={TermsPage} />
+        
+        {/* Amazon affiliate redirect - shareable link */}
+        <Route path="/shop" component={AmazonRedirectPage} />
+        <Route path="/amazon" component={AmazonRedirectPage} />
 
         {/* App routes */}
         <Route path="/app">
