@@ -105,7 +105,7 @@ export default function LandingPage() {
                   </div>
 
                   {/* Metrics Grid */}
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-700">
                     {/* Net Profit */}
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit (after fees & postage)</div>
@@ -128,6 +128,37 @@ export default function LandingPage() {
                     <div className="space-y-1">
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">eBay Sold Avg</div>
                       <div className="text-sm font-semibold text-slate-300">£11.50</div>
+                    </div>
+                  </div>
+
+                  {/* Fees Breakdown */}
+                  <div className="space-y-2 text-xs">
+                    <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon Breakdown</div>
+                    <div className="space-y-1 pl-2 border-l border-slate-700">
+                      <div className="flex justify-between text-slate-400">
+                        <span>List Price</span>
+                        <span className="text-slate-300">£12.90</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Referral Fee (15.3%)</span>
+                        <span className="text-slate-300">-£1.97</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Closing Fee</span>
+                        <span className="text-slate-300">-£0.75</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Royal Mail Large Letter</span>
+                        <span className="text-slate-300">-£2.80</span>
+                      </div>
+                      <div className="flex justify-between text-slate-400">
+                        <span>Your Cost</span>
+                        <span className="text-slate-300">-£2.50</span>
+                      </div>
+                      <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-teal-400">
+                        <span>Net</span>
+                        <span>£4.88</span>
+                      </div>
                     </div>
                   </div>
 
