@@ -71,10 +71,10 @@ app.use(
       checkPeriod: 86400000, // 24 hours
     }),
     cookie: {
-      secure: process.env.NODE_ENV === 'production', // HTTPS only in production
+      secure: true, // Always secure (Replit uses HTTPS proxy)
       httpOnly: true, // ✅ SECURITY: Prevent JavaScript access (XSS protection)
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      sameSite: isDevelopment ? 'lax' : 'strict', // ✅ SECURITY: CSRF protection
+      sameSite: 'none', // Required for Replit webview cross-origin cookies
       path: '/', // Ensure cookie is available for all paths
     },
     proxy: true, // Trust the reverse proxy
@@ -82,7 +82,7 @@ app.use(
 );
 
 // Log session configuration
-log(`Session configured: secure=${process.env.NODE_ENV === 'production'}, httpOnly=true, sameSite=${isDevelopment ? 'lax' : 'strict'}, maxAge=30days, proxy=true, resave=true`);
+log(`Session configured: secure=true, httpOnly=true, sameSite=none, maxAge=30days, proxy=true, resave=true`);
 
 app.use((req, res, next) => {
   const start = Date.now();
