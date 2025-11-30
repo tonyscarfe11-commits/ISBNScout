@@ -113,9 +113,9 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {/* Trial Status Card */}
           {trialInfo && (trialInfo.status === 'trialing' || trialInfo.tier === 'trial') && (
-            <Card className={`p-4 ${trialInfo.daysRemaining <= 0 ? 'border-red-500 bg-red-50 dark:bg-red-950' : 'border-primary bg-primary/5'}`}>
+            <Card className={`p-4 ${trialInfo.daysRemaining <= 0 ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30' : 'border-teal-500 bg-teal-50 dark:bg-teal-950/30'}`}>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Clock className={`h-5 w-5 ${trialInfo.daysRemaining <= 0 ? 'text-red-600' : 'text-primary'}`} />
+                <Clock className={`h-5 w-5 ${trialInfo.daysRemaining <= 0 ? 'text-orange-600' : 'text-teal-600'}`} />
                 {trialInfo.daysRemaining <= 0 ? 'Trial Expired - Grace Period' : 'Free Trial Active'}
               </h2>
               <div className="space-y-3">
@@ -123,23 +123,23 @@ export default function SettingsPage() {
                   <>
                     <div className="flex items-center justify-between">
                       <div>
-                        <p className="text-sm font-medium text-red-700 dark:text-red-400">Your trial has ended</p>
+                        <p className="text-sm font-medium text-orange-700 dark:text-orange-400">Your trial has ended</p>
                         <p className="text-xs text-muted-foreground">
                           You have 3 days of grace period access
                         </p>
                       </div>
                       <div className="text-right">
-                        <p className="text-3xl font-bold font-mono text-red-600">
+                        <p className="text-3xl font-bold font-data text-orange-600">
                           {Math.max(0, 3 + trialInfo.daysRemaining)}
                         </p>
                         <p className="text-xs text-muted-foreground">grace days left</p>
                       </div>
                     </div>
-                    <div className="p-3 bg-red-100 dark:bg-red-900 border border-red-200 dark:border-red-800 rounded-lg">
-                      <p className="text-sm font-medium text-red-900 dark:text-red-100">
-                        🚨 Grace period active
+                    <div className="p-3 bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                      <p className="text-sm font-medium text-orange-900 dark:text-orange-100">
+                        Grace period active
                       </p>
-                      <p className="text-xs text-red-800 dark:text-red-200 mt-1">
+                      <p className="text-xs text-orange-800 dark:text-orange-200 mt-1">
                         Your access will be blocked in {Math.max(0, 3 + trialInfo.daysRemaining)} {Math.max(0, 3 + trialInfo.daysRemaining) === 1 ? 'day' : 'days'}. Upgrade now to keep full access!
                       </p>
                     </div>
@@ -153,14 +153,14 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-bold font-mono text-primary">
+                      <p className="text-3xl font-bold font-data text-teal-600">
                         {trialInfo.daysRemaining}
                       </p>
                       <p className="text-xs text-muted-foreground">days left</p>
                     </div>
                   </div>
                 )}
-                <div className="flex items-center justify-between p-3 bg-background rounded-lg border">
+                <div className="flex items-center justify-between gap-2 p-3 bg-background rounded-lg border">
                   <div>
                     <p className="text-sm font-medium">Enjoying ISBNScout?</p>
                     <p className="text-xs text-muted-foreground">
@@ -170,17 +170,18 @@ export default function SettingsPage() {
                   <Button
                     size="sm"
                     onClick={() => setLocation('/subscription')}
+                    className="bg-teal-600 hover:bg-teal-700 text-white shrink-0"
                   >
                     <Crown className="h-4 w-4 mr-1" />
                     Upgrade
                   </Button>
                 </div>
-                {trialInfo.daysRemaining <= 3 && (
-                  <div className="p-3 bg-yellow-50 dark:bg-yellow-950 border border-yellow-200 dark:border-yellow-800 rounded-lg">
-                    <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                      ⚠️ Trial ending soon!
+                {trialInfo.daysRemaining <= 3 && trialInfo.daysRemaining > 0 && (
+                  <div className="p-3 bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg">
+                    <p className="text-sm font-medium text-amber-800 dark:text-amber-200">
+                      Trial ending soon!
                     </p>
-                    <p className="text-xs text-yellow-700 dark:text-yellow-300 mt-1">
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
                       Your trial expires in {trialInfo.daysRemaining} {trialInfo.daysRemaining === 1 ? 'day' : 'days'}. Upgrade to continue using all features.
                     </p>
                   </div>
