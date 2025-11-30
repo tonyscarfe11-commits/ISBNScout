@@ -27,6 +27,7 @@ import BlogPost2 from "@/pages/BlogPost2";
 import BlogPost3 from "@/pages/BlogPost3";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
+import CookiePolicyPage from "@/pages/CookiePolicyPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
 import FAQPage from "@/pages/FAQPage";
 import OfflineModePage from "@/pages/OfflineModePage";
@@ -65,6 +66,7 @@ function Router() {
         <Route path="/offline-mode" component={OfflineModePage} />
         <Route path="/privacy" component={PrivacyPage} />
         <Route path="/terms" component={TermsPage} />
+        <Route path="/cookies" component={CookiePolicyPage} />
         <Route path="/affiliates" component={AffiliatePage} />
         <Route path="/affiliate-dashboard" component={AffiliateDashboard} />
         

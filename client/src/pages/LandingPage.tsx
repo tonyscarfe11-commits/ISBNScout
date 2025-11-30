@@ -685,6 +685,7 @@ export default function LandingPage() {
               <button onClick={() => setLocation("/affiliates")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-affiliates">Affiliates</button>
               <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-privacy">Privacy</button>
               <button onClick={() => setLocation("/terms")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-terms">Terms</button>
+              <button onClick={() => setLocation("/cookies")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-cookies">Cookies</button>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-700 text-center text-base text-slate-300">
