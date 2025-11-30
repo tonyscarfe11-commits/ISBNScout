@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { ScannerInterface } from "@/components/ScannerInterface";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
@@ -7,6 +7,7 @@ import { ProfitVerdict, calculateVerdict, type ProfitVerdictData } from "@/compo
 import { CostEditor, getUserCosts } from "@/components/CostEditor";
 import { OnboardingWizard, useOnboarding } from "@/components/OnboardingWizard";
 import { useToast } from "@/hooks/use-toast";
+import { useBluetoothScanner } from "@/hooks/use-bluetooth-scanner";
 import { useLocation } from "wouter";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -20,7 +21,12 @@ import {
   Zap,
   Crown,
   Bluetooth,
-  Library
+  BluetoothConnected,
+  Library,
+  Layers,
+  X,
+  Check,
+  Trash2
 } from "lucide-react";
 import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
 import { getScanQueue } from "@/lib/scan-queue";
@@ -49,6 +55,11 @@ export default function ScanPage() {
   const [costEditorOpen, setCostEditorOpen] = useState(false);
   const [currentCost, setCurrentCost] = useState(() => getUserCosts().defaultPurchaseCost);
 
+  const [bluetoothEnabled, setBluetoothEnabled] = useState(false);
+  const [shelfMode, setShelfMode] = useState(false);
+  const [shelfScans, setShelfScans] = useState<ProfitVerdictData[]>([]);
+  const [isScanning, setIsScanning] = useState(false);
+
   const { data: scanLimits } = useQuery<{
     scansUsedToday: number;
     scansUsedMonth: number;
@@ -75,6 +86,20 @@ export default function ScanPage() {
     const unsubscribe = syncService.onStatusChange(setOfflineStatus);
     return unsubscribe;
   }, []);
+
+  const { isListening } = useBluetoothScanner({
+    onScan: (barcode: string) => {
+      console.log("[ScanPage] Bluetooth scanner detected:", barcode);
+      if (!shelfMode) {
+        toast({
+          title: "Barcode Scanned",
+          description: `ISBN: ${barcode}`,
+        });
+      }
+      handleIsbnScan(barcode);
+    },
+    enabled: bluetoothEnabled,
+  });
 
   const saveScan = async (isbn: string, bookData: any) => {
     if (!offlineStatus.isOnline) {
@@ -152,14 +177,17 @@ export default function ScanPage() {
 
   const handleIsbnScan = async (isbn: string) => {
     console.log("Scanning ISBN:", isbn);
+    setIsScanning(true);
 
     try {
-      toast({
-        title: "Looking up book...",
-        description: offlineStatus.isOnline
-          ? "Fetching pricing from marketplaces"
-          : "Looking up from offline cache",
-      });
+      if (!shelfMode) {
+        toast({
+          title: "Looking up book...",
+          description: offlineStatus.isOnline
+            ? "Fetching pricing from marketplaces"
+            : "Looking up from offline cache",
+        });
+      }
 
       const pricingData = await lookupPricing(isbn);
 
@@ -194,7 +222,15 @@ export default function ScanPage() {
         source: pricingData.source,
       };
 
-      setCurrentVerdict(verdictData);
+      if (shelfMode) {
+        setShelfScans(prev => [...prev, verdictData]);
+        toast({
+          title: verdict === "BUY" ? "BUY IT!" : verdict === "SKIP" ? "SKIP" : "MAYBE",
+          description: `${pricingData.title?.substring(0, 30) || isbn}... £${profit.toFixed(2)} profit`,
+        });
+      } else {
+        setCurrentVerdict(verdictData);
+      }
 
       const velocityToken = getAuthToken();
       const velocityHeaders: HeadersInit = { "Content-Type": "application/json" };
@@ -263,6 +299,8 @@ export default function ScanPage() {
         description: error.message || "Could not fetch book pricing",
         variant: "destructive",
       });
+    } finally {
+      setIsScanning(false);
     }
   };
 
@@ -424,7 +462,136 @@ export default function ScanPage() {
           }}
         />
 
+        {/* Bluetooth & Shelf Mode Controls - Always visible when scanning */}
         {!currentVerdict && (
+          <div className="flex gap-2">
+            <Button
+              variant={bluetoothEnabled ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                setBluetoothEnabled(!bluetoothEnabled);
+                toast({
+                  title: bluetoothEnabled ? "Bluetooth Scanner Off" : "Bluetooth Scanner On",
+                  description: bluetoothEnabled 
+                    ? "Switched to camera scanning" 
+                    : "Ready to receive barcode input",
+                });
+              }}
+              className={`flex-1 gap-2 ${bluetoothEnabled ? "bg-teal-600 hover:bg-teal-700" : ""}`}
+              data-testid="button-bluetooth-toggle"
+            >
+              {bluetoothEnabled ? (
+                <BluetoothConnected className="h-4 w-4" />
+              ) : (
+                <Bluetooth className="h-4 w-4" />
+              )}
+              {bluetoothEnabled ? "Scanner On" : "Connect Scanner"}
+            </Button>
+            <Button
+              variant={shelfMode ? "default" : "outline"}
+              size="sm"
+              onClick={() => {
+                if (shelfMode && shelfScans.length > 0) {
+                  return;
+                }
+                setShelfMode(!shelfMode);
+                setShelfScans([]);
+                toast({
+                  title: shelfMode ? "Shelf Mode Off" : "Shelf Mode On",
+                  description: shelfMode 
+                    ? "Switched to single scan mode" 
+                    : "Rapid scan multiple books, review together",
+                });
+              }}
+              className={`flex-1 gap-2 ${shelfMode ? "bg-amber-600 hover:bg-amber-700" : ""}`}
+              data-testid="button-shelf-mode"
+            >
+              <Layers className="h-4 w-4" />
+              {shelfMode ? `Shelf (${shelfScans.length})` : "Shelf Mode"}
+            </Button>
+          </div>
+        )}
+
+        {/* Shelf Mode Scans List */}
+        {shelfMode && shelfScans.length > 0 && (
+          <Card className="overflow-hidden" data-testid="card-shelf-scans">
+            <div className="p-3 bg-amber-500/10 border-b flex items-center justify-between">
+              <span className="font-semibold text-sm flex items-center gap-2">
+                <Layers className="h-4 w-4 text-amber-600" />
+                Shelf Scans ({shelfScans.length})
+              </span>
+              <div className="flex gap-2">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  onClick={() => {
+                    setShelfScans([]);
+                    toast({ title: "Shelf cleared" });
+                  }}
+                  data-testid="button-clear-shelf"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setShelfMode(false);
+                    setShelfScans([]);
+                    toast({ title: "Shelf mode finished", description: `Scanned ${shelfScans.length} books` });
+                  }}
+                  data-testid="button-finish-shelf"
+                >
+                  Done
+                </Button>
+              </div>
+            </div>
+            <div className="max-h-64 overflow-y-auto divide-y">
+              {shelfScans.map((scan, index) => (
+                <div 
+                  key={`${scan.isbn}-${index}`}
+                  className={`p-3 flex items-center gap-3 ${
+                    scan.verdict === "BUY" 
+                      ? "bg-emerald-50 dark:bg-emerald-950/20" 
+                      : scan.verdict === "SKIP"
+                      ? "bg-red-50 dark:bg-red-950/20"
+                      : "bg-amber-50 dark:bg-amber-950/20"
+                  }`}
+                  data-testid={`shelf-scan-${index}`}
+                >
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold shrink-0 ${
+                    scan.verdict === "BUY" ? "bg-emerald-500" : scan.verdict === "SKIP" ? "bg-red-500" : "bg-amber-500"
+                  }`}>
+                    {scan.verdict === "BUY" ? <Check className="h-4 w-4" /> : scan.verdict === "SKIP" ? <X className="h-4 w-4" /> : "?"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{scan.title}</p>
+                    <p className="text-xs text-muted-foreground">
+                      £{scan.profit.toFixed(2)} profit • {scan.roi.toFixed(0)}% ROI
+                    </p>
+                  </div>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    onClick={() => setShelfScans(prev => prev.filter((_, i) => i !== index))}
+                    data-testid={`button-remove-scan-${index}`}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                </div>
+              ))}
+            </div>
+            {/* Summary */}
+            <div className="p-3 bg-muted/50 border-t">
+              <div className="flex justify-between text-sm">
+                <span>Total BUY: <strong className="text-emerald-600">{shelfScans.filter(s => s.verdict === "BUY").length}</strong></span>
+                <span>Total profit: <strong className="text-emerald-600">£{shelfScans.filter(s => s.verdict === "BUY").reduce((sum, s) => sum + s.profit, 0).toFixed(2)}</strong></span>
+              </div>
+            </div>
+          </Card>
+        )}
+
+        {!currentVerdict && !shelfMode && (
           <div className="pt-2">
             <Button
               variant="ghost"
@@ -435,14 +602,13 @@ export default function ScanPage() {
             >
               <span className="flex items-center gap-2">
                 <Zap className="h-4 w-4" />
-                Advanced Tools
+                More Options
               </span>
               {showAdvanced ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
             </Button>
 
             {showAdvanced && (
               <Card className="mt-2 p-4 space-y-3">
-                <p className="text-xs text-muted-foreground">Power user features</p>
                 <div className="grid grid-cols-2 gap-2">
                   <Button
                     variant="outline"
@@ -465,9 +631,6 @@ export default function ScanPage() {
                     Edit Costs
                   </Button>
                 </div>
-                <p className="text-[10px] text-muted-foreground">
-                  Bluetooth scanner and batch mode coming soon
-                </p>
               </Card>
             )}
           </div>
