@@ -515,115 +515,146 @@ export default function LandingPage() {
       {/* Pricing Section */}
       <section className="py-16 bg-slate-50 dark:bg-slate-900/30">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-foreground mb-3">
-              Simple pricing for serious UK book flippers
-            </h2>
-            <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
-            </p>
-          </div>
+          <h2 className="text-3xl font-bold text-foreground mb-3">
+            Simple pricing for serious UK book flippers
+          </h2>
+          <p className="text-base text-muted-foreground max-w-3xl mb-12">
+            Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
+          </p>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-8">
-            {/* Pro Plan */}
-            <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
-                  <p className="text-sm text-muted-foreground">Perfect for UK sellers sourcing weekly in charity shops</p>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {/* Left Column - 14 Day Free Trial */}
+            <div>
+              <Card className="p-6 border-slate-200 dark:border-slate-700 h-full">
+                <div className="space-y-4">
+                  <Badge className="bg-teal-100 text-teal-700 border-teal-200 w-fit text-xs">
+                    14-DAY FREE TRIAL
+                  </Badge>
+                  <h3 className="text-lg font-bold text-foreground">Test it during real sourcing runs</h3>
+                  <p className="text-sm text-muted-foreground">
+                    Scan books in charity shops, car-boots, and libraries with full features enabled.
+                  </p>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Full Pro & Elite access</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">No card required</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Cancel anytime</span>
+                    </li>
+                  </ul>
                 </div>
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-foreground">£14.99</span>
-                    <span className="text-sm text-muted-foreground">/month</span>
-                  </div>
-                </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Unlimited scans</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Offline mode</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Barcode, cover & AI spine recognition</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Amazon + eBay UK profit calculator</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Royal Mail & Evri postage estimates</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Scan history</span>
-                  </li>
-                </ul>
-                <Button 
-                  size="lg" 
-                  onClick={() => setLocation("/auth")}
-                  className="w-full bg-teal-600 hover:bg-teal-700 text-white"
-                >
-                  Start 14-Day Pro Trial
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  Prefer yearly? £189/year (save ~2 months)
-                </p>
-              </div>
-            </Card>
+              </Card>
+            </div>
 
-            {/* Elite Plan */}
-            <Card className="p-6 border-slate-200 dark:border-slate-700">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-xl font-bold text-foreground mb-1">Elite</h3>
-                  <p className="text-sm text-muted-foreground">For high-volume sellers who need automation and advanced tools</p>
-                </div>
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-foreground">£19.99</span>
-                    <span className="text-sm text-muted-foreground">/month</span>
+            {/* Middle Column - Pro Plan */}
+            <div>
+              <Card className="p-6 border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30 h-full">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">Pro</h3>
+                    <p className="text-xs text-muted-foreground">Perfect for UK sellers sourcing weekly in charity shops and car-boots.</p>
                   </div>
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold text-foreground">£14.99</span>
+                      <span className="text-sm text-muted-foreground">/month</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Unlimited scans</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Offline mode</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Barcode, cover & AI spine recognition</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Amazon + eBay UK profit calculator</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Royal Mail & Evri postage estimates</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Scan history</span>
+                    </li>
+                  </ul>
+                  <Button 
+                    size="lg" 
+                    onClick={() => setLocation("/auth")}
+                    className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+                  >
+                    Start 14-Day Pro Trial
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Prefer yearly? £149/year (save ~2 months)
+                  </p>
                 </div>
-                <ul className="space-y-2">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Everything in Pro</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Buy / Don't Buy triggers</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Custom profit rules</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">CSV export</span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
-                    <span className="text-sm text-foreground">Multi-device access</span>
-                  </li>
-                </ul>
-                <Button 
-                  size="lg" 
-                  onClick={() => setLocation("/auth")}
-                  className="w-full"
-                >
-                  Start 14-Day Elite Trial
-                </Button>
-                <p className="text-xs text-center text-muted-foreground">
-                  Prefer yearly? £199/year (save ~2½ months)
-                </p>
-              </div>
-            </Card>
+              </Card>
+            </div>
+
+            {/* Right Column - Elite Plan */}
+            <div>
+              <Card className="p-6 border-slate-200 dark:border-slate-700 h-full">
+                <div className="space-y-4">
+                  <div>
+                    <h3 className="text-xl font-bold text-foreground mb-1">Elite</h3>
+                    <p className="text-xs text-muted-foreground">For high-volume sellers sourcing automation and advanced tools.</p>
+                  </div>
+                  <div>
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold text-foreground">£19.99</span>
+                      <span className="text-sm text-muted-foreground">/month</span>
+                    </div>
+                  </div>
+                  <ul className="space-y-2">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Everything in Pro</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Buy / Don't Buy triggers</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Custom profit rules</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">CSV export</span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <span className="text-sm text-foreground">Multi-device access</span>
+                    </li>
+                  </ul>
+                  <Button 
+                    size="lg" 
+                    onClick={() => setLocation("/auth")}
+                    className="w-full"
+                  >
+                    Start 14-Day Elite Trial
+                  </Button>
+                  <p className="text-xs text-center text-muted-foreground">
+                    Prefer yearly? £199/year (save ~2 months)
+                  </p>
+                </div>
+              </Card>
+            </div>
           </div>
         </div>
       </section>
