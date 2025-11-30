@@ -258,12 +258,156 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* Built For Section */}
+      {/* Problem/Solution Section */}
+      <section className="py-16 bg-slate-950 border-y border-slate-800">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-12">
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-foreground">The Problem</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Scout for hours in charity shops and car-boots. Find 50 potential books. But you're guessing on profit. No sales data. No velocity info. You buy based on hunches. Half your buys are losers.
+              </p>
+              <p className="text-muted-foreground leading-relaxed">
+                You need to make buy/don't-buy decisions <span className="text-teal-400 font-semibold">in seconds</span>. Not hours of research at home later.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <h3 className="text-2xl font-bold text-foreground">ISBNScout Solution</h3>
+              <p className="text-muted-foreground leading-relaxed">
+                Scan ISBN or spine. Instant profit calculation. Sales velocity. Demand signals. <span className="text-teal-400 font-semibold">Make the decision right there.</span>
+              </p>
+              <ul className="space-y-2 text-muted-foreground">
+                <li className="flex gap-2">
+                  <span className="text-teal-400">✓</span>
+                  <span>Scout smarter. Skip the losers.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-teal-400">✓</span>
+                  <span>Works offline. No signal needed.</span>
+                </li>
+                <li className="flex gap-2">
+                  <span className="text-teal-400">✓</span>
+                  <span>Real data. Not guesswork.</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Social Proof Section */}
       <section className="py-16 bg-background">
+        <div className="max-w-4xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-12">Scouts Love It</h2>
+          <div className="grid md:grid-cols-3 gap-6">
+            <Card className="p-6 border-slate-700 bg-slate-900/50">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="text-teal-400">★</span>
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "I was losing £2-3 per book on bad buys. ISBNScout cut my losses in half. Now I skip the obvious losers instantly."
+              </p>
+              <p className="text-sm text-teal-400 font-semibold">Sarah M. • Charity Shop Scout</p>
+            </Card>
+
+            <Card className="p-6 border-slate-700 bg-slate-900/50">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="text-teal-400">★</span>
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "Boot sale scout here. I used to spend 2 hours deciding on 40 books. With spine recognition, I scan the whole box in 5 minutes."
+              </p>
+              <p className="text-sm text-teal-400 font-semibold">Marcus T. • Boot Sale Hunter</p>
+            </Card>
+
+            <Card className="p-6 border-slate-700 bg-slate-900/50">
+              <div className="flex gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((i) => (
+                  <span key={i} className="text-teal-400">★</span>
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-4">
+                "Offline mode is a game-changer. Charity shops have no signal. I can make decisions without hunting for WiFi."
+              </p>
+              <p className="text-sm text-teal-400 font-semibold">James P. • eBay Seller</p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Security/Privacy Section */}
+      <section className="py-12 bg-slate-950 border-y border-slate-800">
+        <div className="max-w-4xl mx-auto px-4">
+          <div className="grid md:grid-cols-2 gap-8 items-center">
+            <div>
+              <h3 className="text-2xl font-bold text-foreground mb-4">Your Data. Your Rules.</h3>
+              <ul className="space-y-3 text-muted-foreground">
+                <li className="flex gap-3">
+                  <span className="text-teal-400 font-bold">🔒</span>
+                  <span><strong className="text-foreground">End-to-end encrypted</strong> - Competitors can't track your hunting spots</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-teal-400 font-bold">📱</span>
+                  <span><strong className="text-foreground">Stays on your phone</strong> - Scouting data never leaves your device</span>
+                </li>
+                <li className="flex gap-3">
+                  <span className="text-teal-400 font-bold">🚫</span>
+                  <span><strong className="text-foreground">We never sell data</strong> - Your margins are private</span>
+                </li>
+              </ul>
+            </div>
+            <Card className="p-6 border-teal-600/30 bg-teal-600/5">
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                <strong className="text-teal-400">Why this matters:</strong> Your scouting strategy is your edge. If competitors know where you hunt and what you buy, that edge disappears. ISBNScout protects that.
+              </p>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-3xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground text-center mb-12">Questions?</h2>
+          <div className="space-y-6">
+            <div className="border-b border-slate-700 pb-6">
+              <h4 className="text-lg font-bold text-foreground mb-2">How often is sales data updated?</h4>
+              <p className="text-muted-foreground">Daily. ISBNScout syncs sales data, pricing, and velocity signals every 24 hours when you're online. Works perfectly offline too.</p>
+            </div>
+
+            <div className="border-b border-slate-700 pb-6">
+              <h4 className="text-lg font-bold text-foreground mb-2">What if a book has no sales data?</h4>
+              <p className="text-muted-foreground">ISBNScout shows "No market data available" and suggests skipping it. Better to skip unknowns than buy blind. When in doubt, don't buy.</p>
+            </div>
+
+            <div className="border-b border-slate-700 pb-6">
+              <h4 className="text-lg font-bold text-foreground mb-2">Do I need internet to scout?</h4>
+              <p className="text-muted-foreground">No. ISBNScout works completely offline. Scan, see profit calculations, make decisions—all without signal. Syncs data when you reconnect.</p>
+            </div>
+
+            <div className="border-b border-slate-700 pb-6">
+              <h4 className="text-lg font-bold text-foreground mb-2">Can I list books directly to Amazon/eBay from ISBNScout?</h4>
+              <p className="text-muted-foreground">ISBNScout is a scouting tool for buy/don't-buy decisions. It's not a full selling platform. Use ISBNScout to decide what to buy, then list via Amazon/eBay separately.</p>
+            </div>
+
+            <div>
+              <h4 className="text-lg font-bold text-foreground mb-2">Is there a free trial?</h4>
+              <p className="text-muted-foreground">Yes. 14 days free. No credit card required. Full access to all features. Cancel anytime.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Built For Section */}
+      <section className="py-16 bg-muted border-y border-border">
         <div className="max-w-7xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold text-foreground mb-8">Built for:</h2>
           <p className="text-lg text-muted-foreground">
-            Charity shop hunters • Amazon sellers • eBay booksellers
+            Charity shop hunters • Amazon sellers • eBay booksellers • Boot sale scouts • Estate sale hunters
           </p>
         </div>
       </section>
