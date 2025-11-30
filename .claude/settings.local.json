@@ -42,7 +42,11 @@
       "Bash(fi)",
       "WebSearch",
       "Bash(netstat:*)",
-      "Bash(ss:*)"
+      "Bash(ss:*)",
+      "WebFetch(domain:chatgpt.com)",
+      "Bash(xargs:*)",
+      "Bash(npm start)",
+      "Bash(killall -9 node tsx npm)"
     ],
     "deny": [],
     "ask": []

@@ -320,11 +320,11 @@ export function ScannerInterface({ onIsbnScan, onCoverScan }: ScannerInterfacePr
           )}
 
           {/* Top controls */}
-          <div className="absolute top-0 left-0 right-0 p-4 bg-gradient-to-b from-black/70 to-transparent">
+          <div className="absolute top-0 left-0 right-0 p-6 bg-gradient-to-b from-black/80 to-transparent">
             <div className="flex items-center justify-between">
-              <div className="text-white">
-                <p className="text-sm font-medium">
-                  {scanMode === "isbn" ? "Scanning Barcode" : "Capture Photo"}
+              <div className="text-white text-center flex-1">
+                <p className="text-lg font-medium">
+                  {scanMode === "isbn" ? "Detecting ISBN..." : "Capturing..."}
                 </p>
               </div>
               <Button

@@ -25,8 +25,17 @@ export class SalesVelocityService {
   /**
    * Calculate sales velocity based on Amazon BSR
    * Lower rank = faster sales
+   * Optional: Pass profit data to get smarter buy recommendations
    */
-  calculateVelocity(salesRank: number, category: string = 'Books'): VelocityAnalysis {
+  calculateVelocity(
+    salesRank: number,
+    category: string = 'Books',
+    profitData?: {
+      profit: number;
+      profitMargin: number;
+      purchaseCost: number;
+    }
+  ): VelocityAnalysis {
     // Books category has different thresholds than other categories
     const isBooks = category.toLowerCase().includes('book');
     
@@ -152,6 +161,23 @@ export class SalesVelocityService {
       }
     }
 
+    // If profit data is provided, use smart recommendation logic
+    if (profitData) {
+      const smartRecommendation = this.shouldBuy(
+        velocity.rating,
+        profitData.profit,
+        profitData.profitMargin,
+        profitData.purchaseCost
+      );
+
+      // Override the velocity-only recommendation with profit-aware one
+      velocity = {
+        ...velocity,
+        buyRecommendation: smartRecommendation.recommendation,
+        description: `${velocity.description} - ${smartRecommendation.reason}`
+      };
+    }
+
     return {
       velocity,
       rankCategory,
@@ -221,6 +247,7 @@ export class SalesVelocityService {
 
   /**
    * Determine if a book is worth buying based on velocity and profit
+   * Simple rules - no confusing points system
    */
   shouldBuy(
     velocity: VelocityRating,
@@ -230,58 +257,62 @@ export class SalesVelocityService {
   ): {
     recommendation: 'strong_buy' | 'buy' | 'maybe' | 'skip';
     reason: string;
-    score: number; // 0-100
+    score: number;
   } {
-    // Calculate velocity score (0-50 points)
-    let velocityScore = 0;
-    switch (velocity) {
-      case 'very_fast': velocityScore = 50; break;
-      case 'fast': velocityScore = 40; break;
-      case 'medium': velocityScore = 25; break;
-      case 'slow': velocityScore = 10; break;
-      case 'very_slow': velocityScore = 0; break;
-    }
-
-    // Calculate profit score (0-50 points)
-    let profitScore = 0;
-    if (profitMargin >= 100) profitScore = 50; // 100%+ margin
-    else if (profitMargin >= 50) profitScore = 40; // 50-100% margin
-    else if (profitMargin >= 30) profitScore = 30; // 30-50% margin
-    else if (profitMargin >= 20) profitScore = 20; // 20-30% margin
-    else if (profitMargin >= 10) profitScore = 10; // 10-20% margin
-    else profitScore = 0; // <10% margin
-
-    const totalScore = velocityScore + profitScore;
-
-    // Determine recommendation
     let recommendation: 'strong_buy' | 'buy' | 'maybe' | 'skip';
     let reason: string;
 
-    if (totalScore >= 70) {
-      recommendation = 'strong_buy';
-      reason = 'Fast sales + great profit - this is a winner!';
-    } else if (totalScore >= 50) {
-      recommendation = 'buy';
-      reason = 'Good profit and decent velocity - solid buy';
-    } else if (totalScore >= 30) {
-      recommendation = 'maybe';
-      if (velocityScore < 15) {
-        reason = 'Slow seller - only if profit is exceptional';
-      } else {
-        reason = 'Low profit margin - need faster sales';
-      }
-    } else {
-      recommendation = 'skip';
-      if (profit < 5) {
-        reason = 'Profit too low to be worth the effort';
-      } else if (velocity === 'very_slow' || velocity === 'slow') {
-        reason = 'Too slow to sell - cash will be tied up';
-      } else {
-        reason = 'Poor combination of profit and velocity';
-      }
+    // Rule 1: Skip if profit is negative or too low (less than £3)
+    if (profit < 3) {
+      return {
+        recommendation: 'skip',
+        reason: profit < 0 ? 'Losing money on this book' : 'Profit too low - not worth the effort',
+        score: 0
+      };
     }
 
-    return { recommendation, reason, score: totalScore };
+    // Rule 2: Skip if very slow velocity (will take months to sell)
+    if (velocity === 'very_slow') {
+      return {
+        recommendation: 'skip',
+        reason: 'Takes too long to sell - cash will be tied up',
+        score: 10
+      };
+    }
+
+    // Rule 3: Strong Buy = Fast sales + Good profit (£5+)
+    if ((velocity === 'very_fast' || velocity === 'fast') && profit >= 5) {
+      return {
+        recommendation: 'strong_buy',
+        reason: 'Sells fast with good profit!',
+        score: 100
+      };
+    }
+
+    // Rule 4: Buy = Medium velocity + Decent profit (£5+) OR Fast velocity + Okay profit (£3-5)
+    if ((velocity === 'medium' && profit >= 5) || ((velocity === 'very_fast' || velocity === 'fast') && profit >= 3)) {
+      return {
+        recommendation: 'buy',
+        reason: 'Decent profit and reasonable sales speed',
+        score: 70
+      };
+    }
+
+    // Rule 5: Maybe = Slow sales OR Low profit (£3-5)
+    if (velocity === 'slow' || profit < 5) {
+      return {
+        recommendation: 'maybe',
+        reason: velocity === 'slow' ? 'Slow to sell - consider if profit is high' : 'Low profit margin - only buy if sales are fast',
+        score: 40
+      };
+    }
+
+    // Rule 6: Default to Maybe for edge cases
+    return {
+      recommendation: 'maybe',
+      reason: 'Borderline - use your judgment',
+      score: 50
+    };
   }
 
   /**

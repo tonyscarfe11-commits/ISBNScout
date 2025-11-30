@@ -1031,7 +1031,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (result.lowestPrice) {
         const estimatedCost = 8.00;
         const fees = result.lowestPrice * 0.15; // 15% marketplace fees
-        result.profit = result.lowestPrice - estimatedCost - fees;
+        const shipping = 2.15; // Royal Mail 2nd Class Large Letter (typical book 300-500g)
+        result.profit = result.lowestPrice - estimatedCost - fees - shipping;
       }
 
       // 6. Cache the result for offline use (24 hour TTL)
@@ -1509,21 +1510,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Valid sales rank is required" });
       }
 
-      // Calculate velocity analysis
-      const analysis = salesVelocityService.calculateVelocity(salesRank, category || 'Books');
-      const timeToSell = salesVelocityService.getTimeToSell(analysis.velocity.rating);
-      
-      // Calculate buy recommendation if profit data provided
-      let buyRecommendation = analysis.velocity.buyRecommendation;
-      if (profit !== undefined && profitMargin !== undefined && yourCost !== undefined) {
-        buyRecommendation = salesVelocityService.shouldBuy(
-          analysis.velocity.rating,
-          profit,
-          profitMargin,
-          yourCost
-        ).recommendation;
-      }
+      // Calculate velocity analysis with profit-aware recommendations
+      const profitData = (profit !== undefined && profitMargin !== undefined && yourCost !== undefined)
+        ? { profit, profitMargin, purchaseCost: yourCost }
+        : undefined;
 
+      const analysis = salesVelocityService.calculateVelocity(
+        salesRank,
+        category || 'Books',
+        profitData
+      );
+      const timeToSell = salesVelocityService.getTimeToSell(analysis.velocity.rating);
+
+      // Get detailed recommendation with scoring
       const recommendation = salesVelocityService.shouldBuy(
         analysis.velocity.rating,
         profit || 0,

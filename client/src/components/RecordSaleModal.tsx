@@ -54,6 +54,7 @@ export function RecordSaleModal({
     salePrice: "",
     soldPlatform: "ebay",
     fees: "",
+    shippingCost: "2.15", // Default Royal Mail 2nd Class Large Letter
     notes: "",
   });
 
@@ -97,8 +98,9 @@ export function RecordSaleModal({
     const salePrice = parseFloat(formData.salePrice);
     const purchaseCost = parseFloat(item.purchaseCost);
     const fees = formData.fees ? parseFloat(formData.fees) : 0;
+    const shippingCost = formData.shippingCost ? parseFloat(formData.shippingCost) : 0;
 
-    return salePrice - purchaseCost - fees;
+    return salePrice - purchaseCost - fees - shippingCost;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -155,6 +157,7 @@ export function RecordSaleModal({
         salePrice: "",
         soldPlatform: "ebay",
         fees: "",
+        shippingCost: "2.15",
         notes: "",
       });
 
@@ -292,6 +295,33 @@ export function RecordSaleModal({
               </div>
             </div>
 
+            <div className="grid grid-cols-2 gap-4">
+              {/* Shipping Cost */}
+              <div className="space-y-2">
+                <Label htmlFor="shippingCost">
+                  Shipping Cost (£) <span className="text-destructive">*</span>
+                </Label>
+                <Input
+                  id="shippingCost"
+                  type="number"
+                  step="0.01"
+                  min="0"
+                  placeholder="2.15"
+                  value={formData.shippingCost}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shippingCost: e.target.value })
+                  }
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  Royal Mail 2nd Class: £2.15 (Large Letter), £3.35 (Small Parcel)
+                </p>
+              </div>
+
+              {/* Empty space for grid alignment */}
+              <div></div>
+            </div>
+
             {/* Profit Display */}
             {profit !== null && (
               <div
@@ -319,7 +349,8 @@ export function RecordSaleModal({
                 <p className="text-xs text-muted-foreground mt-1">
                   Sale Price (£{formData.salePrice || "0.00"}) - Purchase Cost
                   (£{parseFloat(item.purchaseCost).toFixed(2)}) - Fees (£
-                  {formData.fees || "0.00"})
+                  {formData.fees || "0.00"}) - Shipping (£
+                  {formData.shippingCost || "0.00"})
                 </p>
               </div>
             )}

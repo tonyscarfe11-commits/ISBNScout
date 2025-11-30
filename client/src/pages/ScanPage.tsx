@@ -209,7 +209,8 @@ export default function ScanPage() {
       const yourCost = 8.00;
       const lowestPrice = pricingData.lowestPrice || pricingData.ebayPrice || pricingData.amazonPrice || 0;
       const fees = lowestPrice * 0.15; // 15% marketplace fees
-      const profit = lowestPrice - yourCost - fees;
+      const shipping = 2.15; // Royal Mail 2nd Class Large Letter (typical book 300-500g)
+      const profit = lowestPrice - yourCost - fees - shipping;
       const profitMargin = lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0;
       const salesRank = 15000; // Default for now - could come from Amazon API
 

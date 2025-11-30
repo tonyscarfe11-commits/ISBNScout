@@ -5,9 +5,9 @@ async function createTestUser() {
     console.log('Creating test user...');
 
     const testUser = await authService.signup(
-      'demo',
-      'demo@isbnscout.com',
-      'Demo123!'
+      'testuser',
+      'testuser@isbnscout.com',
+      'password123'
     );
 
     console.log('✅ Test user created successfully!');
@@ -16,8 +16,8 @@ async function createTestUser() {
     console.log('Subscription Tier:', testUser.subscriptionTier);
     console.log('Trial Ends:', testUser.trialEndsAt);
     console.log('\nLogin credentials:');
-    console.log('Email: demo@isbnscout.com');
-    console.log('Password: Demo123!');
+    console.log('Email: testuser@isbnscout.com');
+    console.log('Password: password123');
 
     process.exit(0);
   } catch (error) {

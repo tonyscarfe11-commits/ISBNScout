@@ -22,30 +22,40 @@ export interface ShippingRate {
  */
 function calculateRoyalMail2ndClass(weightKg: number): ShippingRate {
   let cost: number;
+  let service: string;
 
   if (weightKg <= 0.1) {
-    cost = 0.85; // Large Letter up to 100g
+    cost = 0.85;
+    service = '2nd Class Large Letter';
   } else if (weightKg <= 0.25) {
-    cost = 1.55; // Large Letter up to 250g
+    cost = 1.55;
+    service = '2nd Class Large Letter';
   } else if (weightKg <= 0.5) {
-    cost = 2.15; // Large Letter up to 500g
+    cost = 2.15;
+    service = '2nd Class Large Letter';
   } else if (weightKg <= 0.75) {
-    cost = 2.70; // Large Letter up to 750g
+    cost = 2.70;
+    service = '2nd Class Large Letter';
   } else if (weightKg <= 1.0) {
-    cost = 3.35; // Small Parcel up to 1kg
+    cost = 3.35;
+    service = '2nd Class Small Parcel';
   } else if (weightKg <= 2.0) {
-    cost = 3.85; // Small Parcel up to 2kg
+    cost = 3.85;
+    service = '2nd Class Small Parcel';
   } else if (weightKg <= 5.0) {
-    cost = 5.99; // Medium Parcel up to 5kg
+    cost = 5.99;
+    service = '2nd Class Medium Parcel';
   } else if (weightKg <= 10.0) {
-    cost = 9.99; // Medium Parcel up to 10kg
+    cost = 9.99;
+    service = '2nd Class Medium Parcel';
   } else {
-    cost = 15.99; // Large Parcel
+    cost = 15.99;
+    service = '2nd Class Large Parcel';
   }
 
   return {
     carrier: 'Royal Mail',
-    service: '2nd Class',
+    service,
     cost,
     maxWeight: weightKg,
     estimatedDays: '2-3 working days',
@@ -58,30 +68,40 @@ function calculateRoyalMail2ndClass(weightKg: number): ShippingRate {
  */
 function calculateRoyalMail1stClass(weightKg: number): ShippingRate {
   let cost: number;
+  let service: string;
 
   if (weightKg <= 0.1) {
-    cost = 1.35; // Large Letter up to 100g
+    cost = 1.35;
+    service = '1st Class Large Letter';
   } else if (weightKg <= 0.25) {
-    cost = 1.95; // Large Letter up to 250g
+    cost = 1.95;
+    service = '1st Class Large Letter';
   } else if (weightKg <= 0.5) {
-    cost = 2.65; // Large Letter up to 500g
+    cost = 2.65;
+    service = '1st Class Large Letter';
   } else if (weightKg <= 0.75) {
-    cost = 3.30; // Large Letter up to 750g
+    cost = 3.30;
+    service = '1st Class Large Letter';
   } else if (weightKg <= 1.0) {
-    cost = 4.45; // Small Parcel up to 1kg
+    cost = 4.45;
+    service = '1st Class Small Parcel';
   } else if (weightKg <= 2.0) {
-    cost = 5.25; // Small Parcel up to 2kg
+    cost = 5.25;
+    service = '1st Class Small Parcel';
   } else if (weightKg <= 5.0) {
-    cost = 7.99; // Medium Parcel up to 5kg
+    cost = 7.99;
+    service = '1st Class Medium Parcel';
   } else if (weightKg <= 10.0) {
-    cost = 12.99; // Medium Parcel up to 10kg
+    cost = 12.99;
+    service = '1st Class Medium Parcel';
   } else {
-    cost = 19.99; // Large Parcel
+    cost = 19.99;
+    service = '1st Class Large Parcel';
   }
 
   return {
     carrier: 'Royal Mail',
-    service: '1st Class',
+    service,
     cost,
     maxWeight: weightKg,
     estimatedDays: '1-2 working days',
@@ -97,7 +117,7 @@ function calculateRoyalMailSigned(weightKg: number): ShippingRate {
 
   return {
     ...base,
-    service: 'Signed For 2nd Class',
+    service: base.service.replace('2nd Class', 'Signed For'),
     cost: base.cost + 2.10, // Add £2.10 for signature
     tracked: true,
     estimatedDays: '2-3 working days',

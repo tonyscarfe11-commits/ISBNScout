@@ -19,6 +19,7 @@ import { BookOpen, TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { useState } from "react";
 import type { BookStatus } from "./BookCard";
 import { calculateProfit, calculateProfitAllPlatforms, type Platform, PLATFORM_FEES } from "@/lib/profitCalculator";
+import { calculateShippingCost } from "@/lib/shippingCalculator";
 
 export type VelocityRating = 'very_fast' | 'fast' | 'medium' | 'slow' | 'very_slow' | 'unknown';
 
@@ -108,6 +109,32 @@ export function BookDetailsModal({
         </DialogHeader>
 
         <div className="space-y-6">
+          {/* Large Profit Display */}
+          {profitCalc && (
+            <div className="text-center space-y-3">
+              <div className="flex items-center justify-center gap-3">
+                <div className="text-5xl font-bold font-mono text-primary">
+                  £{profitCalc.netProfit.toFixed(2)}
+                </div>
+                {book.buyRecommendation && (
+                  <Badge
+                    className={`text-lg px-4 py-2 ${
+                      book.buyRecommendation === 'strong_buy' || book.buyRecommendation === 'buy'
+                        ? 'bg-primary text-primary-foreground'
+                        : book.buyRecommendation === 'maybe'
+                        ? 'bg-chart-3 text-white'
+                        : 'bg-destructive text-destructive-foreground'
+                    }`}
+                  >
+                    {book.buyRecommendation === 'strong_buy' || book.buyRecommendation === 'buy' ? 'BUY' :
+                     book.buyRecommendation === 'maybe' ? 'MAYBE' : 'SKIP'}
+                  </Badge>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">Profit</p>
+            </div>
+          )}
+
           <div className="flex gap-4">
             <div className="w-32 h-48 bg-muted rounded-md flex-shrink-0 overflow-hidden flex items-center justify-center">
               {book.thumbnail ? (
@@ -127,14 +154,14 @@ export function BookDetailsModal({
                       e.currentTarget.remove();
                       const icon = document.createElement('div');
                       icon.className = 'w-full h-full flex items-center justify-center';
-                      icon.innerHTML = '<svg class="h-12 w-12 text-muted-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
+                      icon.innerHTML = '<svg class="h-12 w-12 text-chart-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>';
                       parent.appendChild(icon);
                     }
                   }}
                 />
               ) : (
                 <div className="w-full h-full flex items-center justify-center">
-                  <BookOpen className="h-12 w-12 text-muted-foreground" />
+                  <BookOpen className="h-12 w-12 text-chart-3" />
                 </div>
               )}
             </div>
@@ -153,24 +180,41 @@ export function BookDetailsModal({
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase">
-                Amazon Price
-              </Label>
-              <div className="text-2xl font-bold font-mono">
-                {book.amazonPrice ? `£${book.amazonPrice.toFixed(2)}` : "-"}
+          {/* Platform Comparison */}
+          {allPlatforms && (
+            <div className="space-y-3">
+              <Label className="text-sm font-semibold">Platform Comparison</Label>
+              <div className="grid grid-cols-2 gap-3">
+                {/* Amazon FBM */}
+                <div className="p-4 bg-card border border-card-border rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">Amazon FBM</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {book.amazonPrice ? `£${book.amazonPrice.toFixed(2)}` : "-"}
+                  </p>
+                  <p className="text-lg font-bold text-primary">
+                    £{allPlatforms['amazon-fbm'].netProfit.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {allPlatforms['amazon-fbm'].roi.toFixed(0)}% ROI
+                  </p>
+                </div>
+
+                {/* eBay */}
+                <div className="p-4 bg-card border border-card-border rounded-lg">
+                  <p className="text-xs text-muted-foreground mb-1">eBay UK</p>
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {book.ebayPrice ? `£${book.ebayPrice.toFixed(2)}` : "-"}
+                  </p>
+                  <p className="text-lg font-bold text-primary">
+                    £{allPlatforms['ebay'].netProfit.toFixed(2)}
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {allPlatforms['ebay'].roi.toFixed(0)}% ROI
+                  </p>
+                </div>
               </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs text-muted-foreground uppercase">
-                eBay Price
-              </Label>
-              <div className="text-2xl font-bold font-mono">
-                {book.ebayPrice ? `£${book.ebayPrice.toFixed(2)}` : "-"}
-              </div>
-            </div>
-          </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="yourCost">Your Cost</Label>
@@ -187,51 +231,27 @@ export function BookDetailsModal({
 
           {profitCalc && (
             <div className="space-y-4">
-              {/* Platform Selector */}
-              <div className="space-y-2">
-                <Label>Selling Platform</Label>
-                <Select value={selectedPlatform} onValueChange={(value) => setSelectedPlatform(value as Platform)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="amazon-fbm">Amazon FBM</SelectItem>
-                    <SelectItem value="ebay">eBay</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  {PLATFORM_FEES[selectedPlatform].description}
-                </p>
-              </div>
-
-              {/* Profit Summary */}
-              <div className={`p-4 rounded-lg border-2 ${
-                isGoodDeal
-                  ? 'bg-green-50 border-green-500 dark:bg-green-950'
-                  : isProfitable
-                  ? 'bg-yellow-50 border-yellow-500 dark:bg-yellow-950'
-                  : 'bg-red-50 border-red-500 dark:bg-red-950'
-              }`}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium">Net Profit</span>
-                  <div className={`flex items-center gap-2 text-2xl font-bold font-mono ${
-                    isProfitable ? 'text-green-600' : 'text-red-600'
-                  }`}>
-                    {isProfitable ? <TrendingUp className="h-6 w-6" /> : <TrendingDown className="h-6 w-6" />}
-                    £{profitCalc.netProfit.toFixed(2)}
+              {/* Sales Velocity */}
+              {book.velocity && (
+                <div className="p-4 bg-card border border-card-border rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-xs text-muted-foreground mb-1">Sales Velocity</p>
+                      <p className="text-lg font-semibold">{book.velocityDescription}</p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {book.estimatedSalesPerMonth && `${book.estimatedSalesPerMonth} sales/month`}
+                        {book.timeToSell && ` • ${book.timeToSell}`}
+                      </p>
+                    </div>
+                    {book.salesRank && (
+                      <div className="text-right">
+                        <p className="text-xs text-muted-foreground">BSR</p>
+                        <p className="text-sm font-mono">#{book.salesRank.toLocaleString()}</p>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-2 text-xs">
-                  <div>
-                    <span className="text-muted-foreground">Margin:</span>{" "}
-                    <span className="font-semibold">{profitCalc.profitMargin.toFixed(1)}%</span>
-                  </div>
-                  <div>
-                    <span className="text-muted-foreground">ROI:</span>{" "}
-                    <span className="font-semibold">{profitCalc.roi.toFixed(0)}%</span>
-                  </div>
-                </div>
-              </div>
+              )}
 
               {/* Detailed Breakdown */}
               <div className="space-y-2">
@@ -271,6 +291,31 @@ export function BookDetailsModal({
                           <div className="flex justify-between">
                             <span className="text-muted-foreground">Closing fee:</span>
                             <span className="text-red-600">-£{profitCalc.closingFee.toFixed(2)}</span>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Costs Breakdown */}
+                    <div>
+                      <p className="font-semibold mb-2">Costs:</p>
+                      <div className="space-y-1 ml-2">
+                        <div className="flex justify-between">
+                          <span className="text-muted-foreground">Purchase Cost:</span>
+                          <span className="text-red-600">-£{profitCalc.purchaseCost.toFixed(2)}</span>
+                        </div>
+                        {profitCalc.shippingCost > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">
+                              Shipping ({calculateShippingCost(0.3, 'royal-mail-2nd').service}):
+                            </span>
+                            <span className="text-red-600">-£{profitCalc.shippingCost.toFixed(2)}</span>
+                          </div>
+                        )}
+                        {profitCalc.packagingCost > 0 && (
+                          <div className="flex justify-between">
+                            <span className="text-muted-foreground">Packaging:</span>
+                            <span className="text-red-600">-£{profitCalc.packagingCost.toFixed(2)}</span>
                           </div>
                         )}
                       </div>

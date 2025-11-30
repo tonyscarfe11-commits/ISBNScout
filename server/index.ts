@@ -11,53 +11,47 @@ const app = express();
 // Enable trust proxy for Replit
 app.set('trust proxy', 1);
 
-// CORS configuration - whitelist specific origins only
-const allowedOrigins = [
-  'http://localhost:5000',
-  'http://localhost:3000',
-  'http://127.0.0.1:5000',
-  'http://127.0.0.1:3000',
-  // Production domains
-  'https://isbnscout.com',
-  'https://www.isbnscout.com',
-  // Mobile app scheme (if using custom URL scheme):
-  // 'app://your-mobile-app',
-];
+// CORS configuration
+const isDev = process.env.NODE_ENV === 'development';
 
-// In development, allow additional origins
-if (process.env.NODE_ENV === 'development') {
-  // Allow Replit preview URLs or other dev URLs
-  allowedOrigins.push('https://*.replit.dev');
-}
+if (isDev) {
+  // Development: Allow all origins for easier testing
+  console.log('[CORS] Development mode - allowing all origins');
+  app.use(cors({
+    origin: true, // Allow all origins in development
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
+} else {
+  // Production: Whitelist specific origins only
+  const allowedOrigins = [
+    'https://isbnscout.com',
+    'https://www.isbnscout.com',
+  ];
 
-app.use(cors({
-  origin: (origin, callback) => {
-    // Allow requests with no origin (like mobile apps, Postman, curl)
-    if (!origin) {
-      return callback(null, true);
-    }
-
-    // Check if origin is in whitelist or matches pattern
-    const isAllowed = allowedOrigins.some(allowedOrigin => {
-      if (allowedOrigin.includes('*')) {
-        // Handle wildcard patterns
-        const pattern = new RegExp('^' + allowedOrigin.replace(/\*/g, '.*') + '$');
-        return pattern.test(origin);
+  app.use(cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, curl)
+      if (!origin) {
+        return callback(null, true);
       }
-      return origin === allowedOrigin;
-    });
 
-    if (isAllowed) {
-      callback(null, true);
-    } else {
-      console.warn(`[CORS] Blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true, // Allow cookies to be sent
-  methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-}));
+      // Check if origin is in whitelist
+      const isAllowed = allowedOrigins.includes(origin);
+
+      if (isAllowed) {
+        callback(null, true);
+      } else {
+        console.warn(`[CORS] Blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  }));
+}
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
