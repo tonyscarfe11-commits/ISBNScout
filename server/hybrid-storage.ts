@@ -59,10 +59,44 @@ export class HybridStorage implements IStorage {
         data TEXT NOT NULL,
         timestamp TEXT NOT NULL,
         synced INTEGER DEFAULT 0,
-        error TEXT
+        error TEXT,
+        retry_count INTEGER DEFAULT 0
       )
     `);
+    
+    // Add retry_count column if it doesn't exist (migration for existing DBs)
+    try {
+      this.local["db"].exec(`ALTER TABLE sync_queue ADD COLUMN retry_count INTEGER DEFAULT 0`);
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    
+    // Clean up permanently failed items (more than 5 retries or older than 7 days with errors)
+    const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    this.local["db"]
+      .prepare("DELETE FROM sync_queue WHERE synced = 0 AND (retry_count > 5 OR (error IS NOT NULL AND timestamp < ?))")
+      .run(weekAgo);
+    
     console.log("[HybridStorage] Sync queue initialized");
+  }
+
+  // Helper to convert date strings back to Date objects
+  private convertDates(data: any): any {
+    if (!data || typeof data !== 'object') return data;
+    
+    const dateFields = [
+      'createdAt', 'updatedAt', 'scannedAt', 'listedAt', 'lastRun',
+      'subscriptionExpiresAt', 'trialStartedAt', 'trialEndsAt',
+      'purchaseDate', 'soldDate'
+    ];
+    
+    const result = { ...data };
+    for (const field of dateFields) {
+      if (result[field] && typeof result[field] === 'string') {
+        result[field] = new Date(result[field]);
+      }
+    }
+    return result;
   }
 
   private async queueSync(operation: string, entity: string, data: any) {
@@ -87,8 +121,9 @@ export class HybridStorage implements IStorage {
 
     this.isSyncing = true;
     try {
+      // Only get items with less than 5 retries
       const pending = this.local["db"]
-        .prepare("SELECT * FROM sync_queue WHERE synced = 0 ORDER BY timestamp ASC LIMIT 50")
+        .prepare("SELECT * FROM sync_queue WHERE synced = 0 AND (retry_count IS NULL OR retry_count < 5) ORDER BY timestamp ASC LIMIT 50")
         .all() as any[];
 
       if (pending.length === 0) {
@@ -100,14 +135,16 @@ export class HybridStorage implements IStorage {
 
       for (const item of pending) {
         try {
-          const data = JSON.parse(item.data);
+          const rawData = JSON.parse(item.data);
+          // Convert date strings back to Date objects
+          const data = this.convertDates(rawData);
 
           switch (item.entity) {
             case "book":
               if (item.operation === "create") {
                 await this.remote.createBook(data);
               } else if (item.operation === "update") {
-                await this.remote.updateBook(data.isbn, data.updates);
+                await this.remote.updateBook(data.isbn, this.convertDates(data.updates));
               }
               break;
 
@@ -115,7 +152,7 @@ export class HybridStorage implements IStorage {
               if (item.operation === "create") {
                 await this.remote.createUser(data);
               } else if (item.operation === "update") {
-                await this.remote.updateUser(data.id, data.updates);
+                await this.remote.updateUser(data.id, this.convertDates(data.updates));
               }
               break;
 
@@ -135,7 +172,7 @@ export class HybridStorage implements IStorage {
               if (item.operation === "create") {
                 await this.remote.createInventoryItem(data);
               } else if (item.operation === "update") {
-                await this.remote.updateInventoryItem(data.id, data.updates);
+                await this.remote.updateInventoryItem(data.id, this.convertDates(data.updates));
               } else if (item.operation === "delete") {
                 await this.remote.deleteInventoryItem(data.id);
               }
@@ -158,12 +195,25 @@ export class HybridStorage implements IStorage {
             .run(item.id);
 
         } catch (error: any) {
-          console.error(`[HybridStorage] Sync error for ${item.id}:`, error.message);
-
-          // Mark error but keep trying
-          this.local["db"]
-            .prepare("UPDATE sync_queue SET error = ? WHERE id = ?")
-            .run(error.message, item.id);
+          const retryCount = (item.retry_count || 0) + 1;
+          const isPermanentError = 
+            error.message?.includes('duplicate key') ||
+            error.message?.includes('foreign key constraint') ||
+            error.message?.includes('unique constraint');
+          
+          if (isPermanentError || retryCount >= 5) {
+            // Mark as permanently failed (won't retry)
+            console.warn(`[HybridStorage] Permanently failed ${item.id}: ${error.message}`);
+            this.local["db"]
+              .prepare("UPDATE sync_queue SET synced = -1, error = ?, retry_count = ? WHERE id = ?")
+              .run(error.message, retryCount, item.id);
+          } else {
+            // Increment retry count for transient errors
+            console.error(`[HybridStorage] Sync error for ${item.id} (retry ${retryCount}):`, error.message);
+            this.local["db"]
+              .prepare("UPDATE sync_queue SET error = ?, retry_count = ? WHERE id = ?")
+              .run(error.message, retryCount, item.id);
+          }
         }
       }
 
@@ -172,6 +222,12 @@ export class HybridStorage implements IStorage {
       this.local["db"]
         .prepare("DELETE FROM sync_queue WHERE synced = 1 AND timestamp < ?")
         .run(weekAgo);
+      
+      // Clean up permanently failed items older than 30 days
+      const monthAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+      this.local["db"]
+        .prepare("DELETE FROM sync_queue WHERE synced = -1 AND timestamp < ?")
+        .run(monthAgo);
 
       console.log(`[HybridStorage] Sync complete`);
     } catch (error: any) {
