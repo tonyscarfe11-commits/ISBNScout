@@ -624,23 +624,23 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-slate-950 text-slate-400 py-8">
+      <footer className="bg-slate-950 text-slate-200 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
               <span className="text-white font-semibold">ISBNScout</span>
             </div>
-            <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <button onClick={() => scrollToSection("features")} className="hover:text-teal-400" data-testid="button-footer-features">Features</button>
-              <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400" data-testid="button-footer-pricing">Pricing</button>
-              <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400" data-testid="button-footer-faq">FAQ</button>
-              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400" data-testid="button-footer-privacy">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400" data-testid="button-footer-terms">Terms</button>
+            <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
+              <button onClick={() => scrollToSection("features")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-faq">FAQ</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400 transition-colors">Support</a>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-privacy">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-terms">Terms</button>
             </div>
           </div>
-          <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">
+          <div className="mt-6 pt-6 border-t border-slate-700 text-center text-sm text-slate-300">
             <p>© 2025 ISBNScout. All rights reserved.</p>
           </div>
         </div>
