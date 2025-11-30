@@ -8,6 +8,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { getAuthToken, clearAuthToken } from "@/lib/queryClient";
 
 export function AppHeader() {
   const [location, setLocation] = useLocation();
@@ -17,7 +18,16 @@ export function AppHeader() {
   useEffect(() => {
     const checkAuth = async () => {
       try {
-        const response = await fetch('/api/user/me', { credentials: 'include' });
+        const token = getAuthToken();
+        const headers: HeadersInit = {};
+        if (token) {
+          headers['Authorization'] = `Bearer ${token}`;
+        }
+        
+        const response = await fetch('/api/user/me', { 
+          credentials: 'include',
+          headers,
+        });
         if (response.ok) {
           const userData = await response.json();
           setUser(userData);
@@ -33,10 +43,21 @@ export function AppHeader() {
 
   const handleLogout = async () => {
     try {
+      const token = getAuthToken();
+      const headers: HeadersInit = {};
+      if (token) {
+        headers['Authorization'] = `Bearer ${token}`;
+      }
+      
       await fetch('/api/auth/logout', {
         method: 'POST',
-        credentials: 'include'
+        credentials: 'include',
+        headers,
       });
+      
+      // Clear the localStorage token
+      clearAuthToken();
+      
       setUser(null);
       setLocation('/auth');
     } catch (error) {

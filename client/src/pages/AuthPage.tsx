@@ -8,6 +8,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { BrandText } from "@/components/icons";
 import { Mail, Lock, User } from "lucide-react";
+import { setAuthToken } from "@/lib/queryClient";
 
 export default function AuthPage() {
   const [, setLocation] = useLocation();
@@ -49,6 +50,11 @@ export default function AuthPage() {
       }
 
       const data = await response.json();
+
+      // Store auth token for localStorage fallback
+      if (data.authToken) {
+        setAuthToken(data.authToken);
+      }
 
       toast({
         title: "Welcome back!",
@@ -108,6 +114,11 @@ export default function AuthPage() {
       }
 
       const data = await response.json();
+
+      // Store auth token for localStorage fallback
+      if (data.authToken) {
+        setAuthToken(data.authToken);
+      }
 
       toast({
         title: "Account created!",

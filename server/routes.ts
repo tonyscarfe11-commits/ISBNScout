@@ -13,7 +13,7 @@ import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
 import { RepricingScheduler } from "./repricing-scheduler";
-import { requireAuth, getUserId } from "./middleware/auth";
+import { requireAuth, getUserId, generateAuthToken, removeAuthToken, validateAuthToken } from "./middleware/auth";
 import { requireActiveSubscription } from "./middleware/subscription";
 import { scanLimitService } from "./services/scan-limit-service";
 import { z } from "zod";
@@ -70,6 +70,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session
       req.session.userId = user.id;
 
+      // Generate token for localStorage fallback
+      const authToken = generateAuthToken(user.id);
+
       // Explicitly save session
       await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
@@ -78,7 +81,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
 
-      res.json({ user, message: "Account created successfully" });
+      res.json({ user, authToken, message: "Account created successfully" });
     } catch (error: any) {
       res.status(400).json({ message: error.message });
     }
@@ -97,6 +100,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Set session
       req.session.userId = user.id;
 
+      // Generate token for localStorage fallback (for embedded contexts)
+      const authToken = generateAuthToken(user.id);
+
       // Explicitly save session
       await new Promise<void>((resolve, reject) => {
         req.session.save((err) => {
@@ -110,7 +116,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       });
 
-      res.json({ user, message: "Logged in successfully" });
+      res.json({ user, authToken, message: "Logged in successfully" });
     } catch (error: any) {
       res.status(401).json({ message: error.message });
     }
@@ -406,9 +412,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   });
 
   // Get current user info (with optional auth for backwards compatibility)
+  // Supports both session cookies and Bearer token auth
   app.get("/api/user/me", async (req, res) => {
     try {
-      const userId = req.session.userId;
+      // Check session first
+      let userId = req.session.userId;
+      
+      // Fallback: check Authorization header for token
+      if (!userId) {
+        const authHeader = req.headers.authorization;
+        if (authHeader?.startsWith('Bearer ')) {
+          const token = authHeader.substring(7);
+          userId = validateAuthToken(token) || undefined;
+          if (userId) {
+            // Store in session for this request
+            req.session.userId = userId;
+          }
+        }
+      }
 
       if (!userId) {
         return res.status(401).json({ message: "Not authenticated" });
