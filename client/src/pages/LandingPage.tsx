@@ -3,256 +3,237 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useLocation } from "wouter";
 import {
-  BookOpen,
-  Camera,
-  TrendingUp,
-  Zap,
-  Shield,
-  Clock,
-  BarChart3,
-  CheckCircle2,
-  ArrowRight,
-  Star,
-  Wifi,
-  WifiOff,
   ScanLine,
+  Camera,
+  BookOpen,
+  ArrowRight,
 } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
 
-  const features = [
-    {
-      icon: ScanLine,
-      title: "Scan Any Book Spine",
-      description: "Point your phone at a shelf. Our AI reads spines instantly. The only app that can do this.",
-    },
-    {
-      icon: Camera,
-      title: "Cover & Spine AI",
-      description: "Can't see the spine clearly? Photograph the cover. AI identifies ISBNs, titles, and authors instantly.",
-    },
-    {
-      icon: TrendingUp,
-      title: "Real Sales Velocity",
-      description: "Know exactly how fast books sell. See Amazon BSR data. Only scout books worth your time.",
-    },
-    {
-      icon: WifiOff,
-      title: "Works Without Signal",
-      description: "Car boots, charity shops, friend's houses – scout anywhere offline. Auto-syncs when online.",
-    },
-    {
-      icon: BarChart3,
-      title: "Quick Profit Calculator",
-      description: "See your profit margin instantly. Know your costs, market price, and profit before you buy.",
-    },
-    {
-      icon: Zap,
-      title: "Lightning Fast Workflow",
-      description: "Scan → See profitability → Make decision. One-handed operation. Built for speed.",
-    },
-  ];
-
-  const testimonials = [
-    {
-      name: "Sarah Johnson",
-      role: "Car Boot & Charity Shop Scout",
-      content: "Spine scanning is a game-changer. I used to manually check every ISBN. Now I scan shelves in seconds.",
-      rating: 5,
-    },
-    {
-      name: "Michael Chen",
-      role: "Independent Book Scout",
-      content: "Finally an app that works offline in the actual places I scout. No more network anxiety.",
-      rating: 5,
-    },
-    {
-      name: "Emma Williams",
-      role: "Full-Time Scouter",
-      content: "Knowing real sales velocity before I buy means I don't waste time on books that won't move.",
-      rating: 5,
-    },
-  ];
-
-  const stats = [
-    { value: "Scan", label: "Book Spines Instantly" },
-    { value: "Check", label: "Profitability in Seconds" },
-    { value: "Decide", label: "Before You Buy" },
-    { value: "Offline", label: "Works Everywhere" },
-  ];
-
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
+      {/* Dark Navy Header */}
+      <nav className="sticky top-0 bg-slate-900 border-b border-slate-800 z-50">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <img src={logoImage} alt="ISBN Scout" className="h-10 w-10" />
-            <span className="text-xl font-bold text-foreground">ISBN Scout</span>
+            <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
+            <span className="text-lg font-bold text-white">ISBNScout</span>
           </div>
-          <div className="flex items-center gap-3 flex-wrap">
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation("/subscription")}
-              data-testid="link-pricing"
-            >
-              Pricing
-            </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => setLocation("/auth")}
-              data-testid="link-login"
-            >
-              Login
-            </Button>
-            <Button 
-              onClick={() => setLocation("/auth")}
-              data-testid="button-start-trial"
-            >
-              Start Free Trial
-            </Button>
+          <div className="flex items-center gap-6">
+            <button onClick={() => setLocation("/about")} className="text-slate-300 hover:text-white text-sm">Features</button>
+            <button onClick={() => setLocation("/app")} className="text-slate-300 hover:text-white text-sm">Offline Mode</button>
+            <button onClick={() => setLocation("/subscription")} className="text-slate-300 hover:text-white text-sm">Pricing</button>
+            <button onClick={() => setLocation("/blog")} className="text-slate-300 hover:text-white text-sm">FAQ</button>
+            <button onClick={() => setLocation("/contact")} className="text-slate-300 hover:text-white text-sm">Contact</button>
+            <div className="flex gap-2 ml-4">
+              <Button 
+                variant="ghost"
+                onClick={() => setLocation("/auth")}
+                className="text-slate-300 hover:text-white hover:bg-slate-800"
+                data-testid="link-login"
+              >
+                Log In
+              </Button>
+              <Button 
+                onClick={() => setLocation("/auth")}
+                className="bg-teal-600 hover:bg-teal-700 text-white"
+                data-testid="button-start-trial"
+              >
+                Start Free Trial
+              </Button>
+            </div>
           </div>
         </div>
       </nav>
 
-      <section className="relative overflow-hidden py-20 lg:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-accent via-background to-muted" />
-        <div className="relative max-w-7xl mx-auto px-4">
-          <div className="text-center max-w-4xl mx-auto space-y-8">
-            <Badge variant="secondary">
-              <Zap className="h-3 w-3 mr-1" />
-              AI-Powered Book Scouting
-            </Badge>
-            
-            <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
-              Scout smarter,{" "}
-              <span className="text-primary">offline</span>
-            </h1>
-            
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              AI scans book spines instantly. Check profitability with real sales data. 
-              Works in car boots, charity shops, anywhere – no internet required.
-            </p>
-            
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+      {/* Hero Section */}
+      <section className="py-20 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* Left Column */}
+            <div className="space-y-6">
+              <Badge variant="secondary" className="bg-teal-100 text-teal-800 border-teal-200 w-fit">
+                BOOK SCOUTING, UPGRADED
+              </Badge>
+              
+              <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
+                Scan books.<br />
+                <span className="text-teal-600">Even offline.</span>
+              </h1>
+              
+              <p className="text-lg text-muted-foreground max-w-xl">
+                ISBNScout helps UK book resellers find profitable books in seconds with barcode, cover, and AI spine recognition. Built for charity shops, car-boot sales, and anywhere signal drops.
+              </p>
+              
               <Button 
                 size="lg" 
                 onClick={() => setLocation("/auth")}
-                className="text-lg px-8"
-                data-testid="button-get-started"
+                className="bg-teal-600 hover:bg-teal-700 text-white text-base px-8 w-fit"
+                data-testid="button-hero-trial"
               >
-                Get Started Free
-                <ArrowRight className="ml-2 h-5 w-5" />
+                Start 14-Day Free Trial
               </Button>
-              <Button 
-                size="lg" 
-                variant="outline"
-                onClick={() => setLocation("/app/scan")}
-                className="text-lg px-8"
-                data-testid="button-try-demo"
-              >
-                Try Demo
-              </Button>
+              
+              <p className="text-sm text-muted-foreground">
+                No credit card required. Cancel anytime.
+              </p>
             </div>
 
-            <div className="pt-8">
-              <img 
-                src={logoImage} 
-                alt="ISBN Scout App" 
-                className="mx-auto h-32 w-32 drop-shadow-lg"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
+            {/* Right Column - Product Demo */}
+            <div>
+              <Card className="bg-slate-900 border-slate-800 p-6 text-white">
+                <div className="space-y-4">
+                  {/* Header */}
+                  <div className="flex items-center justify-between pb-4 border-b border-slate-700">
+                    <div className="flex items-center gap-2">
+                      <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse" />
+                      <span className="font-semibold text-sm">LIVE SCAN</span>
+                    </div>
+                    <Badge className="bg-teal-600/20 text-teal-400 border-teal-600/50 text-xs">
+                      OFFLINE READY
+                    </Badge>
+                  </div>
 
-      <section className="py-16 bg-card border-y border-border">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-4xl font-bold text-primary">{stat.value}</div>
-                <div className="text-muted-foreground mt-1">{stat.label}</div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+                  {/* Book Details */}
+                  <div className="space-y-3">
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Best Candidate</div>
+                      <div className="font-semibold text-sm">"Introduction to Cognitive Science" - 3rd Ed.</div>
+                    </div>
 
-      <section id="features" className="py-20 bg-muted">
-        <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              The fastest scouting workflow
-            </h2>
-            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-              Designed for UK book scouts. Offline-first. AI-powered. Lightning fast.
-            </p>
-          </div>
+                    <div className="flex gap-2 flex-wrap">
+                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">
+                        AI Spine Recognition
+                      </Badge>
+                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">
+                        Charity shop - £2.50
+                      </Badge>
+                    </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {features.map((feature, index) => (
-              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
-                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-primary" />
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit (After Fees & Postage)</div>
+                        <div className="text-2xl font-bold text-teal-400">£7.90</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Sales Velocity</div>
+                        <div className="text-sm text-slate-300">10 sales / 30 days</div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3 pt-2">
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon Used</div>
+                        <div className="font-semibold text-slate-300">£12.90</div>
+                      </div>
+                      <div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">eBay Sold Avg</div>
+                        <div className="font-semibold text-slate-300">£11.50</div>
+                      </div>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Decision</div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        <span className="text-sm font-semibold text-green-400">Strong buy - high demand</span>
+                      </div>
+                    </div>
+
+                    <button className="w-full mt-4 bg-teal-600 hover:bg-teal-700 text-white font-semibold py-2 rounded-md transition-colors text-sm">
+                      List to Amazon →
+                    </button>
+                  </div>
                 </div>
-                <h3 className="text-xl font-semibold text-foreground mb-2">
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground">
-                  {feature.description}
-                </p>
               </Card>
-            ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="py-20 bg-card">
+      {/* Features Section */}
+      <section className="py-16 bg-muted border-y border-border">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
-              Trusted by book sellers
-            </h2>
-            <p className="text-xl text-muted-foreground">
-              See what our users are saying
-            </p>
-          </div>
-
           <div className="grid md:grid-cols-3 gap-8">
-            {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 bg-muted">
-                <div className="flex gap-1 mb-4">
-                  {[...Array(testimonial.rating)].map((_, i) => (
-                    <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
-                  ))}
-                </div>
-                <p className="text-foreground mb-4 italic">"{testimonial.content}"</p>
-                <div>
-                  <div className="font-semibold text-foreground">{testimonial.name}</div>
-                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
-                </div>
-              </Card>
-            ))}
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <ScanLine className="h-6 w-6 text-teal-600" />
+                <div className="text-xs font-bold text-teal-600 uppercase tracking-widest">BARCODE SCANNER</div>
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Point. Scan. Decide.</h3>
+              <p className="text-sm text-muted-foreground">Lightning-fast ISBN lookup to Amazon & eBay. Ideal for high-volume scanning sessions in shops and car-boots.</p>
+              <ul className="text-sm text-muted-foreground space-y-1 pt-2">
+                <li>• Instant ISBN lookup to Amazon & eBay</li>
+                <li>• Fallback manual ISBN entry when damaged</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <Camera className="h-6 w-6 text-teal-600" />
+                <div className="text-xs font-bold text-teal-600 uppercase tracking-widest">AI COVER RECOGNITION</div>
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Just take a photo.</h3>
+              <p className="text-sm text-muted-foreground">Snap the front cover and let AI extract title, author, and edition – perfect for older books or missing barcodes.</p>
+              <ul className="text-sm text-muted-foreground space-y-1 pt-2">
+                <li>• Ideal for vintage and collectible books</li>
+                <li>• Works even when barcodes are faded or covered</li>
+              </ul>
+            </div>
+
+            <div className="space-y-3">
+              <div className="flex items-center gap-3">
+                <BookOpen className="h-6 w-6 text-teal-600" />
+                <div className="text-xs font-bold text-teal-600 uppercase tracking-widest">AI SPINE RECOGNITION</div>
+              </div>
+              <h3 className="text-lg font-bold text-foreground">Scan the whole shelf.</h3>
+              <p className="text-sm text-muted-foreground">Photograph a single spine or entire shelf – ISBNScout reads the titles for you. No other scouting app offers this.</p>
+              <ul className="text-sm text-muted-foreground space-y-1 pt-2">
+                <li>• Rapid shelf scanning without pulling books out</li>
+                <li>• Huge time-saver on big charity shop trips</li>
+              </ul>
+            </div>
           </div>
         </div>
       </section>
 
+      {/* Built For Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <h2 className="text-2xl font-bold text-foreground mb-8">Built for:</h2>
+          <p className="text-lg text-muted-foreground">
+            Charity shop hunters • Amazon sellers • eBay booksellers
+          </p>
+        </div>
+      </section>
+
+      {/* Sources Section */}
+      <section className="py-12 bg-muted border-t border-border">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <p className="text-sm text-muted-foreground">
+            <span className="font-semibold">Sources:</span> Amazon UK • eBay UK • Google Books • AI Vision
+          </p>
+        </div>
+      </section>
+
+      {/* CTA Footer */}
       <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
           <h2 className="text-3xl lg:text-4xl font-bold mb-4">
-            Start scouting smarter today
+            Ready to scout smarter?
           </h2>
-          <p className="text-xl opacity-90 mb-8">
-            Free trial. No credit card needed. Works offline from day one.
+          <p className="text-lg opacity-90 mb-8">
+            Start your free trial today. No credit card required.
           </p>
           <Button 
             size="lg" 
             variant="secondary"
             onClick={() => setLocation("/auth")}
             className="text-lg px-8"
-            data-testid="button-start-trial-bottom"
+            data-testid="button-cta"
           >
             Start Free Trial
             <ArrowRight className="ml-2 h-5 w-5" />
@@ -260,42 +241,43 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-12 bg-foreground text-background/70">
+      {/* Footer */}
+      <footer className="py-12 bg-foreground text-background/70 border-t border-border">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="grid md:grid-cols-4 gap-8">
+          <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
-                <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
-                <span className="text-background font-bold">ISBN Scout</span>
+                <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
+                <span className="text-background font-bold">ISBNScout</span>
               </div>
               <p className="text-sm">
                 The book scouting app that works without signal.
               </p>
             </div>
             <div>
-              <h4 className="text-background font-semibold mb-4">Product</h4>
+              <h4 className="text-background font-semibold mb-4 text-sm">Product</h4>
               <ul className="space-y-2 text-sm">
                 <li><button onClick={() => setLocation("/subscription")} className="hover:text-background transition-colors">Pricing</button></li>
-                <li><button onClick={() => setLocation("/app/scan")} className="hover:text-background transition-colors">Demo</button></li>
+                <li><button onClick={() => setLocation("/auth")} className="hover:text-background transition-colors">Demo</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-background font-semibold mb-4">Resources</h4>
+              <h4 className="text-background font-semibold mb-4 text-sm">Company</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setLocation("/blog")} className="hover:text-background transition-colors">Blog</button></li>
                 <li><button onClick={() => setLocation("/about")} className="hover:text-background transition-colors">About</button></li>
+                <li><button onClick={() => setLocation("/blog")} className="hover:text-background transition-colors">Blog</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-background font-semibold mb-4">Legal</h4>
+              <h4 className="text-background font-semibold mb-4 text-sm">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setLocation("/privacy")} className="hover:text-background transition-colors">Privacy Policy</button></li>
-                <li><button onClick={() => setLocation("/terms")} className="hover:text-background transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => setLocation("/privacy")} className="hover:text-background transition-colors">Privacy</button></li>
+                <li><button onClick={() => setLocation("/terms")} className="hover:text-background transition-colors">Terms</button></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-background/20 mt-12 pt-8 text-center text-sm">
-            <p>2024 ISBN Scout. All rights reserved.</p>
+          <div className="border-t border-background/20 pt-8 text-center text-sm">
+            <p>2024 ISBNScout. All rights reserved.</p>
           </div>
         </div>
       </footer>
