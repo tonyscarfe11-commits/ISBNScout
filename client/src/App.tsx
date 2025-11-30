@@ -28,6 +28,7 @@ import BlogPost3 from "@/pages/BlogPost3";
 import PrivacyPage from "@/pages/PrivacyPage";
 import TermsPage from "@/pages/TermsPage";
 import SubscriptionSuccessPage from "@/pages/SubscriptionSuccessPage";
+import FAQPage from "@/pages/FAQPage";
 import NotFound from "@/pages/not-found";
 
 function AppLayout({ children }: { children: React.ReactNode }) {
@@ -55,6 +56,8 @@ function Router() {
         <Route path="/blog/book-scouting-tips" component={BlogPost1} />
         <Route path="/blog/ai-transforming-book-selling" component={BlogPost2} />
         <Route path="/blog/amazon-fba-fbm-ebay-comparison" component={BlogPost3} />
+        <Route path="/faq" component={FAQPage} />
+        <Route path="/contact" component={FAQPage} />
         <Route path="/privacy" component={PrivacyPage} />
         <Route path="/terms" component={TermsPage} />
 
