@@ -9,25 +9,27 @@
 
 ### A. Color Palette
 
-**Dark Mode (Primary)**
-- Background Base: 215 25% 12% (deep blue-gray)
-- Surface: 215 20% 18% (elevated surfaces)
-- Primary Action: 210 100% 60% (bright blue for scan/action buttons)
+**Primary Brand Color**: #4A9B9B (teal/turquoise) - HSL: 180 35% 45%
+
+**Dark Mode**
+- Background Base: 180 20% 10% (deep teal-gray)
+- Surface: 180 18% 14% (elevated surfaces)
+- Primary Action: 180 40% 55% (teal for scan/action buttons)
 - Success: 150 65% 55% (profitable books indicator)
 - Warning: 40 90% 60% (break-even indicator)
 - Error: 0 75% 60% (unprofitable indicator)
 - Text Primary: 0 0% 95%
-- Text Secondary: 215 15% 65%
+- Text Secondary: 180 12% 60%
 
 **Light Mode**
-- Background Base: 0 0% 98%
-- Surface: 0 0% 100%
-- Primary Action: 210 100% 50%
+- Background Base: 180 15% 97%
+- Surface: 180 20% 99%
+- Primary Action: 180 35% 45% (teal - #4A9B9B)
 - Success: 150 60% 45%
 - Warning: 40 85% 50%
 - Error: 0 70% 50%
-- Text Primary: 215 25% 15%
-- Text Secondary: 215 15% 45%
+- Text Primary: 180 25% 12%
+- Text Secondary: 180 15% 45%
 
 ### B. Typography
 

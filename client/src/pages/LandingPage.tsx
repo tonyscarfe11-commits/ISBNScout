@@ -84,14 +84,14 @@ export default function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-slate-50 to-white">
-      <nav className="sticky top-0 bg-white/80 backdrop-blur-md border-b border-slate-200 z-50">
-        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-background">
+      <nav className="sticky top-0 bg-background/80 backdrop-blur-md border-b border-border z-50">
+        <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-3">
             <img src={logoImage} alt="ISBN Scout" className="h-10 w-10" />
-            <span className="text-xl font-bold text-slate-900">ISBN Scout</span>
+            <span className="text-xl font-bold text-foreground">ISBN Scout</span>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 flex-wrap">
             <Button 
               variant="ghost" 
               onClick={() => setLocation("/subscription")}
@@ -108,7 +108,6 @@ export default function LandingPage() {
             </Button>
             <Button 
               onClick={() => setLocation("/auth")}
-              className="bg-teal-600 hover:bg-teal-700"
               data-testid="button-start-trial"
             >
               Start Free Trial
@@ -118,20 +117,20 @@ export default function LandingPage() {
       </nav>
 
       <section className="relative overflow-hidden py-20 lg:py-32">
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-50 via-white to-slate-50" />
+        <div className="absolute inset-0 bg-gradient-to-br from-accent via-background to-muted" />
         <div className="relative max-w-7xl mx-auto px-4">
           <div className="text-center max-w-4xl mx-auto space-y-8">
-            <Badge variant="secondary" className="bg-teal-100 text-teal-800 border-teal-200">
+            <Badge variant="secondary">
               <Zap className="h-3 w-3 mr-1" />
               AI-Powered Book Scouting
             </Badge>
             
-            <h1 className="text-5xl lg:text-6xl font-bold text-slate-900 leading-tight">
+            <h1 className="text-5xl lg:text-6xl font-bold text-foreground leading-tight">
               The book scouting app that{" "}
-              <span className="text-teal-600">works without signal</span>
+              <span className="text-primary">works without signal</span>
             </h1>
             
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Scan book spines with AI, check profitability with sales velocity data, 
               and list to Amazon & eBay - all from your phone, even offline.
             </p>
@@ -140,7 +139,7 @@ export default function LandingPage() {
               <Button 
                 size="lg" 
                 onClick={() => setLocation("/auth")}
-                className="bg-teal-600 hover:bg-teal-700 text-lg px-8"
+                className="text-lg px-8"
                 data-testid="button-get-started"
               >
                 Get Started Free
@@ -168,40 +167,40 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-16 bg-white border-y border-slate-200">
+      <section className="py-16 bg-card border-y border-border">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
             {stats.map((stat, index) => (
               <div key={index} className="text-center">
-                <div className="text-4xl font-bold text-teal-600">{stat.value}</div>
-                <div className="text-slate-600 mt-1">{stat.label}</div>
+                <div className="text-4xl font-bold text-primary">{stat.value}</div>
+                <div className="text-muted-foreground mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      <section id="features" className="py-20 bg-slate-50">
+      <section id="features" className="py-20 bg-muted">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Everything you need to scout profitably
             </h2>
-            <p className="text-xl text-slate-600 max-w-2xl mx-auto">
+            <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
               Built by book sellers, for book sellers. Every feature designed to save time and increase profits.
             </p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
             {features.map((feature, index) => (
-              <Card key={index} className="p-6 bg-white border-slate-200 hover:shadow-lg transition-shadow">
-                <div className="h-12 w-12 rounded-lg bg-teal-100 flex items-center justify-center mb-4">
-                  <feature.icon className="h-6 w-6 text-teal-600" />
+              <Card key={index} className="p-6 hover:shadow-lg transition-shadow">
+                <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center mb-4">
+                  <feature.icon className="h-6 w-6 text-primary" />
                 </div>
-                <h3 className="text-xl font-semibold text-slate-900 mb-2">
+                <h3 className="text-xl font-semibold text-foreground mb-2">
                   {feature.title}
                 </h3>
-                <p className="text-slate-600">
+                <p className="text-muted-foreground">
                   {feature.description}
                 </p>
               </Card>
@@ -210,29 +209,29 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-card">
         <div className="max-w-7xl mx-auto px-4">
           <div className="text-center mb-16">
-            <h2 className="text-3xl lg:text-4xl font-bold text-slate-900 mb-4">
+            <h2 className="text-3xl lg:text-4xl font-bold text-foreground mb-4">
               Trusted by book sellers
             </h2>
-            <p className="text-xl text-slate-600">
+            <p className="text-xl text-muted-foreground">
               See what our users are saying
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {testimonials.map((testimonial, index) => (
-              <Card key={index} className="p-6 bg-slate-50 border-slate-200">
+              <Card key={index} className="p-6 bg-muted">
                 <div className="flex gap-1 mb-4">
                   {[...Array(testimonial.rating)].map((_, i) => (
                     <Star key={i} className="h-5 w-5 fill-yellow-400 text-yellow-400" />
                   ))}
                 </div>
-                <p className="text-slate-700 mb-4 italic">"{testimonial.content}"</p>
+                <p className="text-foreground mb-4 italic">"{testimonial.content}"</p>
                 <div>
-                  <div className="font-semibold text-slate-900">{testimonial.name}</div>
-                  <div className="text-sm text-slate-600">{testimonial.role}</div>
+                  <div className="font-semibold text-foreground">{testimonial.name}</div>
+                  <div className="text-sm text-muted-foreground">{testimonial.role}</div>
                 </div>
               </Card>
             ))}
@@ -240,18 +239,19 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <section className="py-20 bg-teal-600">
+      <section className="py-20 bg-primary text-primary-foreground">
         <div className="max-w-4xl mx-auto px-4 text-center">
-          <h2 className="text-3xl lg:text-4xl font-bold text-white mb-4">
+          <h2 className="text-3xl lg:text-4xl font-bold mb-4">
             Ready to scout smarter?
           </h2>
-          <p className="text-xl text-teal-100 mb-8">
+          <p className="text-xl opacity-90 mb-8">
             Start your free trial today. No credit card required.
           </p>
           <Button 
             size="lg" 
+            variant="secondary"
             onClick={() => setLocation("/auth")}
-            className="bg-white text-teal-600 hover:bg-teal-50 text-lg px-8"
+            className="text-lg px-8"
             data-testid="button-start-trial-bottom"
           >
             Start Free Trial
@@ -260,41 +260,41 @@ export default function LandingPage() {
         </div>
       </section>
 
-      <footer className="py-12 bg-slate-900 text-slate-400">
+      <footer className="py-12 bg-foreground text-background/70">
         <div className="max-w-7xl mx-auto px-4">
           <div className="grid md:grid-cols-4 gap-8">
             <div>
               <div className="flex items-center gap-2 mb-4">
                 <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
-                <span className="text-white font-bold">ISBN Scout</span>
+                <span className="text-background font-bold">ISBN Scout</span>
               </div>
               <p className="text-sm">
                 The book scouting app that works without signal.
               </p>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Product</h4>
+              <h4 className="text-background font-semibold mb-4">Product</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setLocation("/subscription")} className="hover:text-white transition-colors">Pricing</button></li>
-                <li><button onClick={() => setLocation("/app/scan")} className="hover:text-white transition-colors">Demo</button></li>
+                <li><button onClick={() => setLocation("/subscription")} className="hover:text-background transition-colors">Pricing</button></li>
+                <li><button onClick={() => setLocation("/app/scan")} className="hover:text-background transition-colors">Demo</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Resources</h4>
+              <h4 className="text-background font-semibold mb-4">Resources</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setLocation("/blog")} className="hover:text-white transition-colors">Blog</button></li>
-                <li><button onClick={() => setLocation("/about")} className="hover:text-white transition-colors">About</button></li>
+                <li><button onClick={() => setLocation("/blog")} className="hover:text-background transition-colors">Blog</button></li>
+                <li><button onClick={() => setLocation("/about")} className="hover:text-background transition-colors">About</button></li>
               </ul>
             </div>
             <div>
-              <h4 className="text-white font-semibold mb-4">Legal</h4>
+              <h4 className="text-background font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm">
-                <li><button onClick={() => setLocation("/privacy")} className="hover:text-white transition-colors">Privacy Policy</button></li>
-                <li><button onClick={() => setLocation("/terms")} className="hover:text-white transition-colors">Terms of Service</button></li>
+                <li><button onClick={() => setLocation("/privacy")} className="hover:text-background transition-colors">Privacy Policy</button></li>
+                <li><button onClick={() => setLocation("/terms")} className="hover:text-background transition-colors">Terms of Service</button></li>
               </ul>
             </div>
           </div>
-          <div className="border-t border-slate-800 mt-12 pt-8 text-center text-sm">
+          <div className="border-t border-background/20 mt-12 pt-8 text-center text-sm">
             <p>2024 ISBN Scout. All rights reserved.</p>
           </div>
         </div>
