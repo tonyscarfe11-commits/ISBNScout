@@ -13,7 +13,7 @@ export default function CookiePolicyPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <nav className="sticky top-0 bg-slate-900 border-b border-slate-800 z-50">
+      <nav className="sticky top-0 bg-slate-800 border-b border-slate-700 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
@@ -152,7 +152,7 @@ export default function CookiePolicyPage() {
         </div>
       </div>
 
-      <footer className="bg-slate-950 text-slate-400 py-8 mt-16">
+      <footer className="bg-slate-900 text-slate-400 py-8 mt-16">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">

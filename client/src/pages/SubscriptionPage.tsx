@@ -117,7 +117,7 @@ export default function SubscriptionPage() {
   return (
     <div className="min-h-screen bg-background">
       {/* Navigation - Matching Landing Page */}
-      <nav className="sticky top-0 bg-slate-900 border-b border-slate-800 z-50">
+      <nav className="sticky top-0 bg-slate-800 border-b border-slate-700 z-50">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
@@ -244,7 +244,7 @@ export default function SubscriptionPage() {
       </div>
 
       {/* Footer CTA */}
-      <section className="mt-16 bg-slate-900 text-white py-12">
+      <section className="mt-16 bg-slate-800 text-white py-12">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
           <h2 className="text-3xl font-bold">
             Ready to find profitable books faster?
@@ -269,7 +269,7 @@ export default function SubscriptionPage() {
       </section>
 
       {/* Footer - Matching Landing Page */}
-      <footer className="bg-slate-950 text-slate-400 py-8">
+      <footer className="bg-slate-900 text-slate-400 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">

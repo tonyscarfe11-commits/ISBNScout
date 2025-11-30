@@ -183,7 +183,7 @@ export default function AffiliateDashboard() {
 
     return (
       <div className="min-h-screen bg-background">
-        <header className="bg-slate-900 border-b border-slate-800">
+        <header className="bg-slate-800 border-b border-slate-700">
           <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
             <button
               onClick={() => setLocation("/")}
@@ -200,7 +200,7 @@ export default function AffiliateDashboard() {
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="text-slate-300 hover:text-white hover:bg-slate-800"
+              className="text-slate-300 hover:text-white hover:bg-slate-700"
               data-testid="button-logout"
             >
               <LogOut className="h-4 w-4 mr-2" />
@@ -352,7 +352,7 @@ export default function AffiliateDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="bg-slate-900 border-b border-slate-800">
+      <header className="bg-slate-800 border-b border-slate-700">
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button
             onClick={() => setLocation("/")}
