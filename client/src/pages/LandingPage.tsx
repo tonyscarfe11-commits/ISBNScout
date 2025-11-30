@@ -289,6 +289,18 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* Offline Section */}
+      <section className="py-16 bg-background">
+        <div className="max-w-7xl mx-auto px-4">
+          <h2 className="text-3xl font-bold text-foreground mb-3">
+            Works even when your signal doesn't.
+          </h2>
+          <p className="text-base text-muted-foreground max-w-2xl">
+            Most scouting apps stop the moment your phone loses reception. ISBNScout is built as offline-first, so you keep working in basements, back rooms, and concrete warehouses.
+          </p>
+        </div>
+      </section>
+
       {/* CTA Section */}
       <section className="py-16 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
