@@ -259,7 +259,7 @@ export default function LandingPage() {
       </section>
 
       {/* Problem/Solution Section */}
-      <section className="py-16 bg-slate-950 border-y border-slate-800">
+      <section className="py-16 bg-slate-900 border-y border-slate-800">
         <div className="max-w-4xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-12">
             <div className="space-y-4">
@@ -300,7 +300,7 @@ export default function LandingPage() {
         <div className="max-w-4xl mx-auto px-4">
           <h2 className="text-3xl font-bold text-foreground text-center mb-12">Scouts Love It</h2>
           <div className="grid md:grid-cols-3 gap-6">
-            <Card className="p-6 border-slate-700 bg-slate-900/50">
+            <Card className="p-6 border-slate-600 bg-slate-800">
               <div className="flex gap-1 mb-3">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span key={i} className="text-teal-400">★</span>
@@ -312,7 +312,7 @@ export default function LandingPage() {
               <p className="text-sm text-teal-400 font-semibold">Sarah M. • Charity Shop Scout</p>
             </Card>
 
-            <Card className="p-6 border-slate-700 bg-slate-900/50">
+            <Card className="p-6 border-slate-600 bg-slate-800">
               <div className="flex gap-1 mb-3">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span key={i} className="text-teal-400">★</span>
@@ -324,7 +324,7 @@ export default function LandingPage() {
               <p className="text-sm text-teal-400 font-semibold">Marcus T. • Boot Sale Hunter</p>
             </Card>
 
-            <Card className="p-6 border-slate-700 bg-slate-900/50">
+            <Card className="p-6 border-slate-600 bg-slate-800">
               <div className="flex gap-1 mb-3">
                 {[1, 2, 3, 4, 5].map((i) => (
                   <span key={i} className="text-teal-400">★</span>
@@ -340,7 +340,7 @@ export default function LandingPage() {
       </section>
 
       {/* Security/Privacy Section */}
-      <section className="py-12 bg-slate-950 border-y border-slate-800">
+      <section className="py-12 bg-slate-900 border-y border-slate-800">
         <div className="max-w-4xl mx-auto px-4">
           <div className="grid md:grid-cols-2 gap-8 items-center">
             <div>
