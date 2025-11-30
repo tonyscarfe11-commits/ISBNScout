@@ -5,7 +5,25 @@ import { useLocation } from "wouter";
 import { Barcode, Camera, Eye, Check, Play, ChevronDown, Menu, X, Star, Wifi, WifiOff, Zap } from "lucide-react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 import demoVideo from "@assets/generated_videos/uk_book_scanning_app.mp4";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
+
+const REFERRAL_COOKIE_NAME = "isbn_ref";
+const REFERRAL_COOKIE_DAYS = 30;
+
+function setReferralCookie(affiliateId: string, referralCode: string) {
+  const expires = new Date();
+  expires.setDate(expires.getDate() + REFERRAL_COOKIE_DAYS);
+  document.cookie = `${REFERRAL_COOKIE_NAME}=${affiliateId}:${referralCode};expires=${expires.toUTCString()};path=/;SameSite=Lax`;
+}
+
+function getReferralCookie(): { affiliateId: string; referralCode: string } | null {
+  const match = document.cookie.match(new RegExp(`(^| )${REFERRAL_COOKIE_NAME}=([^;]+)`));
+  if (match) {
+    const [affiliateId, referralCode] = match[2].split(':');
+    return { affiliateId, referralCode };
+  }
+  return null;
+}
 
 const faqItems = [
   {
@@ -53,6 +71,34 @@ export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [videoPlaying, setVideoPlaying] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    
+    if (refCode && !getReferralCookie()) {
+      fetch(`/api/affiliates/validate/${encodeURIComponent(refCode)}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.valid) {
+            setReferralCookie(data.affiliateId, data.referralCode);
+            
+            fetch('/api/affiliates/track-click', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                referralCode: refCode,
+                landingPage: window.location.pathname,
+              }),
+            }).catch(console.error);
+            
+            const cleanUrl = window.location.pathname;
+            window.history.replaceState({}, '', cleanUrl);
+          }
+        })
+        .catch(console.error);
+    }
+  }, []);
 
   const handlePlayVideo = () => {
     if (videoRef.current) {

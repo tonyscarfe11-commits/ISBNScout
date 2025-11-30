@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import crypto from "crypto";
 import { storage } from "./storage";
 import { EbayService } from "./ebay-service";
 import { AmazonService } from "./amazon-service";
