@@ -660,29 +660,24 @@ export default function LandingPage() {
       </section>
 
       {/* CTA Section */}
-      <section className="py-16 bg-gradient-to-r from-teal-600 to-teal-700 text-white">
+      <section className="py-16 bg-slate-900 text-white">
         <div className="max-w-4xl mx-auto px-4 text-center space-y-6">
-          <h2 className="text-3xl font-bold">Ready to scout smarter?</h2>
+          <h2 className="text-3xl font-bold">Ready to find profitable books faster?</h2>
           <p className="text-lg opacity-90">
-            Start your 14-day free trial. No credit card. Cancel anytime.
+            Scan shelves, see net profit, and list to Amazon and eBay — even when your phone has no signal.
           </p>
           <div className="flex gap-3 justify-center">
             <Button 
               size="lg"
               onClick={() => setLocation("/auth")}
-              className="bg-white text-teal-700 hover:bg-slate-100"
+              className="bg-teal-600 hover:bg-teal-700 text-white"
             >
-              Start Free Trial
-            </Button>
-            <Button 
-              size="lg"
-              variant="outline"
-              onClick={() => setLocation("/subscription")}
-              className="border-white text-white hover:bg-white/20"
-            >
-              View Plans
+              Start 14-Day Free Trial
             </Button>
           </div>
+          <p className="text-sm opacity-75">
+            No credit card required. Designed for UK sellers.
+          </p>
         </div>
       </section>
     </div>
