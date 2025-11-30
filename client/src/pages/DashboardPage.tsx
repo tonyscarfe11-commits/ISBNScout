@@ -157,10 +157,55 @@ export default function DashboardPage() {
     { category: "Children's Books", sold: 0, revenue: 0 },
   ];
 
+  const SkeletonCard = () => (
+    <Card className="p-4 md:p-5 border-l-4 border-l-muted animate-pulse">
+      <div className="flex items-center justify-between mb-2">
+        <div className="h-4 w-16 bg-muted rounded skeleton-shimmer" />
+        <div className="p-1.5 md:p-2 rounded-full bg-muted" />
+      </div>
+      <div className="h-8 w-20 bg-muted rounded skeleton-shimmer mb-1" />
+      <div className="h-3 w-14 bg-muted rounded skeleton-shimmer" />
+    </Card>
+  );
+
+  const SkeletonRow = () => (
+    <div className="flex items-center gap-3 p-3 border rounded-lg animate-pulse">
+      <div className="h-12 w-10 bg-muted rounded skeleton-shimmer" />
+      <div className="flex-1 space-y-2">
+        <div className="h-4 w-32 bg-muted rounded skeleton-shimmer" />
+        <div className="h-3 w-24 bg-muted rounded skeleton-shimmer" />
+      </div>
+      <div className="h-6 w-16 bg-muted rounded skeleton-shimmer" />
+    </div>
+  );
+
   if (isLoading) {
     return (
-      <div className="min-h-screen pb-20 flex items-center justify-center bg-background">
-        <Loader2 className="h-8 w-8 animate-spin text-teal-600" />
+      <div className="min-h-screen pb-28 bg-background">
+        <AppHeader />
+        <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="space-y-2">
+              <div className="h-8 w-40 bg-muted rounded skeleton-shimmer" />
+              <div className="h-4 w-48 bg-muted rounded skeleton-shimmer" />
+            </div>
+            <div className="h-10 w-32 bg-muted rounded skeleton-shimmer" />
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+            <SkeletonCard />
+          </div>
+          <Card className="p-4 md:p-6">
+            <div className="h-6 w-32 bg-muted rounded skeleton-shimmer mb-4" />
+            <div className="space-y-2">
+              <SkeletonRow />
+              <SkeletonRow />
+              <SkeletonRow />
+            </div>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -170,7 +215,7 @@ export default function DashboardPage() {
       <AppHeader />
       <div className="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 animate-fade-in">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold tracking-tight">Dashboard</h1>
             <p className="text-muted-foreground text-sm md:text-base">
@@ -179,7 +224,7 @@ export default function DashboardPage() {
           </div>
           <Button 
             onClick={() => setLocation("/app/scan")} 
-            className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
+            className="bg-teal-600 hover:bg-teal-700 text-white gap-2 shadow-sm"
             data-testid="button-scan-new"
           >
             <Camera className="h-4 w-4" />
@@ -189,33 +234,33 @@ export default function DashboardPage() {
 
         {/* Stats Grid - Teal Color Scheme */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-500">
+          <Card className="p-4 md:p-5 border-l-4 border-l-teal-500 card-professional animate-slide-up stagger-1">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Scans</span>
               <div className="p-1.5 md:p-2 rounded-full bg-teal-500/10">
                 <Calendar className="h-4 w-4 text-teal-600" />
               </div>
             </div>
-            <div className="text-2xl md:text-3xl font-bold tracking-tight">{stats.scansThisMonth}</div>
+            <div className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.scansThisMonth}</div>
             <p className="text-xs text-muted-foreground mt-1">
               This month
             </p>
           </Card>
 
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-400">
+          <Card className="p-4 md:p-5 border-l-4 border-l-teal-400 card-professional animate-slide-up stagger-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Inventory</span>
               <div className="p-1.5 md:p-2 rounded-full bg-teal-400/10">
                 <BookOpen className="h-4 w-4 text-teal-500" />
               </div>
             </div>
-            <div className="text-2xl md:text-3xl font-bold tracking-tight">{stats.totalInventory}</div>
+            <div className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.totalInventory}</div>
             <p className="text-xs text-muted-foreground mt-1">
               {stats.listedBooks} listed
             </p>
           </Card>
 
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-600">
+          <Card className="p-4 md:p-5 border-l-4 border-l-teal-600 card-professional animate-slide-up stagger-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Sold</span>
               <div className="p-1.5 md:p-2 rounded-full bg-teal-600/10">
@@ -223,9 +268,9 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-2xl md:text-3xl font-bold tracking-tight">{stats.soldThisMonth}</span>
+              <span className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.soldThisMonth}</span>
               {stats.soldThisMonth > 0 && (
-                <Badge className="bg-teal-100 text-teal-800 border-teal-200 gap-1 text-xs">
+                <Badge className="bg-teal-100 text-teal-800 border-teal-200 gap-1 text-xs dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               )}
@@ -235,25 +280,25 @@ export default function DashboardPage() {
             </p>
           </Card>
 
-          <Card className="p-4 md:p-5 border-l-4 border-l-emerald-500">
+          <Card className="p-4 md:p-5 border-l-4 border-l-emerald-500 card-professional animate-slide-up stagger-4">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Profit</span>
               <div className="p-1.5 md:p-2 rounded-full bg-emerald-500/10">
                 <PoundSterling className="h-4 w-4 text-emerald-600" />
               </div>
             </div>
-            <div className="text-2xl md:text-3xl font-bold text-emerald-600 tracking-tight">
+            <div className="text-2xl md:text-3xl font-bold text-emerald-600 tracking-tight font-data">
               £{stats.totalProfit.toFixed(2)}
             </div>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-xs text-muted-foreground mt-1 font-data">
               £{stats.avgProfit.toFixed(2)} avg
             </p>
           </Card>
         </div>
 
         {/* Recent Scans */}
-        <Card className="p-4 md:p-6">
-          <div className="flex items-center justify-between mb-4">
+        <Card className="p-4 md:p-6 animate-slide-up stagger-5">
+          <div className="flex items-center justify-between gap-2 mb-4">
             <div>
               <h2 className="text-lg md:text-xl font-bold tracking-tight">Recent Scans</h2>
               <p className="text-xs md:text-sm text-muted-foreground">
@@ -264,7 +309,6 @@ export default function DashboardPage() {
               variant="outline" 
               size="sm"
               onClick={() => setLocation("/app/history")} 
-              className="hover-elevate"
               data-testid="button-view-all"
             >
               View All
@@ -272,15 +316,17 @@ export default function DashboardPage() {
           </div>
 
           {recentScans.length === 0 ? (
-            <div className="text-center py-10">
-              <div className="w-14 h-14 bg-teal-50 dark:bg-teal-950/30 rounded-full flex items-center justify-center mx-auto mb-4">
-                <BookOpen className="h-7 w-7 text-teal-600" />
+            <div className="text-center py-10 animate-fade-in">
+              <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <BookOpen className="h-8 w-8 text-teal-600" />
               </div>
               <h3 className="text-base font-semibold mb-1">No scans yet</h3>
-              <p className="text-sm text-muted-foreground mb-4">Start scanning books to track profits</p>
+              <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
+                Start scanning books to track profits and build your inventory
+              </p>
               <Button 
                 onClick={() => setLocation("/app/scan")}
-                className="bg-teal-600 hover:bg-teal-700 text-white"
+                className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
                 data-testid="button-first-scan"
               >
                 Scan Your First Book
@@ -288,13 +334,14 @@ export default function DashboardPage() {
             </div>
           ) : (
             <div className="space-y-2">
-              {recentScans.map((scan) => (
+              {recentScans.map((scan, index) => (
                 <div
                   key={scan.id}
-                  className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-colors cursor-pointer"
+                  className={`flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50 transition-all duration-200 cursor-pointer press-effect animate-fade-in`}
+                  style={{ animationDelay: `${index * 50}ms` }}
                   data-testid={`card-scan-${scan.id}`}
                 >
-                  <div className="h-12 w-10 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 rounded flex items-center justify-center shrink-0">
+                  <div className="h-12 w-10 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
                     <BookOpen className="h-5 w-5 text-teal-600" />
                   </div>
                   <div className="flex-1 min-w-0">
@@ -302,28 +349,28 @@ export default function DashboardPage() {
                     <p className="text-xs text-muted-foreground truncate">{scan.author}</p>
                   </div>
                   <div className="text-right hidden sm:block">
-                    <div className="text-xs text-muted-foreground">Amazon</div>
-                    <div className="font-medium text-sm">
-                      {scan.amazonPrice ? `£${scan.amazonPrice.toFixed(2)}` : "-"}
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Amazon</div>
+                    <div className="font-semibold text-sm font-data">
+                      {scan.amazonPrice ? `£${scan.amazonPrice.toFixed(2)}` : "—"}
                     </div>
                   </div>
                   <div className="text-right hidden sm:block">
-                    <div className="text-xs text-muted-foreground">eBay</div>
-                    <div className="font-medium text-sm">
-                      {scan.ebayPrice ? `£${scan.ebayPrice.toFixed(2)}` : "-"}
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">eBay</div>
+                    <div className="font-semibold text-sm font-data">
+                      {scan.ebayPrice ? `£${scan.ebayPrice.toFixed(2)}` : "—"}
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="text-xs text-muted-foreground">Profit</div>
-                    <div className="font-bold text-emerald-600 text-sm">
-                      {scan.profit ? `£${scan.profit.toFixed(2)}` : "-"}
+                    <div className="text-[10px] uppercase tracking-wide text-muted-foreground font-medium">Profit</div>
+                    <div className="font-bold text-emerald-600 text-sm font-data">
+                      {scan.profit ? `£${scan.profit.toFixed(2)}` : "—"}
                     </div>
                   </div>
                   <Badge
                     className={`capitalize text-xs ${
                       scan.status === "profitable" 
-                        ? "bg-emerald-100 text-emerald-800 border-emerald-200" 
-                        : "bg-slate-100 text-slate-800 border-slate-200"
+                        ? "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800" 
+                        : "bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:border-slate-700"
                     }`}
                   >
                     {scan.status}
@@ -337,12 +384,12 @@ export default function DashboardPage() {
         {/* Quick Actions & Categories */}
         <div className="grid lg:grid-cols-2 gap-4">
           {/* Quick Actions */}
-          <Card className="p-4 md:p-6">
+          <Card className="p-4 md:p-6 animate-slide-up" style={{ animationDelay: '0.3s' }}>
             <h2 className="text-lg md:text-xl font-bold mb-4 tracking-tight">Quick Actions</h2>
             <div className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full justify-start h-11 text-sm hover-elevate"
+                className="w-full justify-start h-11 text-sm transition-all duration-200"
                 onClick={() => setLocation("/app/scan")}
                 data-testid="button-quick-scan"
               >
@@ -351,7 +398,7 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start h-11 text-sm hover-elevate"
+                className="w-full justify-start h-11 text-sm transition-all duration-200"
                 onClick={() => setLocation("/app/history")}
                 data-testid="button-quick-history"
               >
@@ -360,7 +407,7 @@ export default function DashboardPage() {
               </Button>
               <Button
                 variant="outline"
-                className="w-full justify-start h-11 text-sm hover-elevate"
+                className="w-full justify-start h-11 text-sm transition-all duration-200"
                 onClick={() => setLocation("/app/calculator")}
                 data-testid="button-quick-calculator"
               >
@@ -369,11 +416,13 @@ export default function DashboardPage() {
               </Button>
             </div>
 
-            <div className="mt-4 p-4 bg-teal-50 dark:bg-teal-950/30 rounded-lg border border-teal-200 dark:border-teal-800">
+            <div className="mt-4 p-4 bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-950/40 dark:to-teal-900/20 rounded-xl border border-teal-200/60 dark:border-teal-800/60">
               <div className="flex items-start gap-3">
-                <CheckCircle2 className="h-5 w-5 text-teal-600 mt-0.5 flex-shrink-0" />
+                <div className="p-1.5 rounded-full bg-teal-500/10">
+                  <CheckCircle2 className="h-4 w-4 text-teal-600" />
+                </div>
                 <div className="flex-1">
-                  <h3 className="font-semibold text-sm mb-1">
+                  <h3 className="font-semibold text-sm mb-0.5">
                     {userPlan === 'trial' ? 'Free Trial Active' : `${userPlan.charAt(0).toUpperCase() + userPlan.slice(1).replace(/_/g, ' ')} Plan`}
                   </h3>
                   <p className="text-xs text-muted-foreground mb-2">
@@ -383,7 +432,7 @@ export default function DashboardPage() {
                     <Button 
                       size="sm" 
                       onClick={() => setLocation("/subscription")} 
-                      className="bg-teal-600 hover:bg-teal-700 text-white text-xs h-8"
+                      className="bg-teal-600 hover:bg-teal-700 text-white text-xs h-7 shadow-sm"
                       data-testid="button-upgrade"
                     >
                       View Plans
@@ -395,27 +444,30 @@ export default function DashboardPage() {
           </Card>
 
           {/* Top Categories */}
-          <Card className="p-4 md:p-6">
+          <Card className="p-4 md:p-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 rounded-lg bg-teal-100 dark:bg-teal-900/30">
+              <div className="p-2 rounded-xl bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 shadow-sm">
                 <BarChart3 className="h-4 w-4 text-teal-600" />
               </div>
               <h2 className="text-lg md:text-xl font-bold tracking-tight">Top Categories</h2>
             </div>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {topPerformers.map((category, index) => (
-                <div key={index} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-teal-600 text-white font-bold text-xs">
+                <div 
+                  key={index} 
+                  className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-border cursor-pointer"
+                >
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 text-white font-bold text-xs shadow-sm">
                     {index + 1}
                   </div>
-                  <div className="flex-1">
+                  <div className="flex-1 min-w-0">
                     <div className="font-medium text-sm">{category.category}</div>
                     <div className="text-xs text-muted-foreground">
                       {category.sold} sold
                     </div>
                   </div>
                   <div className="text-right">
-                    <div className="font-bold text-emerald-600 text-sm">
+                    <div className="font-bold text-emerald-600 text-sm font-data">
                       £{category.revenue.toFixed(2)}
                     </div>
                   </div>
