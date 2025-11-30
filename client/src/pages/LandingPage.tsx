@@ -641,7 +641,7 @@ export default function LandingPage() {
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-700 text-center text-sm text-slate-300">
-            <p>© 2025 ISBNScout. All rights reserved.</p>
+            <p>© 2025 ISBNScout. All rights reserved. LillyWhiteTech</p>
           </div>
         </div>
       </footer>
