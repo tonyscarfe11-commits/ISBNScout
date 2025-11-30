@@ -639,8 +639,8 @@ export default function ScanPage() {
         </div>
 
         {bluetoothEnabled && (
-          <div className="flex items-center gap-2 p-3 rounded-md bg-primary/10 border border-primary/20">
-            <Bluetooth className="h-4 w-4 text-primary" />
+          <div className="flex items-center gap-2 p-3 rounded-md bg-teal-500/10 border border-teal-500/20">
+            <Bluetooth className="h-4 w-4 text-teal-600" />
             <span className="text-sm font-medium">
               Bluetooth Scanner Active
             </span>
@@ -684,9 +684,9 @@ export default function ScanPage() {
 
         {/* AI Recognition Status */}
         {isProcessingImage && (
-          <Card className="p-6 bg-primary/5 border-primary/20" data-testid="card-ai-processing">
+          <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-ai-processing">
             <div className="flex items-center gap-3">
-              <Loader2 className="h-5 w-5 animate-spin text-primary" />
+              <Loader2 className="h-5 w-5 animate-spin text-teal-600" />
               <div>
                 <h3 className="font-semibold">AI Recognition in Progress</h3>
                 <p className="text-sm text-muted-foreground">
@@ -801,11 +801,11 @@ export default function ScanPage() {
 
         {/* Shelf Scanning Results */}
         {shelfResults.length > 0 && !isProcessingImage && (
-          <Card className="p-6 bg-blue-500/5 border-blue-500/20" data-testid="card-shelf-results">
+          <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-shelf-results">
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <Library className="h-5 w-5 text-blue-600" />
+                  <Library className="h-5 w-5 text-teal-600" />
                   <h3 className="font-semibold">
                     Detected {shelfResults.length} Book{shelfResults.length !== 1 ? 's' : ''}
                   </h3>
@@ -825,7 +825,7 @@ export default function ScanPage() {
                     key={index}
                     className={`p-4 rounded-lg border cursor-pointer transition-colors ${
                       selectedBooks.has(index)
-                        ? 'bg-primary/5 border-primary'
+                        ? 'bg-teal-500/5 border-teal-500'
                         : 'bg-background border-border hover:bg-muted/50'
                     }`}
                     onClick={() => toggleBookSelection(index)}

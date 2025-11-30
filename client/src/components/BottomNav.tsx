@@ -1,7 +1,6 @@
 import { Camera, Clock, Settings, LayoutDashboard } from "lucide-react";
 import { Link, useLocation } from "wouter";
 
-// Core scouting features only - simple and focused
 const navItems = [
   { path: "/app/dashboard", icon: LayoutDashboard, label: "Dashboard" },
   { path: "/app/scan", icon: Camera, label: "Scan" },
@@ -13,10 +12,11 @@ export function BottomNav() {
   const [location] = useLocation();
 
   return (
-    <nav className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80 border-t border-border shadow-lg z-40">
-      <div className="flex items-center justify-around h-24 max-w-full mx-auto px-2">
+    <nav className="fixed bottom-0 left-0 right-0 bg-slate-900 border-t border-slate-800 z-40">
+      <div className="flex items-center justify-around h-20 max-w-md mx-auto px-2">
         {navItems.map((item) => {
-          const isActive = location === item.path;
+          const isActive = location === item.path || 
+            (item.path === "/app/dashboard" && location === "/app");
           const Icon = item.icon;
 
           return (
@@ -26,14 +26,14 @@ export function BottomNav() {
               data-testid={`link-nav-${item.label.toLowerCase()}`}
             >
               <button
-                className={`flex flex-col items-center justify-center gap-1.5 px-4 py-2 rounded-lg transition-smooth min-w-[70px] ${
+                className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-lg transition-all min-w-[70px] ${
                   isActive
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:bg-muted/50 hover:text-foreground"
+                    ? "text-teal-400 bg-teal-500/10"
+                    : "text-slate-400 hover:text-teal-300 hover:bg-slate-800"
                 }`}
               >
-                <Icon className={`h-6 w-6 ${isActive ? 'stroke-[2.5]' : ''}`} />
-                <span className={`text-xs font-medium ${isActive ? 'font-semibold' : ''}`}>
+                <Icon className={`h-5 w-5 ${isActive ? 'stroke-[2.5]' : ''}`} />
+                <span className={`text-xs ${isActive ? 'font-semibold' : 'font-medium'}`}>
                   {item.label}
                 </span>
               </button>
