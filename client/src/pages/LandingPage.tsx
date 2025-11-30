@@ -115,24 +115,34 @@ export default function LandingPage() {
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit (After Fees & Postage)</div>
-                        <div className="text-2xl font-bold text-teal-400">£7.90</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN</div>
+                        <div className="font-semibold text-slate-300">£12.90</div>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Sales Velocity</div>
-                        <div className="text-sm text-slate-300">10 sales / 30 days</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees (6%)</div>
+                        <div className="font-semibold text-slate-300">£12.14</div>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-3 pt-2">
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon Used</div>
-                        <div className="font-semibold text-slate-300">£12.90</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Your Cost</div>
+                        <div className="font-semibold text-slate-300">£2.50</div>
                       </div>
                       <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">eBay Sold Avg</div>
-                        <div className="font-semibold text-slate-300">£11.50</div>
+                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Royal Mail (Large Letter)</div>
+                        <div className="font-semibold text-slate-300">£2.80</div>
                       </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-700">
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit</div>
+                      <div className="text-2xl font-bold text-teal-400">£4.84</div>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Sales Velocity</div>
+                      <div className="text-sm text-slate-300">10 sales / 30 days</div>
                     </div>
 
                     <div className="pt-2">
