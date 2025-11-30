@@ -50,7 +50,7 @@ export class ScanLimitService {
     const dailyLimit = limits.scansPerDay;
     const monthlyLimit = limits.scansPerMonth;
 
-    // Check daily limit first (more restrictive for free tier)
+    // Check daily limit first
     if (dailyLimit !== -1 && hasReachedDailyLimit(scansUsedToday, user.subscriptionTier)) {
       return {
         allowed: false,
@@ -58,7 +58,7 @@ export class ScanLimitService {
         scansUsedMonth,
         dailyLimit,
         monthlyLimit,
-        message: `You've used all ${dailyLimit} free scans for today. Upgrade for unlimited scans!`,
+        message: `You've reached your daily scan limit. Please try again tomorrow or upgrade your plan.`,
       };
     }
 

@@ -13,15 +13,6 @@ export interface SubscriptionLimits {
 }
 
 export const SUBSCRIPTION_LIMITS: Record<string, SubscriptionLimits> = {
-  free: {
-    scansPerMonth: 100, // Limited free tier
-    scansPerDay: 10, // 10 scans per day for free users
-    canAutoList: false,
-    canUseAI: false, // AI is expensive
-    canUseShelfScan: false,
-    canUseRepricing: false,
-    canAccessAPI: false,
-  },
   trial: {
     scansPerMonth: -1, // Unlimited during trial period (time-limited, not scan-limited)
     scansPerDay: -1, // No daily limit during trial

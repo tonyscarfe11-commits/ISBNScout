@@ -2214,8 +2214,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      // Check if on basic/free tier and migrate to trial
-      if (user.subscriptionTier === 'basic' || user.subscriptionTier === 'free') {
+      // Check if on legacy tier and migrate to trial
+      if (user.subscriptionTier === 'basic') {
         const now = new Date();
         const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 

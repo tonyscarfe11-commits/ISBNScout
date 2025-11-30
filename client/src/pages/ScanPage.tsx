@@ -390,7 +390,6 @@ export default function ScanPage() {
   };
 
 
-  const isFreeTier = !scanLimits?.isUnlimited && scanLimits?.tier === 'free';
   const scansRemaining = scanLimits?.scansRemainingToday ?? Infinity;
   const dailyLimit = scanLimits?.dailyLimit ?? Infinity;
 

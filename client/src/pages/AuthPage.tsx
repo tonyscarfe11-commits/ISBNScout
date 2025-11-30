@@ -122,7 +122,7 @@ export default function AuthPage() {
 
       toast({
         title: "Account created!",
-        description: `Welcome, ${data.user.username}! You're on the Free plan.`,
+        description: `Welcome, ${data.user.username}! Your 14-day free trial has started.`,
       });
 
       setLocation("/app");
@@ -293,7 +293,7 @@ export default function AuthPage() {
         </Card>
 
         <p className="text-center text-base text-muted-foreground mt-6 font-medium">
-          Start with our Free plan and upgrade anytime
+          Start your 14-day free trial today
         </p>
       </div>
     </div>

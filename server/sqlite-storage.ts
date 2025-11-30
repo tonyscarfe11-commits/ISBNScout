@@ -266,8 +266,8 @@ export class SQLiteStorage implements IStorage {
         now.toISOString()
       );
       console.log("[SQLite] Created default user with 14-day trial");
-    } else if ((defaultUser as any).subscriptionTier === "free" || !(defaultUser as any).trialEndsAt) {
-      // Migrate existing users from free tier to trial
+    } else if (!(defaultUser as any).trialEndsAt) {
+      // Migrate existing users without trial dates
       this.db.prepare(`
         UPDATE users SET
           subscriptionTier = ?,

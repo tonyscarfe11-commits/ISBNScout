@@ -76,12 +76,17 @@ export class PostgresStorage implements IStorage {
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {
+    const now = new Date();
+    const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days
+    
     const result = await this.db
       .insert(users)
       .values({
         ...insertUser,
-        subscriptionTier: "free",
-        subscriptionStatus: "active",
+        subscriptionTier: "trial",
+        subscriptionStatus: "trialing",
+        trialStartedAt: now,
+        trialEndsAt: trialEnds,
         subscriptionExpiresAt: null,
         stripeCustomerId: null,
         stripeSubscriptionId: null,

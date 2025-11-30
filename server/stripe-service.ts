@@ -21,13 +21,6 @@ export interface SubscriptionPlan {
 }
 
 export const SUBSCRIPTION_PLANS: Record<string, SubscriptionPlan> = {
-  free: {
-    id: 'free',
-    name: 'Trial',
-    price: 0,
-    interval: 'month',
-    features: ['10 free scans', 'ISBN scanning only', 'Live pricing data'],
-  },
   pro_monthly: {
     id: 'pro_monthly',
     name: 'Pro',
@@ -127,12 +120,8 @@ export class StripeService {
       throw new Error(`Invalid plan ID: ${planId}`);
     }
 
-    if (plan.price === 0) {
-      throw new Error('Cannot create checkout session for free plan');
-    }
-
     if (!plan.stripePriceId) {
-      throw new Error(`Plan ${planId} does not have a Stripe price ID configured`);
+      throw new Error('This plan is not available for checkout');
     }
 
     try {
