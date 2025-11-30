@@ -13,7 +13,6 @@ import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
 
 export default function LandingPage() {
   const [, setLocation] = useLocation();
-  const [platform, setPlatform] = useState<"amazon" | "ebay">("amazon");
 
   return (
     <div className="min-h-screen bg-background">
@@ -86,127 +85,123 @@ export default function LandingPage() {
 
             {/* Right Column - Product Demo */}
             <div>
-              <Card className="bg-slate-900 border-slate-800 p-6 text-white">
-                <div className="space-y-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between pb-4 border-b border-slate-700">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-teal-500 rounded-full animate-pulse" />
-                      <span className="font-semibold text-sm">LIVE SCAN</span>
-                    </div>
-                    <div className="flex gap-2">
-                      <button
-                        onClick={() => setPlatform("amazon")}
-                        className={`text-xs px-2 py-1 rounded ${platform === "amazon" ? "bg-teal-600/40 text-teal-400" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}
-                      >
-                        Amazon MFN
-                      </button>
-                      <button
-                        onClick={() => setPlatform("ebay")}
-                        className={`text-xs px-2 py-1 rounded ${platform === "ebay" ? "bg-teal-600/40 text-teal-400" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}
-                      >
-                        eBay
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* Book Details */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Amazon Card */}
+                <Card className="bg-slate-900 border-slate-800 p-5 text-white">
                   <div className="space-y-3">
                     <div>
-                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Best Candidate</div>
-                      <div className="font-semibold text-sm">"Introduction to Cognitive Science" - 3rd Ed.</div>
-                    </div>
-
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">
-                        AI Spine Recognition
-                      </Badge>
-                      <Badge variant="outline" className="bg-slate-800 border-slate-700 text-slate-300 text-xs">
-                        Charity shop - £2.50
-                      </Badge>
-                    </div>
-
-                    {platform === "amazon" ? (
-                      <>
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Amazon MFN Price</div>
-                            <div className="font-semibold text-slate-300">£12.90</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Referral Fee (15.3%)</div>
-                            <div className="font-semibold text-slate-300">-£1.97</div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Closing Fee</div>
-                            <div className="font-semibold text-slate-300">-£0.75</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
-                            <div className="font-semibold text-teal-400">£10.18</div>
-                          </div>
-                        </div>
-                      </>
-                    ) : (
-                      <>
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">eBay Sold Avg</div>
-                            <div className="font-semibold text-slate-300">£11.50</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Final Value Fee (12.8%)</div>
-                            <div className="font-semibold text-slate-300">-£1.47</div>
-                          </div>
-                        </div>
-
-                        <div className="grid grid-cols-2 gap-3 pt-2">
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">PayPal Fee (3.4%)</div>
-                            <div className="font-semibold text-slate-300">-£0.39</div>
-                          </div>
-                          <div>
-                            <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">After Fees</div>
-                            <div className="font-semibold text-teal-400">£9.64</div>
-                          </div>
-                        </div>
-                      </>
-                    )}
-
-                    <div className="grid grid-cols-2 gap-3 pt-2">
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Your Cost</div>
-                        <div className="font-semibold text-slate-300">£2.50</div>
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+                        <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
+                        <span className="font-semibold text-sm">AMAZON MFN</span>
                       </div>
-                      <div>
-                        <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Royal Mail (Large Letter)</div>
-                        <div className="font-semibold text-slate-300">£2.80</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Book</div>
+                      <div className="font-semibold text-xs">"Intro to Cognitive Science"</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Your Cost</div>
+                      <div className="font-semibold text-slate-300">£2.50</div>
+                    </div>
+
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">List Price</span>
+                        <span className="text-slate-300">£12.90</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Referral (15.3%)</span>
+                        <span className="text-slate-300">-£1.97</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Closing Fee</span>
+                        <span className="text-slate-300">-£0.75</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Postage</span>
+                        <span className="text-slate-300">-£2.80</span>
                       </div>
                     </div>
 
                     <div className="pt-2 border-t border-slate-700">
                       <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit</div>
-                      <div className="text-2xl font-bold text-teal-400">{platform === "amazon" ? "£4.88" : "£4.34"}</div>
+                      <div className="text-xl font-bold text-teal-400">£4.88</div>
                     </div>
 
                     <div className="pt-2">
-                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Sales Velocity</div>
-                      <div className="text-sm text-slate-300">10 sales / 30 days</div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Velocity</div>
+                      <div className="text-xs text-slate-300">10 sales / 30 days</div>
                     </div>
 
                     <div className="pt-2">
-                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Decision</div>
                       <div className="flex items-center gap-2">
                         <div className="w-2 h-2 bg-green-500 rounded-full" />
-                        <span className="text-sm font-semibold text-green-400">Strong buy - high demand</span>
+                        <span className="text-xs font-semibold text-green-400">Strong buy</span>
                       </div>
                     </div>
                   </div>
-                </div>
-              </Card>
+                </Card>
+
+                {/* eBay Card */}
+                <Card className="bg-slate-900 border-slate-800 p-5 text-white">
+                  <div className="space-y-3">
+                    <div>
+                      <div className="flex items-center gap-2 mb-3 pb-3 border-b border-slate-700">
+                        <div className="w-2 h-2 bg-teal-500 rounded-full animate-pulse" />
+                        <span className="font-semibold text-sm">EBAY</span>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Book</div>
+                      <div className="font-semibold text-xs">"Intro to Cognitive Science"</div>
+                    </div>
+
+                    <div>
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Your Cost</div>
+                      <div className="font-semibold text-slate-300">£2.50</div>
+                    </div>
+
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Avg Sold</span>
+                        <span className="text-slate-300">£11.50</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Final Value (12.8%)</span>
+                        <span className="text-slate-300">-£1.47</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">PayPal Fee (3.4%)</span>
+                        <span className="text-slate-300">-£0.39</span>
+                      </div>
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-400">Postage</span>
+                        <span className="text-slate-300">-£2.80</span>
+                      </div>
+                    </div>
+
+                    <div className="pt-2 border-t border-slate-700">
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Net Profit</div>
+                      <div className="text-xl font-bold text-teal-400">£4.34</div>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="text-xs text-slate-400 uppercase tracking-wide mb-1">Velocity</div>
+                      <div className="text-xs text-slate-300">8 sales / 30 days</div>
+                    </div>
+
+                    <div className="pt-2">
+                      <div className="flex items-center gap-2">
+                        <div className="w-2 h-2 bg-green-500 rounded-full" />
+                        <span className="text-xs font-semibold text-green-400">Strong buy</span>
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              </div>
             </div>
           </div>
         </div>
