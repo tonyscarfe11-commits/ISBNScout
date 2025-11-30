@@ -1,8 +1,13 @@
 import { Button } from "./ui/button";
 import { useLocation } from "wouter";
-import { LogOut, ArrowLeft } from "lucide-react";
+import { LogOut, ArrowLeft, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export function AppHeader() {
   const [location, setLocation] = useLocation();
@@ -57,10 +62,30 @@ export function AppHeader() {
         
         {!isLoading && (
           user ? (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <span className="text-sm font-medium text-slate-300 hidden sm:block">
                 {user.username || user.email}
               </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => {
+                      localStorage.removeItem('hasSeenWelcome');
+                      setLocation('/app/dashboard');
+                      window.location.reload();
+                    }}
+                    className="text-slate-400 hover:text-teal-400 hover:bg-slate-800"
+                    data-testid="button-help"
+                  >
+                    <HelpCircle className="w-4 h-4" />
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>
+                  <p>Show welcome guide</p>
+                </TooltipContent>
+              </Tooltip>
               <Button
                 variant="ghost"
                 size="sm"

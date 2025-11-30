@@ -5,6 +5,8 @@ import { BookCard } from "@/components/BookCard";
 import { BookDetailsModal, type BookDetails } from "@/components/BookDetailsModal";
 import { OfflineBanner } from "@/components/OfflineBanner";
 import { AppHeader } from "@/components/AppHeader";
+import { ProfitVerdict, calculateVerdict, type ProfitVerdictData } from "@/components/ProfitVerdict";
+import { CostEditor, getUserCosts } from "@/components/CostEditor";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import { useBluetoothScanner } from "@/hooks/useBluetoothScanner";
@@ -12,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap, Library, Camera } from "lucide-react";
+import { Bluetooth, BluetoothOff, Loader2, CheckCircle2, BookOpen, User, Hash, Zap, Library, Camera, Settings2 } from "lucide-react";
 import { apiRequest } from "@/lib/queryClient";
 import { getOfflineSyncService, type OfflineStatus } from "@/lib/offline-sync";
 import { getScanQueue } from "@/lib/scan-queue";
@@ -46,6 +48,12 @@ export default function ScanPage() {
   const [selectedBooks, setSelectedBooks] = useState<Set<number>>(new Set());
 
   const [currentTier, setCurrentTier] = useState("trial");
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+  
+  // Profit verdict state
+  const [currentVerdict, setCurrentVerdict] = useState<ProfitVerdictData | null>(null);
+  const [costEditorOpen, setCostEditorOpen] = useState(false);
+  const [currentCost, setCurrentCost] = useState(() => getUserCosts().defaultPurchaseCost);
 
   // Set up offline sync service
   useEffect(() => {
@@ -205,22 +213,52 @@ export default function ScanPage() {
         });
       }
 
-      // 2. Calculate velocity based on real data
-      const yourCost = 8.00;
+      // 2. Calculate profit using user's cost settings
+      const userCosts = getUserCosts();
+      const yourCost = currentCost || userCosts.defaultPurchaseCost;
       const lowestPrice = pricingData.lowestPrice || pricingData.ebayPrice || pricingData.amazonPrice || 0;
-      const fees = lowestPrice * 0.15; // 15% marketplace fees
-      const shipping = 2.15; // Royal Mail 2nd Class Large Letter (typical book 300-500g)
+      const feePercentage = userCosts.feePercentage / 100;
+      const fees = lowestPrice * feePercentage;
+      const shipping = userCosts.estimatedShipping;
       const profit = lowestPrice - yourCost - fees - shipping;
-      const profitMargin = lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0;
-      const salesRank = 15000; // Default for now - could come from Amazon API
+      const roi = yourCost > 0 ? ((profit / yourCost) * 100) : 0;
+      const salesRank = 15000;
 
+      // Calculate verdict
+      const { verdict, reason } = calculateVerdict(profit, roi, pricingData.confidence);
+
+      // Create verdict data for display
+      const verdictData: ProfitVerdictData = {
+        title: pricingData.title || `Book with ISBN ${isbn}`,
+        author: pricingData.author || "Unknown Author",
+        isbn,
+        thumbnail: pricingData.thumbnail || undefined,
+        yourCost,
+        ebayPrice: pricingData.ebayPrice,
+        amazonPrice: pricingData.amazonPrice,
+        fees,
+        shipping,
+        profit,
+        roi,
+        verdict,
+        reason,
+        velocity: "Medium seller",
+        timeToSell: "2-4 weeks",
+        confidence: pricingData.confidence,
+        source: pricingData.source,
+      };
+
+      // Show the verdict immediately
+      setCurrentVerdict(verdictData);
+
+      // Fetch velocity data in background
       const velocityResponse = await fetch("/api/books/calculate-velocity", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           salesRank,
           profit,
-          profitMargin,
+          profitMargin: lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0,
           yourCost,
           category: "Books"
         }),
@@ -229,6 +267,12 @@ export default function ScanPage() {
       let velocityData;
       if (velocityResponse.ok) {
         velocityData = await velocityResponse.json();
+        // Update verdict with velocity data
+        setCurrentVerdict(prev => prev ? {
+          ...prev,
+          velocity: velocityData.velocity.description,
+          timeToSell: velocityData.timeToSell,
+        } : null);
       } else {
         velocityData = {
           velocity: { rating: 'medium', description: 'Steady seller', estimatedSalesPerMonth: '3-10' },
@@ -678,37 +722,90 @@ export default function ScanPage() {
           </div>
         )}
 
-        <ScannerInterface
-          onIsbnScan={handleIsbnScan}
-          onCoverScan={handleCoverScan}
-        />
-
-        {/* Batch Scanner */}
-        <BatchScanner
-          onComplete={(results) => {
-            // Add successful scans to recent scans
-            const successfulBooks = results
-              .filter(r => r.status === 'success' && r.title)
-              .map(r => ({
-                id: 0,
-                isbn: r.isbn,
-                title: r.title || 'Unknown',
-                author: r.author || 'Unknown',
-                ebayPrice: r.ebayPrice,
-                amazonPrice: r.amazonPrice,
-                status: 'pending' as const,
-              }));
-
-            if (successfulBooks.length > 0) {
-              setRecentScans(prev => [...successfulBooks, ...prev].slice(0, 10));
-
+        {/* Show verdict or scanner */}
+        {currentVerdict ? (
+          <ProfitVerdict
+            data={currentVerdict}
+            onSave={() => {
               toast({
-                title: "Batch scan complete",
-                description: `Added ${successfulBooks.length} books to your library`,
+                title: "Saved to Library",
+                description: `${currentVerdict.title} saved successfully`,
+              });
+              setCurrentVerdict(null);
+            }}
+            onList={(platform) => {
+              toast({
+                title: `Listing to ${platform}`,
+                description: "Redirecting to listing form...",
+              });
+              setLocation("/listings/new");
+            }}
+            onDismiss={() => setCurrentVerdict(null)}
+            onEditCost={() => setCostEditorOpen(true)}
+          />
+        ) : (
+          <ScannerInterface
+            onIsbnScan={handleIsbnScan}
+            onCoverScan={handleCoverScan}
+          />
+        )}
+
+        {/* Cost Editor Modal */}
+        <CostEditor
+          open={costEditorOpen}
+          onClose={() => setCostEditorOpen(false)}
+          currentCost={currentCost}
+          onCostChange={(newCost) => {
+            setCurrentCost(newCost);
+            // Recalculate verdict with new cost
+            if (currentVerdict) {
+              const userCosts = getUserCosts();
+              const bestPrice = currentVerdict.ebayPrice || currentVerdict.amazonPrice || 0;
+              const fees = bestPrice * (userCosts.feePercentage / 100);
+              const profit = bestPrice - newCost - fees - userCosts.estimatedShipping;
+              const roi = newCost > 0 ? ((profit / newCost) * 100) : 0;
+              const { verdict, reason } = calculateVerdict(profit, roi, currentVerdict.confidence);
+              
+              setCurrentVerdict({
+                ...currentVerdict,
+                yourCost: newCost,
+                fees,
+                profit,
+                roi,
+                verdict,
+                reason,
               });
             }
           }}
         />
+
+        {/* Batch Scanner - only show if no verdict */}
+        {!currentVerdict && (
+          <BatchScanner
+            onComplete={(results) => {
+              const successfulBooks = results
+                .filter(r => r.status === 'success' && r.title)
+                .map(r => ({
+                  id: 0,
+                  isbn: r.isbn,
+                  title: r.title || 'Unknown',
+                  author: r.author || 'Unknown',
+                  ebayPrice: r.ebayPrice,
+                  amazonPrice: r.amazonPrice,
+                  status: 'pending' as const,
+                }));
+
+              if (successfulBooks.length > 0) {
+                setRecentScans(prev => [...successfulBooks, ...prev].slice(0, 10));
+
+                toast({
+                  title: "Batch scan complete",
+                  description: `Added ${successfulBooks.length} books to your library`,
+                });
+              }
+            }}
+          />
+        )}
 
         {/* AI Recognition Status */}
         {isProcessingImage && (
