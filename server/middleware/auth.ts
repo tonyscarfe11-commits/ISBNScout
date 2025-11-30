@@ -10,6 +10,7 @@ declare module "express-session" {
 
 // Token store (in production, use Redis or database for persistence)
 const tokenStore = new Map<string, { userId: string; expiresAt: Date }>();
+const affiliateTokenStore = new Map<string, { affiliateId: string; expiresAt: Date }>();
 
 /**
  * Generate a cryptographically secure auth token for localStorage fallback
@@ -93,4 +94,34 @@ export function getUserId(req: Request): string {
  */
 export function getUserIdOrNull(req: Request): string | null {
   return req.session.userId || null;
+}
+
+/**
+ * Generate a cryptographically secure auth token for affiliates
+ */
+export function generateAffiliateToken(affiliateId: string): string {
+  const token = crypto.randomBytes(32).toString('hex');
+  const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+  affiliateTokenStore.set(token, { affiliateId, expiresAt });
+  return token;
+}
+
+/**
+ * Validate an affiliate auth token
+ */
+export function validateAffiliateToken(token: string): string | null {
+  const data = affiliateTokenStore.get(token);
+  if (!data) return null;
+  if (new Date() > data.expiresAt) {
+    affiliateTokenStore.delete(token);
+    return null;
+  }
+  return data.affiliateId;
+}
+
+/**
+ * Remove an affiliate auth token (logout)
+ */
+export function removeAffiliateToken(token: string): void {
+  affiliateTokenStore.delete(token);
 }

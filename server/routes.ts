@@ -14,7 +14,7 @@ import { stripeService } from "./stripe-service";
 import { getPriceCache } from "./price-cache";
 import { RepricingService } from "./repricing-service";
 import { RepricingScheduler } from "./repricing-scheduler";
-import { requireAuth, getUserId, generateAuthToken, removeAuthToken, validateAuthToken } from "./middleware/auth";
+import { requireAuth, getUserId, generateAuthToken, removeAuthToken, validateAuthToken, generateAffiliateToken, validateAffiliateToken, removeAffiliateToken } from "./middleware/auth";
 import { requireActiveSubscription } from "./middleware/subscription";
 import { scanLimitService } from "./services/scan-limit-service";
 import { z } from "zod";
@@ -2345,7 +2345,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
 
-      const affiliateToken = crypto.randomBytes(32).toString('hex');
+      const affiliateToken = generateAffiliateToken(result.affiliate.id);
       
       res.json({ 
         success: true,
@@ -2401,10 +2401,17 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/affiliates/dashboard", async (req, res) => {
     try {
       const { AffiliateService } = await import("./affiliate-service");
-      const affiliateId = req.headers['x-affiliate-id'] as string;
-
+      
+      const authHeader = req.headers.authorization;
+      if (!authHeader?.startsWith('Bearer ')) {
+        return res.status(401).json({ message: "Authentication required" });
+      }
+      
+      const token = authHeader.substring(7);
+      const affiliateId = validateAffiliateToken(token);
+      
       if (!affiliateId) {
-        return res.status(401).json({ message: "Affiliate ID required" });
+        return res.status(401).json({ message: "Invalid or expired token" });
       }
 
       const stats = await AffiliateService.getAffiliateStats(affiliateId);

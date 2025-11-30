@@ -59,16 +59,16 @@ export default function AffiliateDashboard() {
   });
 
   useEffect(() => {
-    const affiliateId = localStorage.getItem("affiliateId");
-    if (affiliateId) {
-      fetchDashboardStats(affiliateId);
+    const token = localStorage.getItem("affiliateToken");
+    if (token) {
+      fetchDashboardStats(token);
     }
   }, []);
 
-  const fetchDashboardStats = async (affiliateId: string) => {
+  const fetchDashboardStats = async (token: string) => {
     try {
       const response = await fetch("/api/affiliates/dashboard", {
-        headers: { "x-affiliate-id": affiliateId },
+        headers: { "Authorization": `Bearer ${token}` },
       });
 
       if (response.ok) {
@@ -104,7 +104,7 @@ export default function AffiliateDashboard() {
       localStorage.setItem("affiliateId", data.affiliate.id);
       localStorage.setItem("affiliateToken", data.affiliateToken);
       
-      await fetchDashboardStats(data.affiliate.id);
+      await fetchDashboardStats(data.affiliateToken);
       
       toast({
         title: "Welcome back!",
