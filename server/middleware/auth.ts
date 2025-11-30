@@ -1,4 +1,5 @@
 import type { Request, Response, NextFunction } from "express";
+import crypto from "crypto";
 
 // Extend Express session type to include userId
 declare module "express-session" {
@@ -7,14 +8,16 @@ declare module "express-session" {
   }
 }
 
-// Simple token store (in production, use Redis or database)
+// Token store (in production, use Redis or database for persistence)
 const tokenStore = new Map<string, { userId: string; expiresAt: Date }>();
 
 /**
- * Generate a simple auth token for localStorage fallback
+ * Generate a cryptographically secure auth token for localStorage fallback
+ * Uses crypto.randomBytes for unpredictable token values
  */
 export function generateAuthToken(userId: string): string {
-  const token = `${userId}-${Date.now()}-${Math.random().toString(36).substring(2)}`;
+  // Generate a cryptographically secure random token (32 bytes = 256 bits)
+  const token = crypto.randomBytes(32).toString('hex');
   const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // 30 days
   tokenStore.set(token, { userId, expiresAt });
   return token;
