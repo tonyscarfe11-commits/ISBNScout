@@ -65,9 +65,19 @@ app.use(helmet({
     directives: {
       defaultSrc: ["'self'"],
       styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for Tailwind
-      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for Vite in dev
+      scriptSrc: [
+        "'self'",
+        "'unsafe-inline'", // Allow inline scripts for Vite in dev
+        "https://us-assets.i.posthog.com", // PostHog analytics
+      ],
       imgSrc: ["'self'", "data:", "https:", "http:"], // Allow external images
-      connectSrc: ["'self'", "https:", "http:"], // Allow API calls
+      connectSrc: [
+        "'self'",
+        "https:",
+        "http:", // Allow API calls
+        "https://us.i.posthog.com", // PostHog API
+        "https://app.posthog.com", // PostHog API
+      ],
       fontSrc: ["'self'", "data:"],
       objectSrc: ["'none'"],
       mediaSrc: ["'self'"],
