@@ -319,6 +319,17 @@ export class SQLiteStorage implements IStorage {
     return row ? this.deserializeUser(row) : undefined;
   }
 
+  async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
+    const stmt = this.db.prepare(`
+      SELECT * FROM users
+      WHERE subscription_tier = 'trial'
+        AND trial_ends_at >= ?
+        AND trial_ends_at <= ?
+    `);
+    const rows = stmt.all(startDate.toISOString(), endDate.toISOString()) as any[];
+    return rows.map(row => this.deserializeUser(row));
+  }
+
   async createUser(insertUser: InsertUser): Promise<User> {
     const id = randomUUID();
     const now = new Date();

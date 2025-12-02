@@ -287,6 +287,17 @@ export class HybridStorage implements IStorage {
     return this.local.getUserByStripeCustomerId(stripeCustomerId);
   }
 
+  async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
+    if (this.isOnline && this.remote) {
+      try {
+        return await this.remote.getUsersWithTrialExpiringBetween(startDate, endDate);
+      } catch (error) {
+        console.warn("[HybridStorage] Remote getUsersWithTrialExpiringBetween failed, using local");
+      }
+    }
+    return this.local.getUsersWithTrialExpiringBetween(startDate, endDate);
+  }
+
   async createUser(user: InsertUser): Promise<User> {
     const created = await this.local.createUser(user);
     await this.queueSync("create", "user", user);

@@ -1,6 +1,6 @@
 import { neon } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-http";
-import { eq, and, desc } from "drizzle-orm";
+import { eq, and, desc, gte, lte } from "drizzle-orm";
 import {
   users,
   apiCredentials,
@@ -73,6 +73,20 @@ export class PostgresStorage implements IStorage {
       .where(eq(users.stripeCustomerId, stripeCustomerId))
       .limit(1);
     return result[0];
+  }
+
+  async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(
+        and(
+          eq(users.subscriptionTier, 'trial'),
+          gte(users.trialEndsAt, startDate),
+          lte(users.trialEndsAt, endDate)
+        )
+      );
+    return result;
   }
 
   async createUser(insertUser: InsertUser): Promise<User> {

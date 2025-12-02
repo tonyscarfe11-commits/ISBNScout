@@ -25,6 +25,7 @@ export interface IStorage {
   getUserByUsername(username: string): Promise<User | undefined>;
   getUserByEmail(email: string): Promise<User | undefined>;
   getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined>;
+  getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]>;
   createUser(user: InsertUser): Promise<User>;
   updateUser(id: string, updates: Partial<Omit<User, 'id' | 'password'>>): Promise<User | undefined>;
 
@@ -110,6 +111,15 @@ export class MemStorage implements IStorage {
   async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
     return Array.from(this.users.values()).find(
       (user) => user.stripeCustomerId === stripeCustomerId,
+    );
+  }
+
+  async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
+    return Array.from(this.users.values()).filter(
+      (user) => user.subscriptionTier === 'trial' &&
+                user.trialEndsAt &&
+                user.trialEndsAt >= startDate &&
+                user.trialEndsAt <= endDate
     );
   }
 

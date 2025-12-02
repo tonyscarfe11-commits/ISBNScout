@@ -1,0 +1,44 @@
+name: Send Trial Reminder Emails
+
+on:
+  # Run daily at 9 AM UTC (adjust timezone as needed)
+  schedule:
+    - cron: '0 9 * * *'
+
+  # Allow manual triggering from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  send-reminders:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Send trial reminder emails
+        run: npx tsx scripts/send-trial-reminders.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EMAIL_FROM: ${{ secrets.EMAIL_FROM }}
+          EMAIL_REPLY_TO: ${{ secrets.EMAIL_REPLY_TO }}
+          APP_URL: ${{ secrets.APP_URL }}
+          NODE_ENV: production
+
+      - name: Log completion
+        if: success()
+        run: echo "✅ Trial reminder emails sent successfully at $(date)"
+
+      - name: Log failure
+        if: failure()
+        run: echo "❌ Trial reminder emails failed at $(date)"

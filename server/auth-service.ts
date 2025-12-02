@@ -1,5 +1,6 @@
 import bcrypt from 'bcrypt';
 import { storage } from './storage';
+import { emailService } from './email-service';
 import type { InsertUser, User } from '../shared/schema';
 
 const SALT_ROUNDS = 10;
@@ -44,6 +45,15 @@ export class AuthService {
     } as any);
 
     console.log(`[Auth] Created user ${username} with trial ending ${trialEnds.toISOString()}`);
+
+    // Send welcome email asynchronously (don't wait for it)
+    emailService.sendWelcomeEmail({
+      username,
+      email,
+      trialEndsAt: trialEnds,
+    }).catch(error => {
+      console.error('[Auth] Failed to send welcome email:', error);
+    });
 
     // Remove password from response
     const { password: _, ...userWithoutPassword } = user;

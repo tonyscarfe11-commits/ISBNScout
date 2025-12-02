@@ -2,9 +2,10 @@ import { Router } from "express";
 import express from "express";
 import Stripe from "stripe";
 import { requireAuth, getUserId } from "../middleware/auth";
-import { stripeService } from "../stripe-service";
+import { stripeService, SUBSCRIPTION_PLANS } from "../stripe-service";
 import { authService } from "../auth-service";
 import { storage } from "../storage";
+import { emailService } from "../email-service";
 
 const router = Router();
 
@@ -213,6 +214,26 @@ router.post("/webhooks/stripe", express.raw({ type: 'application/json' }), async
           });
           console.log(`[Stripe Webhook] Updated user ${user.id} subscription to ${planId}`);
 
+          // Send subscription confirmation email
+          const plan = SUBSCRIPTION_PLANS[planId || 'pro_monthly'];
+          if (plan) {
+            const subscription = await stripeService.getSubscription(subscriptionId);
+            const nextBillingDate = subscription?.currentPeriodEnd
+              ? new Date(subscription.currentPeriodEnd * 1000)
+              : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default to 30 days
+
+            emailService.sendSubscriptionConfirmation({
+              username: user.username,
+              email: user.email,
+              planName: plan.name,
+              amount: plan.price,
+              interval: plan.interval,
+              nextBillingDate,
+            }).catch(error => {
+              console.error('[Email] Failed to send subscription confirmation:', error);
+            });
+          }
+
           // Track affiliate commission if user was referred
           if (user.referredByAffiliateId) {
             try {
@@ -274,6 +295,35 @@ router.post("/webhooks/stripe", express.raw({ type: 'application/json' }), async
             subscriptionStatus: 'past_due',
           });
           console.log(`[Stripe Webhook] Marked user ${user.id} as past_due`);
+        }
+        break;
+      }
+
+      case 'payment_succeeded': {
+        const { customerId, amount, subscriptionId } = result.data;
+
+        const user = await storage.getUserByStripeCustomerId(customerId);
+
+        if (user && subscriptionId) {
+          // Get subscription to find the plan
+          const subscription = await stripeService.getSubscription(subscriptionId);
+          const planId = subscription?.metadata?.planId || user.subscriptionTier || 'pro_monthly';
+          const plan = SUBSCRIPTION_PLANS[planId];
+
+          if (plan) {
+            // Send payment receipt email
+            emailService.sendPaymentReceipt({
+              username: user.username,
+              email: user.email,
+              amount: amount,
+              planName: plan.name,
+              paidAt: new Date(),
+            }).catch(error => {
+              console.error('[Email] Failed to send payment receipt:', error);
+            });
+          }
+
+          console.log(`[Stripe Webhook] Payment of £${amount} received from user ${user.id}`);
         }
         break;
       }
