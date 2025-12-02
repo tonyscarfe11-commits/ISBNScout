@@ -90,7 +90,7 @@ export function CostEditor({ open, onClose, currentCost, onCostChange }: CostEdi
       <DialogContent className="max-w-sm">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <PoundSterling className="h-5 w-5 text-teal-600" />
+            <PoundSterling className="h-5 w-5 text-emerald-600" />
             Set Your Cost
           </DialogTitle>
           <DialogDescription>
@@ -116,7 +116,7 @@ export function CostEditor({ open, onClose, currentCost, onCostChange }: CostEdi
             </div>
             <Button 
               onClick={handleQuickCostSave}
-              className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
               data-testid="button-save-cost"
             >
               <Save className="h-4 w-4" />

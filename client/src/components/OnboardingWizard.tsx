@@ -67,19 +67,19 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
           <DialogTitle>Welcome to ISBNScout</DialogTitle>
           <DialogDescription>Set up your book scouting preferences</DialogDescription>
         </VisuallyHidden>
-        <div className="bg-gradient-to-r from-teal-600 to-teal-700 p-4">
+        <div className="bg-gradient-to-r from-emerald-600 to-emerald-700 p-4">
           <div className="flex items-center justify-between text-white mb-3">
             <span className="text-sm font-medium">Step {step} of {STEPS.length}</span>
             <span className="text-sm opacity-80">{STEPS[step - 1].title}</span>
           </div>
-          <Progress value={progress} className="h-2 bg-teal-800" />
+          <Progress value={progress} className="h-2 bg-emerald-800" />
         </div>
 
         <div className="p-6">
           {step === 1 && (
             <div className="text-center space-y-6">
-              <div className="w-20 h-20 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center mx-auto">
-                <BookOpen className="h-10 w-10 text-teal-600" />
+              <div className="w-20 h-20 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto">
+                <BookOpen className="h-10 w-10 text-emerald-600" />
               </div>
               <div>
                 <h2 className="text-2xl font-bold mb-2">Welcome to ISBNScout</h2>
@@ -95,8 +95,8 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
                   <p className="text-xs font-medium">Scan Barcode</p>
                 </div>
                 <div className="text-center">
-                  <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center mx-auto mb-2">
-                    <Target className="h-5 w-5 text-blue-600" />
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-2">
+                    <Target className="h-5 w-5 text-emerald-600" />
                   </div>
                   <p className="text-xs font-medium">See Profit</p>
                 </div>
@@ -113,8 +113,8 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
           {step === 2 && (
             <div className="space-y-5">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center mx-auto mb-3">
-                  <PoundSterling className="h-8 w-8 text-teal-600" />
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
+                  <PoundSterling className="h-8 w-8 text-emerald-600" />
                 </div>
                 <h2 className="text-xl font-bold mb-1">Set Your Buying Costs</h2>
                 <p className="text-sm text-muted-foreground">
@@ -203,8 +203,8 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
           {step === 3 && (
             <div className="space-y-5">
               <div className="text-center">
-                <div className="w-16 h-16 rounded-full bg-teal-100 dark:bg-teal-900/30 flex items-center justify-center mx-auto mb-3">
-                  <Scan className="h-8 w-8 text-teal-600" />
+                <div className="w-16 h-16 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center mx-auto mb-3">
+                  <Scan className="h-8 w-8 text-emerald-600" />
                 </div>
                 <h2 className="text-xl font-bold mb-1">How to Scout</h2>
                 <p className="text-sm text-muted-foreground">
@@ -214,7 +214,7 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
 
               <div className="space-y-3">
                 <Card className="p-3 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
                     1
                   </div>
                   <div>
@@ -224,7 +224,7 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
                 </Card>
 
                 <Card className="p-3 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
                     2
                   </div>
                   <div>
@@ -234,7 +234,7 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
                 </Card>
 
                 <Card className="p-3 flex items-start gap-3">
-                  <div className="w-8 h-8 rounded-full bg-teal-600 text-white flex items-center justify-center font-bold shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold shrink-0">
                     3
                   </div>
                   <div>
@@ -257,8 +257,8 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
                   Start scanning books and finding profitable deals.
                 </p>
               </div>
-              <Card className="p-4 bg-teal-50 dark:bg-teal-950/30 border-teal-200 dark:border-teal-800">
-                <p className="text-sm font-medium text-teal-800 dark:text-teal-200">
+              <Card className="p-4 bg-emerald-50 dark:bg-emerald-950/30 border-emerald-200 dark:border-emerald-800">
+                <p className="text-sm font-medium text-emerald-800 dark:text-emerald-200">
                   Pro Tip: Scan fast, decide fast. Speed is your advantage!
                 </p>
               </Card>
@@ -280,7 +280,7 @@ export function OnboardingWizard({ open, onComplete }: OnboardingWizardProps) {
           )}
           <Button
             onClick={handleNext}
-            className="bg-teal-600 hover:bg-teal-700 text-white gap-2"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2"
             data-testid="button-onboarding-next"
           >
             {step === STEPS.length ? "Start Scanning" : "Continue"}

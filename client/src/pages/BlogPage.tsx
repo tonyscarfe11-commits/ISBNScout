@@ -46,7 +46,7 @@ export default function BlogPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
-            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-emerald-400 transition-colors"
             data-testid="button-back-home"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -55,7 +55,7 @@ export default function BlogPage() {
           </button>
           <Button 
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-header-trial"
           >
             Start Free Trial
@@ -91,7 +91,7 @@ export default function BlogPage() {
                   <span>{post.readTime}</span>
                 </div>
               </div>
-              <Button variant="ghost" className="mt-4 px-0 text-teal-600 hover:text-teal-700">
+              <Button variant="ghost" className="mt-4 px-0 text-emerald-600 hover:text-emerald-700">
                 Read More →
               </Button>
             </Card>
@@ -106,7 +106,7 @@ export default function BlogPage() {
           <Button 
             size="lg"
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
           >
             Start Your 14-Day Free Trial
           </Button>
@@ -121,11 +121,11 @@ export default function BlogPage() {
               <span className="text-white font-semibold">ISBNScout</span>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <button onClick={() => setLocation("/")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-home">Home</button>
+              <button onClick={() => setLocation("/")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-home">Home</button>
               <button onClick={() => setLocation("/blog")} className="text-white font-medium" data-testid="button-footer-blog">Blog</button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-privacy">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-terms">Terms</button>
-              <button onClick={() => setLocation("/cookies")} className="hover:text-teal-400 transition-colors" data-testid="button-footer-cookies">Cookies</button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-privacy">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-terms">Terms</button>
+              <button onClick={() => setLocation("/cookies")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-cookies">Cookies</button>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-600 text-center text-sm">

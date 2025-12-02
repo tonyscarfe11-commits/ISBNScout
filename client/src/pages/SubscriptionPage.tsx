@@ -121,7 +121,7 @@ export default function SubscriptionPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
-            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-emerald-400 transition-colors"
             data-testid="button-back-home"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -148,6 +148,20 @@ export default function SubscriptionPage() {
           <p className="text-base text-muted-foreground max-w-2xl mx-auto">
             Try ISBNScout free for 14 days. No nonsense, full access — test it in real charity shops before committing.
           </p>
+          <div className="flex flex-wrap justify-center gap-4 mt-6">
+            <div className="flex items-center gap-2 px-4 py-2 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg border border-emerald-200 dark:border-emerald-800">
+              <Check className="h-5 w-5 text-emerald-600 shrink-0" />
+              <span className="text-sm font-semibold text-emerald-800 dark:text-emerald-200">14-Day Money-Back Guarantee</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <Check className="h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">No Credit Card Required</span>
+            </div>
+            <div className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700">
+              <Check className="h-5 w-5 text-slate-600 dark:text-slate-400 shrink-0" />
+              <span className="text-sm font-semibold text-slate-700 dark:text-slate-300">Cancel Anytime</span>
+            </div>
+          </div>
         </div>
 
         {/* Main Layout */}
@@ -155,7 +169,7 @@ export default function SubscriptionPage() {
           {/* Left Column - Trial Info */}
           <div className="space-y-6">
             <div>
-              <Badge className="bg-teal-100 text-teal-800 border-teal-200 mb-3">
+              <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 mb-3">
                 14-DAY FREE TRIAL
               </Badge>
               <h2 className="text-2xl font-bold text-slate-700 dark:text-slate-200 mb-3">
@@ -169,7 +183,7 @@ export default function SubscriptionPage() {
             <ul className="space-y-2">
               {trialFeatures.map((feature, index) => (
                 <li key={index} className="flex items-start gap-2">
-                  <Check className="h-5 w-5 text-teal-600 shrink-0 mt-0.5" />
+                  <Check className="h-5 w-5 text-emerald-600 shrink-0 mt-0.5" />
                   <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                 </li>
               ))}
@@ -183,7 +197,7 @@ export default function SubscriptionPage() {
                 key={plan.id}
                 className={`p-6 flex flex-col ${
                   plan.highlighted
-                    ? "border-teal-600 border-2 bg-teal-50 dark:bg-teal-950/30"
+                    ? "border-emerald-600 border-2 bg-emerald-50 dark:bg-emerald-950/30"
                     : "border-slate-200 dark:border-slate-700"
                 }`}
               >
@@ -193,7 +207,7 @@ export default function SubscriptionPage() {
                       {plan.name}
                     </h3>
                     {plan.highlighted && (
-                      <Badge className="bg-teal-600 text-white">POPULAR</Badge>
+                      <Badge className="bg-emerald-600 text-white">POPULAR</Badge>
                     )}
                   </div>
                   <p className="text-xs text-muted-foreground mt-1">
@@ -215,7 +229,7 @@ export default function SubscriptionPage() {
                 <ul className="space-y-2 mb-6 flex-1">
                   {plan.features.map((feature, index) => (
                     <li key={index} className="flex items-start gap-2">
-                      <Check className="h-4 w-4 text-teal-600 shrink-0 mt-0.5" />
+                      <Check className="h-4 w-4 text-emerald-600 shrink-0 mt-0.5" />
                       <span className="text-sm text-slate-700 dark:text-slate-200">{feature}</span>
                     </li>
                   ))}
@@ -226,7 +240,7 @@ export default function SubscriptionPage() {
                   disabled={isLoading === plan.id}
                   className={`w-full mb-3 ${
                     plan.highlighted
-                      ? "bg-teal-600 hover:bg-teal-700 text-white"
+                      ? "bg-emerald-600 hover:bg-emerald-700 text-white"
                       : ""
                   }`}
                   data-testid={`button-subscribe-${plan.id}`}
@@ -256,7 +270,7 @@ export default function SubscriptionPage() {
             <Button 
               size="lg"
               onClick={() => handleSubscribe("pro")}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
               data-testid="button-footer-trial"
             >
               Start 14-Day Free Trial
@@ -277,10 +291,10 @@ export default function SubscriptionPage() {
               <span className="text-white font-semibold">ISBNScout</span>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <button onClick={() => setLocation("/")} className="hover:text-teal-400">Home</button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400">Terms</button>
-              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
+              <button onClick={() => setLocation("/")} className="hover:text-emerald-400">Home</button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-400">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-400">Terms</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-emerald-400">Support</a>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">

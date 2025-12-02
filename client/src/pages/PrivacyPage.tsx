@@ -18,7 +18,7 @@ export default function PrivacyPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
-            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-emerald-400 transition-colors"
             data-testid="button-back-home"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -27,7 +27,7 @@ export default function PrivacyPage() {
           </button>
           <Button 
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-header-trial"
           >
             Start Free Trial
@@ -71,7 +71,7 @@ export default function PrivacyPage() {
           <section>
             <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">4. Third-Party Services</h2>
             <p className="text-muted-foreground leading-relaxed">
-              ISBNScout integrates with Amazon (FBA & FBM) and eBay to provide listing services. When you connect these accounts, we access only the information necessary to create and manage your listings. We do not share your data with these platforms beyond what's required for the integration.
+              ISBNScout integrates with Amazon and eBay to retrieve current market pricing data. We use these third-party services to provide you with accurate, real-time book valuations to help inform your purchasing decisions. We do not share your personal data with these platforms.
             </p>
           </section>
 
@@ -107,7 +107,7 @@ export default function PrivacyPage() {
             <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">8. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about this Privacy Policy, please contact us at{" "}
-              <a href="mailto:privacy@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">
+              <a href="mailto:privacy@isbnscout.com" className="text-emerald-600 hover:text-emerald-700 hover:underline">
                 privacy@isbnscout.com
               </a>
             </p>
@@ -124,10 +124,10 @@ export default function PrivacyPage() {
               <span className="text-white font-semibold">ISBNScout</span>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <button onClick={() => setLocation("/")} className="hover:text-teal-400">Home</button>
-              <button onClick={() => setLocation("/privacy")} className="text-teal-400">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-400">Terms</button>
-              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
+              <button onClick={() => setLocation("/")} className="hover:text-emerald-400">Home</button>
+              <button onClick={() => setLocation("/privacy")} className="text-emerald-400">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-400">Terms</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-emerald-400">Support</a>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">

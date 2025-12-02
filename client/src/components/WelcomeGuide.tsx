@@ -41,18 +41,18 @@ export function WelcomeGuide({ onDismiss, onStartScanning }: WelcomeGuideProps) 
   ];
 
   return (
-    <Card className="p-6 bg-gradient-to-br from-teal-50 to-white dark:from-teal-950/30 dark:to-background border-teal-200 dark:border-teal-800 animate-scale-in relative overflow-hidden">
+    <Card className="p-6 bg-gradient-to-br from-emerald-50 to-white dark:from-emerald-950/30 dark:to-background border-emerald-200 dark:border-emerald-800 animate-scale-in relative overflow-hidden">
       <button 
         onClick={onDismiss}
-        className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-teal-100 dark:hover:bg-teal-900/50 transition-colors"
+        className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-emerald-100 dark:hover:bg-emerald-900/50 transition-colors"
         data-testid="button-dismiss-welcome"
       >
         <X className="h-4 w-4 text-muted-foreground" />
       </button>
 
       <div className="flex items-center gap-2 mb-4">
-        <div className="p-2 rounded-xl bg-teal-500/10">
-          <Sparkles className="h-5 w-5 text-teal-600" />
+        <div className="p-2 rounded-xl bg-emerald-500/10">
+          <Sparkles className="h-5 w-5 text-emerald-600" />
         </div>
         <div>
           <h2 className="text-lg font-bold">Welcome to ISBNScout!</h2>
@@ -72,17 +72,17 @@ export function WelcomeGuide({ onDismiss, onStartScanning }: WelcomeGuideProps) 
               onClick={() => setStep(index)}
               className={`flex items-start gap-3 p-3 rounded-xl cursor-pointer transition-all duration-200 ${
                 isActive 
-                  ? 'bg-teal-100/80 dark:bg-teal-900/40 border-2 border-teal-500' 
+                  ? 'bg-emerald-100/80 dark:bg-emerald-900/40 border-2 border-emerald-500' 
                   : isComplete
-                  ? 'bg-teal-50/50 dark:bg-teal-950/20 border border-teal-200 dark:border-teal-800'
-                  : 'bg-white/50 dark:bg-background/50 border border-border hover:border-teal-300'
+                  ? 'bg-emerald-50/50 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-800'
+                  : 'bg-white/50 dark:bg-background/50 border border-border hover:border-emerald-300'
               }`}
             >
               <div className={`p-2 rounded-full shrink-0 ${
                 isComplete 
-                  ? 'bg-teal-500 text-white' 
+                  ? 'bg-emerald-500 text-white' 
                   : isActive 
-                  ? 'bg-teal-600 text-white' 
+                  ? 'bg-emerald-600 text-white' 
                   : 'bg-muted'
               }`}>
                 {isComplete ? (
@@ -95,12 +95,12 @@ export function WelcomeGuide({ onDismiss, onStartScanning }: WelcomeGuideProps) 
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-medium text-muted-foreground">Step {index + 1}</span>
                   {s.tip && isActive && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-teal-500/10 text-teal-700 dark:text-teal-300 font-medium">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-emerald-500/10 text-emerald-700 dark:text-emerald-300 font-medium">
                       {s.tip}
                     </span>
                   )}
                 </div>
-                <h3 className={`font-semibold text-sm ${isActive ? 'text-teal-900 dark:text-teal-100' : ''}`}>
+                <h3 className={`font-semibold text-sm ${isActive ? 'text-emerald-900 dark:text-emerald-100' : ''}`}>
                   {s.title}
                 </h3>
                 {isActive && (
@@ -117,7 +117,7 @@ export function WelcomeGuide({ onDismiss, onStartScanning }: WelcomeGuideProps) 
       <div className="flex gap-2">
         <Button 
           onClick={onStartScanning}
-          className="flex-1 bg-teal-600 hover:bg-teal-700 text-white gap-2 shadow-sm"
+          className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm"
           data-testid="button-start-scanning"
         >
           <Camera className="h-4 w-4" />

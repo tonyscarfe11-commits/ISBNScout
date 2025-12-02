@@ -73,7 +73,7 @@ export function AppHeader() {
         <Button 
           variant="ghost"
           onClick={() => setLocation(isAppRoute ? '/app/dashboard' : '/')}
-          className="flex items-center gap-2 text-white hover:text-teal-400 hover:bg-slate-800 px-2"
+          className="flex items-center gap-2 text-white hover:text-emerald-400 hover:bg-slate-800 px-2"
           data-testid="button-home"
         >
           {!isAppRoute && <ArrowLeft className="h-4 w-4" />}
@@ -98,7 +98,7 @@ export function AppHeader() {
                       setLocation('/app/scan');
                       window.location.reload();
                     }}
-                    className="text-slate-400 hover:text-teal-400 hover:bg-slate-800"
+                    className="text-slate-400 hover:text-emerald-400 hover:bg-slate-800"
                     data-testid="button-help"
                   >
                     <HelpCircle className="w-4 h-4" />
@@ -123,7 +123,7 @@ export function AppHeader() {
             <Button
               size="sm"
               onClick={() => setLocation("/auth")}
-              className="bg-teal-600 hover:bg-teal-700 text-white"
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
               data-testid="button-login"
             >
               Log In

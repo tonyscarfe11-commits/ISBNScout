@@ -439,7 +439,7 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
                   {queue.map((item, idx) => (
                     <Card
                       key={idx}
-                      className={`p-3 ${item.status === "processing" ? "bg-blue-50 dark:bg-blue-950" : ""}`}
+                      className={`p-3 ${item.status === "processing" ? "bg-emerald-50 dark:bg-emerald-950" : ""}`}
                     >
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1 min-w-0">
@@ -466,7 +466,7 @@ export function BatchScanner({ onComplete }: BatchScannerProps) {
                               </Badge>
                             )}
                             {item.status === "processing" && (
-                              <Badge variant="outline" className="text-blue-600">
+                              <Badge variant="outline" className="text-emerald-600">
                                 <Loader2 className="h-3 w-3 mr-1 animate-spin" />
                                 Processing
                               </Badge>

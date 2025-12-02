@@ -431,9 +431,9 @@ export default function ScanPage() {
         ) : (
           <>
             {isProcessingImage && (
-              <Card className="p-6 bg-teal-500/5 border-teal-500/20" data-testid="card-ai-processing">
+              <Card className="p-6 bg-emerald-500/5 border-emerald-500/20" data-testid="card-ai-processing">
                 <div className="flex items-center gap-3">
-                  <Loader2 className="h-5 w-5 animate-spin text-teal-600" />
+                  <Loader2 className="h-5 w-5 animate-spin text-emerald-600" />
                   <div>
                     <h3 className="font-semibold">AI Recognition in Progress</h3>
                     <p className="text-sm text-muted-foreground">
@@ -513,7 +513,7 @@ export default function ScanPage() {
                     : "Ready to receive barcode input",
                 });
               }}
-              className={`flex-1 gap-2 ${bluetoothEnabled ? "bg-teal-600 hover:bg-teal-700" : ""}`}
+              className={`flex-1 gap-2 ${bluetoothEnabled ? "bg-emerald-600 hover:bg-emerald-700" : ""}`}
               data-testid="button-bluetooth-toggle"
             >
               {bluetoothEnabled ? (
@@ -672,10 +672,10 @@ export default function ScanPage() {
           </div>
         )}
 
-        <Card className="p-3 bg-gradient-to-r from-teal-50 to-cyan-50 dark:from-teal-950/30 dark:to-cyan-950/30 border-teal-200 dark:border-teal-800">
+        <Card className="p-3 bg-gradient-to-r from-emerald-50 to-cyan-50 dark:from-emerald-950/30 dark:to-cyan-950/30 border-emerald-200 dark:border-emerald-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-xl bg-teal-500/10 shrink-0">
-              <Zap className="h-4 w-4 text-teal-600" />
+            <div className="p-2 rounded-xl bg-emerald-500/10 shrink-0">
+              <Zap className="h-4 w-4 text-emerald-600" />
             </div>
             <div className="text-xs">
               <p className="font-medium">Quick tip</p>

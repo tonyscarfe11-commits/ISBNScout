@@ -18,7 +18,7 @@ export default function TermsPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
-            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-emerald-400 transition-colors"
             data-testid="button-back-home"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -27,7 +27,7 @@ export default function TermsPage() {
           </button>
           <Button 
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-header-trial"
           >
             Start Free Trial
@@ -50,7 +50,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">2. Description of Service</h2>
             <p className="text-muted-foreground leading-relaxed">
-              ISBNScout provides tools for book sellers to scan, price, and list books on various e-commerce platforms including Amazon (FBA & FBM) and eBay. We offer AI-powered features including photo recognition, keyword optimization, and automated listing creation.
+              ISBNScout provides tools for book scouts and resellers to evaluate books before purchasing. We offer barcode scanning, AI-powered image recognition, and real-time pricing data from Amazon and eBay to help you make informed buy/don't-buy decisions. Our service includes profitability analysis, inventory tracking, and offline-first functionality for scouting in locations without internet connectivity.
             </p>
           </section>
 
@@ -84,9 +84,9 @@ export default function TermsPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">5. Platform Integration</h2>
+            <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">5. Third-Party Data Access</h2>
             <p className="text-muted-foreground leading-relaxed">
-              When connecting your Amazon (FBA or FBM) or eBay accounts, you authorize ISBNScout to access these platforms on your behalf to create and manage listings. You remain responsible for all listings created through our service and must comply with each platform's terms of service.
+              ISBNScout retrieves current market pricing data from Amazon and eBay to provide you with accurate book valuations. We access publicly available pricing information to help inform your purchasing decisions. You are responsible for complying with each platform's terms of service in your own business activities.
             </p>
           </section>
 
@@ -143,7 +143,7 @@ export default function TermsPage() {
             <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">12. Contact Information</h2>
             <p className="text-muted-foreground leading-relaxed">
               For questions about these Terms, please contact us at{" "}
-              <a href="mailto:legal@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">
+              <a href="mailto:legal@isbnscout.com" className="text-emerald-600 hover:text-emerald-700 hover:underline">
                 legal@isbnscout.com
               </a>
             </p>
@@ -160,10 +160,10 @@ export default function TermsPage() {
               <span className="text-white font-semibold">ISBNScout</span>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm">
-              <button onClick={() => setLocation("/")} className="hover:text-teal-400">Home</button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-400">Privacy</button>
-              <button onClick={() => setLocation("/terms")} className="text-teal-400">Terms</button>
-              <a href="mailto:support@isbnscout.com" className="hover:text-teal-400">Support</a>
+              <button onClick={() => setLocation("/")} className="hover:text-emerald-400">Home</button>
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-400">Privacy</button>
+              <button onClick={() => setLocation("/terms")} className="text-emerald-400">Terms</button>
+              <a href="mailto:support@isbnscout.com" className="hover:text-emerald-400">Support</a>
             </div>
           </div>
           <div className="mt-6 pt-6 border-t border-slate-800 text-center text-sm">

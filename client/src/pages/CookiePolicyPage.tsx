@@ -1,15 +1,49 @@
 import { useLocation } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Switch } from "@/components/ui/switch";
+import { Card } from "@/components/ui/card";
+import { useToast } from "@/hooks/use-toast";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
+
+interface CookiePreferences {
+  essential: boolean;
+  preferences: boolean;
+  analytics: boolean;
+  affiliate: boolean;
+}
 
 export default function CookiePolicyPage() {
   const [, setLocation] = useLocation();
+  const { toast } = useToast();
+
+  const [cookiePrefs, setCookiePrefs] = useState<CookiePreferences>(() => {
+    const saved = localStorage.getItem('cookiePreferences');
+    return saved ? JSON.parse(saved) : {
+      essential: true,
+      preferences: true,
+      analytics: true,
+      affiliate: true,
+    };
+  });
 
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
+
+  const handleToggle = (key: keyof CookiePreferences) => {
+    if (key === 'essential') return; // Can't disable essential
+    setCookiePrefs(prev => ({ ...prev, [key]: !prev[key] }));
+  };
+
+  const savePreferences = () => {
+    localStorage.setItem('cookiePreferences', JSON.stringify(cookiePrefs));
+    toast({
+      title: "Preferences saved",
+      description: "Your cookie preferences have been updated.",
+    });
+  };
 
   return (
     <div className="min-h-screen bg-background">
@@ -17,7 +51,7 @@ export default function CookiePolicyPage() {
         <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <button 
             onClick={() => setLocation("/")} 
-            className="flex items-center gap-3 text-white hover:text-teal-400 transition-colors"
+            className="flex items-center gap-3 text-white hover:text-emerald-400 transition-colors"
             data-testid="button-back-home"
           >
             <ArrowLeft className="h-5 w-5" />
@@ -26,7 +60,7 @@ export default function CookiePolicyPage() {
           </button>
           <Button 
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-header-trial"
           >
             Start Free Trial
@@ -131,6 +165,81 @@ export default function CookiePolicyPage() {
             <p className="text-muted-foreground leading-relaxed mt-3">
               Please note that disabling essential cookies may affect the functionality of ISBNScout, including your ability to log in and use the service.
             </p>
+
+            <div className="mt-6 space-y-3">
+              <h3 className="text-lg font-semibold text-slate-700 dark:text-slate-200 mb-4">Your Cookie Preferences</h3>
+
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-200">Essential Cookies</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Required for the website to function. Cannot be disabled.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={true}
+                    disabled={true}
+                    aria-label="Essential cookies (always enabled)"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-200">Preference Cookies</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Remember your settings like dark/light mode.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={cookiePrefs.preferences}
+                    onCheckedChange={() => handleToggle('preferences')}
+                    aria-label="Preference cookies"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-200">Analytics Cookies</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Help us understand how visitors use our website.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={cookiePrefs.analytics}
+                    onCheckedChange={() => handleToggle('analytics')}
+                    aria-label="Analytics cookies"
+                  />
+                </div>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-slate-700 dark:text-slate-200">Affiliate Tracking Cookies</h4>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Track referrals from our affiliate partners.
+                    </p>
+                  </div>
+                  <Switch
+                    checked={cookiePrefs.affiliate}
+                    onCheckedChange={() => handleToggle('affiliate')}
+                    aria-label="Affiliate tracking cookies"
+                  />
+                </div>
+              </Card>
+
+              <Button
+                onClick={savePreferences}
+                className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                Save Preferences
+              </Button>
+            </div>
           </section>
 
           <section>
@@ -144,7 +253,7 @@ export default function CookiePolicyPage() {
             <h2 className="text-2xl font-bold mb-3 text-slate-700 dark:text-slate-200">7. Contact Us</h2>
             <p className="text-muted-foreground leading-relaxed">
               If you have any questions about our use of cookies, please contact us at{" "}
-              <a href="mailto:privacy@isbnscout.com" className="text-teal-600 hover:text-teal-700 hover:underline">
+              <a href="mailto:privacy@isbnscout.com" className="text-emerald-600 hover:text-emerald-700 hover:underline">
                 privacy@isbnscout.com
               </a>
             </p>

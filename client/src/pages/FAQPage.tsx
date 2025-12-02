@@ -11,12 +11,12 @@ const faqs = [
     answer: "Yes, that's the core feature! ISBNScout is built from the ground up for offline-first scouting. Scan ISBNs with your phone's camera, and all profitability data syncs to your device when you're connected. You can scan hundreds of books at a charity shop or car-boot sale without any signal, then sync everything when you get back online. Your entire scan history and inventory stays on your device.",
   },
   {
-    question: "Is this built for Amazon UK sellers?",
-    answer: "Absolutely. ISBNScout is specifically designed for UK book resellers. All pricing, fees, and postage calculations are calibrated for the UK market. We use Royal Mail Large Letter postage (£2.80) in our profit calculations, support Amazon MFN (Merchant Fulfilled Network) with correct UK fees, and focus on charity shops and UK car-boot sales as primary sourcing venues.",
+    question: "Is this built for UK book scouts?",
+    answer: "Absolutely. ISBNScout is specifically designed for UK book scouts and resellers. All pricing, fees, and postage calculations are calibrated for the UK market. We use Royal Mail Large Letter postage (£2.80) in our profit calculations, include Amazon MFN (Merchant Fulfilled Network) UK fees, and focus on charity shops and UK car-boot sales as primary sourcing venues.",
   },
   {
     question: "Does it support eBay UK?",
-    answer: "Yes. ISBNScout supports both Amazon MFN and eBay UK. When you scan a book, you'll see profitability forecasts for both platforms side-by-side, including all applicable fees. This helps you make better buy/don't-buy decisions knowing your best-case profit on either channel. Optional listing integration means you can push scans directly to your eBay or Amazon account if you choose.",
+    answer: "Yes. ISBNScout supports both Amazon MFN and eBay UK. When you scan a book, you'll see profitability forecasts for both platforms side-by-side, including all applicable fees. This helps you make better buy/don't-buy decisions knowing your best-case profit on either channel.",
   },
   {
     question: "Is the AI spine recognition real?",
@@ -76,12 +76,12 @@ export default function FAQPage() {
               <div key={index}>
                 <button
                   onClick={() => setExpandedIndex(expandedIndex === index ? null : index)}
-                  className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-teal-600 dark:hover:border-teal-600 transition-colors flex items-center justify-between group"
+                  className="w-full text-left p-4 rounded-lg border border-slate-200 dark:border-slate-700 hover:border-emerald-600 dark:hover:border-emerald-600 transition-colors flex items-center justify-between group"
                   data-testid={`button-faq-${index}`}
                 >
                   <h3 className="font-semibold text-foreground pr-4">{faq.question}</h3>
                   <ChevronDown 
-                    className={`w-5 h-5 text-teal-600 flex-shrink-0 transition-transform ${
+                    className={`w-5 h-5 text-emerald-600 flex-shrink-0 transition-transform ${
                       expandedIndex === index ? "rotate-180" : ""
                     }`}
                   />
@@ -116,8 +116,8 @@ export default function FAQPage() {
                   className="p-6 border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow"
                 >
                   <div className="space-y-4">
-                    <div className="p-3 bg-teal-100 dark:bg-teal-900/30 rounded-lg w-fit">
-                      <Icon className="h-6 w-6 text-teal-600" />
+                    <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg w-fit">
+                      <Icon className="h-6 w-6 text-emerald-600" />
                     </div>
                     <div>
                       <h3 className="font-bold text-foreground mb-2">
@@ -128,7 +128,7 @@ export default function FAQPage() {
                       </p>
                       <a
                         href={`mailto:${option.email}`}
-                        className="text-sm font-semibold text-teal-600 hover:text-teal-700"
+                        className="text-sm font-semibold text-emerald-600 hover:text-emerald-700"
                         data-testid={option.testId}
                       >
                         {option.email}
@@ -148,19 +148,19 @@ export default function FAQPage() {
           <div className="text-center text-xs text-muted-foreground space-y-2">
             <p>© 2025 ISBNScout. All rights reserved.</p>
             <div className="flex justify-center gap-6">
-              <button onClick={() => setLocation("/subscription")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/subscription")} className="hover:text-emerald-600">
                 Pricing
               </button>
-              <button onClick={() => setLocation("/blog")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/blog")} className="hover:text-emerald-600">
                 Docs
               </button>
-              <button onClick={() => setLocation("/contact")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/contact")} className="hover:text-emerald-600">
                 Contact
               </button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-600">
                 Privacy
               </button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-600">
                 Terms
               </button>
             </div>

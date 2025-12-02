@@ -14,7 +14,7 @@ const sizeMap = {
 };
 
 const variantMap = {
-  default: "text-teal-600 dark:text-teal-400",
+  default: "text-emerald-600 dark:text-emerald-400",
   light: "text-white",
   dark: "text-slate-900 dark:text-white",
 };

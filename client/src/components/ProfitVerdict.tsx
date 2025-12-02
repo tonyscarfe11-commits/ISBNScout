@@ -154,7 +154,7 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
               <TrendingUp className="h-3 w-3" />
               Best Price
             </div>
-            <div className="text-lg font-bold font-data text-teal-600">
+            <div className="text-lg font-bold font-data text-emerald-600">
               £{bestPrice.toFixed(2)}
             </div>
             <div className="text-[10px] text-muted-foreground">
@@ -172,7 +172,7 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
             <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
               <ShoppingCart className="h-3 w-3" />
               Your Cost
-              <span className="text-[10px] text-teal-600 group-hover:underline">(edit)</span>
+              <span className="text-[10px] text-emerald-600 group-hover:underline">(edit)</span>
             </div>
             <div className="text-lg font-bold font-data text-red-600">
               -£{data.yourCost.toFixed(2)}
@@ -296,7 +296,7 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
         <div className="grid grid-cols-2 gap-2">
           <Button 
             onClick={onSave}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-save-scan"
           >
             Save to Library

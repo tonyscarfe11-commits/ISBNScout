@@ -113,9 +113,9 @@ export default function SettingsPage() {
         <div className="space-y-4">
           {/* Trial Status Card */}
           {trialInfo && (trialInfo.status === 'trialing' || trialInfo.tier === 'trial') && (
-            <Card className={`p-4 ${trialInfo.daysRemaining <= 0 ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30' : 'border-teal-500 bg-teal-50 dark:bg-teal-950/30'}`}>
+            <Card className={`p-4 ${trialInfo.daysRemaining <= 0 ? 'border-orange-500 bg-orange-50 dark:bg-orange-950/30' : 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'}`}>
               <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Clock className={`h-5 w-5 ${trialInfo.daysRemaining <= 0 ? 'text-orange-600' : 'text-teal-600'}`} />
+                <Clock className={`h-5 w-5 ${trialInfo.daysRemaining <= 0 ? 'text-orange-600' : 'text-emerald-600'}`} />
                 {trialInfo.daysRemaining <= 0 ? 'Trial Expired - Grace Period' : 'Free Trial Active'}
               </h2>
               <div className="space-y-3">
@@ -153,7 +153,7 @@ export default function SettingsPage() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-3xl font-bold font-data text-teal-600">
+                      <p className="text-3xl font-bold font-data text-emerald-600">
                         {trialInfo.daysRemaining}
                       </p>
                       <p className="text-xs text-muted-foreground">days left</p>
@@ -170,7 +170,7 @@ export default function SettingsPage() {
                   <Button
                     size="sm"
                     onClick={() => setLocation('/subscription')}
-                    className="bg-teal-600 hover:bg-teal-700 text-white shrink-0"
+                    className="bg-emerald-600 hover:bg-emerald-700 text-white shrink-0"
                   >
                     <Crown className="h-4 w-4 mr-1" />
                     Upgrade

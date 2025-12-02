@@ -84,7 +84,7 @@ interface InventoryItem {
 }
 
 const statusColors = {
-  in_stock: "bg-blue-500",
+  in_stock: "bg-emerald-500",
   listed: "bg-yellow-500",
   sold: "bg-green-500",
   returned: "bg-orange-500",

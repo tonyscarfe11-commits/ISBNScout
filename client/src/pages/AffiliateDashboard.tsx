@@ -233,7 +233,7 @@ export default function AffiliateDashboard() {
                   </Button>
                 </div>
               </div>
-              <Badge className="self-start bg-teal-600 text-white">
+              <Badge className="self-start bg-emerald-600 text-white">
                 Code: {stats.affiliate.referralCode}
               </Badge>
             </div>
@@ -242,7 +242,7 @@ export default function AffiliateDashboard() {
           <div className="grid md:grid-cols-4 gap-4 mb-8">
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-2">
-                <MousePointer className="h-5 w-5 text-teal-500" />
+                <MousePointer className="h-5 w-5 text-emerald-500" />
                 <span className="text-sm text-muted-foreground">Total Clicks</span>
               </div>
               <p className="text-3xl font-bold" data-testid="text-total-clicks">
@@ -252,7 +252,7 @@ export default function AffiliateDashboard() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-2">
-                <Users className="h-5 w-5 text-teal-500" />
+                <Users className="h-5 w-5 text-emerald-500" />
                 <span className="text-sm text-muted-foreground">Conversions</span>
               </div>
               <p className="text-3xl font-bold" data-testid="text-total-conversions">
@@ -265,7 +265,7 @@ export default function AffiliateDashboard() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-2">
-                <TrendingUp className="h-5 w-5 text-teal-500" />
+                <TrendingUp className="h-5 w-5 text-emerald-500" />
                 <span className="text-sm text-muted-foreground">Total Earned</span>
               </div>
               <p className="text-3xl font-bold" data-testid="text-total-earnings">
@@ -275,10 +275,10 @@ export default function AffiliateDashboard() {
 
             <Card className="p-6">
               <div className="flex items-center gap-3 mb-2">
-                <PoundSterling className="h-5 w-5 text-teal-500" />
+                <PoundSterling className="h-5 w-5 text-emerald-500" />
                 <span className="text-sm text-muted-foreground">Pending Payout</span>
               </div>
-              <p className="text-3xl font-bold text-teal-600" data-testid="text-pending-payout">
+              <p className="text-3xl font-bold text-emerald-600" data-testid="text-pending-payout">
                 £{stats.stats.pendingPayout.toFixed(2)}
               </p>
             </Card>
@@ -338,7 +338,7 @@ export default function AffiliateDashboard() {
             </Card>
           </div>
 
-          <Card className="mt-8 p-6 bg-teal-50 dark:bg-teal-950/20 border-teal-200 dark:border-teal-900">
+          <Card className="mt-8 p-6 bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900">
             <h3 className="font-semibold mb-2">Payout Information</h3>
             <p className="text-sm text-muted-foreground">
               Payouts are processed on the 1st of each month via PayPal. Minimum payout threshold is £10.
@@ -423,7 +423,7 @@ export default function AffiliateDashboard() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-teal-600 hover:bg-teal-700"
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
                 data-testid="button-login"
               >
                 {isLoading ? "Logging in..." : "Login"}
@@ -434,7 +434,7 @@ export default function AffiliateDashboard() {
                 <button
                   type="button"
                   onClick={() => setMode("register")}
-                  className="text-teal-600 hover:underline font-medium"
+                  className="text-emerald-600 hover:underline font-medium"
                   data-testid="button-switch-register"
                 >
                   Register here
@@ -517,7 +517,7 @@ export default function AffiliateDashboard() {
               <Button
                 type="submit"
                 disabled={isLoading}
-                className="w-full bg-teal-600 hover:bg-teal-700"
+                className="w-full bg-emerald-600 hover:bg-emerald-700"
                 data-testid="button-register"
               >
                 {isLoading ? "Registering..." : "Register"}
@@ -528,7 +528,7 @@ export default function AffiliateDashboard() {
                 <button
                   type="button"
                   onClick={() => setMode("login")}
-                  className="text-teal-600 hover:underline font-medium"
+                  className="text-emerald-600 hover:underline font-medium"
                   data-testid="button-switch-login"
                 >
                   Login here
@@ -542,7 +542,7 @@ export default function AffiliateDashboard() {
           Looking for the old application form?{" "}
           <button
             onClick={() => setLocation("/affiliates")}
-            className="text-teal-600 hover:underline"
+            className="text-emerald-600 hover:underline"
           >
             Click here
           </button>

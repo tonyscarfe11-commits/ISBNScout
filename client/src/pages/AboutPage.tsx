@@ -23,7 +23,7 @@ export default function AboutPage() {
               See ISBNScout in action.
             </h1>
             <p className="text-base text-muted-foreground max-w-2xl mx-auto">
-              A quick 20-30 second walkthrough: shelf scan, spine recognition, profit preview, and listing pushed live.
+              A quick 20-30 second walkthrough: shelf scan, spine recognition, instant profit analysis, and buy/skip decision.
             </p>
           </div>
 
@@ -53,7 +53,7 @@ export default function AboutPage() {
           <Button
             size="lg"
             onClick={() => setLocation("/subscription")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-features-trial"
           >
             Start Free Trial
@@ -67,19 +67,19 @@ export default function AboutPage() {
           <div className="text-center text-xs text-muted-foreground space-y-2">
             <p>© 2025 ISBNScout. All rights reserved.</p>
             <div className="flex justify-center gap-6">
-              <button onClick={() => setLocation("/subscription")} className="hover:text-teal-600" data-testid="link-footer-pricing">
+              <button onClick={() => setLocation("/subscription")} className="hover:text-emerald-600" data-testid="link-footer-pricing">
                 Pricing
               </button>
-              <button onClick={() => setLocation("/blog")} className="hover:text-teal-600" data-testid="link-footer-docs">
+              <button onClick={() => setLocation("/blog")} className="hover:text-emerald-600" data-testid="link-footer-docs">
                 Docs
               </button>
-              <button onClick={() => setLocation("/faq")} className="hover:text-teal-600" data-testid="link-footer-contact">
+              <button onClick={() => setLocation("/faq")} className="hover:text-emerald-600" data-testid="link-footer-contact">
                 Contact
               </button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-600" data-testid="link-footer-privacy">
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-600" data-testid="link-footer-privacy">
                 Privacy
               </button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-600" data-testid="link-footer-terms">
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-600" data-testid="link-footer-terms">
                 Terms
               </button>
             </div>

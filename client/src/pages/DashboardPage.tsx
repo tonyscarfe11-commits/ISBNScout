@@ -226,7 +226,7 @@ export default function DashboardPage() {
           </div>
           <Button 
             onClick={() => setLocation("/app/scan")} 
-            className="bg-teal-600 hover:bg-teal-700 text-white gap-2 shadow-sm"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white gap-2 shadow-sm"
             data-testid="button-scan-new"
           >
             <Camera className="h-4 w-4" />
@@ -247,11 +247,11 @@ export default function DashboardPage() {
 
         {/* Stats Grid - Teal Color Scheme */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-500 card-professional animate-slide-up stagger-1">
+          <Card className="p-4 md:p-5 border-l-4 border-l-emerald-500 card-professional animate-slide-up stagger-1">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Scans</span>
-              <div className="p-1.5 md:p-2 rounded-full bg-teal-500/10">
-                <Calendar className="h-4 w-4 text-teal-600" />
+              <div className="p-1.5 md:p-2 rounded-full bg-emerald-500/10">
+                <Calendar className="h-4 w-4 text-emerald-600" />
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.scansThisMonth}</div>
@@ -260,11 +260,11 @@ export default function DashboardPage() {
             </p>
           </Card>
 
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-400 card-professional animate-slide-up stagger-2">
+          <Card className="p-4 md:p-5 border-l-4 border-l-emerald-400 card-professional animate-slide-up stagger-2">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Inventory</span>
-              <div className="p-1.5 md:p-2 rounded-full bg-teal-400/10">
-                <BookOpen className="h-4 w-4 text-teal-500" />
+              <div className="p-1.5 md:p-2 rounded-full bg-emerald-400/10">
+                <BookOpen className="h-4 w-4 text-emerald-500" />
               </div>
             </div>
             <div className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.totalInventory}</div>
@@ -273,17 +273,17 @@ export default function DashboardPage() {
             </p>
           </Card>
 
-          <Card className="p-4 md:p-5 border-l-4 border-l-teal-600 card-professional animate-slide-up stagger-3">
+          <Card className="p-4 md:p-5 border-l-4 border-l-emerald-600 card-professional animate-slide-up stagger-3">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs md:text-sm font-medium text-muted-foreground">Sold</span>
-              <div className="p-1.5 md:p-2 rounded-full bg-teal-600/10">
-                <Package className="h-4 w-4 text-teal-600" />
+              <div className="p-1.5 md:p-2 rounded-full bg-emerald-600/10">
+                <Package className="h-4 w-4 text-emerald-600" />
               </div>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-2xl md:text-3xl font-bold tracking-tight font-data">{stats.soldThisMonth}</span>
               {stats.soldThisMonth > 0 && (
-                <Badge className="bg-teal-100 text-teal-800 border-teal-200 gap-1 text-xs dark:bg-teal-900/30 dark:text-teal-300 dark:border-teal-800">
+                <Badge className="bg-emerald-100 text-emerald-800 border-emerald-200 gap-1 text-xs dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-800">
                   <TrendingUp className="h-3 w-3" />
                 </Badge>
               )}
@@ -330,8 +330,8 @@ export default function DashboardPage() {
 
           {recentScans.length === 0 ? (
             <div className="text-center py-10 animate-fade-in">
-              <div className="w-16 h-16 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
-                <BookOpen className="h-8 w-8 text-teal-600" />
+              <div className="w-16 h-16 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-900/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-sm">
+                <BookOpen className="h-8 w-8 text-emerald-600" />
               </div>
               <h3 className="text-base font-semibold mb-1">No scans yet</h3>
               <p className="text-sm text-muted-foreground mb-4 max-w-xs mx-auto">
@@ -339,7 +339,7 @@ export default function DashboardPage() {
               </p>
               <Button 
                 onClick={() => setLocation("/app/scan")}
-                className="bg-teal-600 hover:bg-teal-700 text-white shadow-sm"
+                className="bg-emerald-600 hover:bg-emerald-700 text-white shadow-sm"
                 data-testid="button-first-scan"
               >
                 Scan Your First Book
@@ -354,8 +354,8 @@ export default function DashboardPage() {
                   style={{ animationDelay: `${index * 50}ms` }}
                   data-testid={`card-scan-${scan.id}`}
                 >
-                  <div className="h-12 w-10 bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
-                    <BookOpen className="h-5 w-5 text-teal-600" />
+                  <div className="h-12 w-10 bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-900/20 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+                    <BookOpen className="h-5 w-5 text-emerald-600" />
                   </div>
                   <div className="flex-1 min-w-0">
                     <h3 className="font-medium truncate text-sm">{scan.title}</h3>
@@ -406,7 +406,7 @@ export default function DashboardPage() {
                 onClick={() => setLocation("/app/scan")}
                 data-testid="button-quick-scan"
               >
-                <Camera className="h-4 w-4 mr-3 text-teal-600" />
+                <Camera className="h-4 w-4 mr-3 text-emerald-600" />
                 Scan New Books
               </Button>
               <Button
@@ -415,7 +415,7 @@ export default function DashboardPage() {
                 onClick={() => setLocation("/app/history")}
                 data-testid="button-quick-history"
               >
-                <Clock className="h-4 w-4 mr-3 text-teal-600" />
+                <Clock className="h-4 w-4 mr-3 text-emerald-600" />
                 View Scan History
               </Button>
               <Button
@@ -424,15 +424,15 @@ export default function DashboardPage() {
                 onClick={() => setLocation("/app/calculator")}
                 data-testid="button-quick-calculator"
               >
-                <PoundSterling className="h-4 w-4 mr-3 text-teal-600" />
+                <PoundSterling className="h-4 w-4 mr-3 text-emerald-600" />
                 Profit Calculator
               </Button>
             </div>
 
-            <div className="mt-4 p-4 bg-gradient-to-br from-teal-50 to-teal-100/50 dark:from-teal-950/40 dark:to-teal-900/20 rounded-xl border border-teal-200/60 dark:border-teal-800/60">
+            <div className="mt-4 p-4 bg-gradient-to-br from-emerald-50 to-emerald-100/50 dark:from-emerald-950/40 dark:to-emerald-900/20 rounded-xl border border-emerald-200/60 dark:border-emerald-800/60">
               <div className="flex items-start gap-3">
-                <div className="p-1.5 rounded-full bg-teal-500/10">
-                  <CheckCircle2 className="h-4 w-4 text-teal-600" />
+                <div className="p-1.5 rounded-full bg-emerald-500/10">
+                  <CheckCircle2 className="h-4 w-4 text-emerald-600" />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-semibold text-sm mb-0.5">
@@ -445,7 +445,7 @@ export default function DashboardPage() {
                     <Button 
                       size="sm" 
                       onClick={() => setLocation("/subscription")} 
-                      className="bg-teal-600 hover:bg-teal-700 text-white text-xs h-7 shadow-sm"
+                      className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs h-7 shadow-sm"
                       data-testid="button-upgrade"
                     >
                       View Plans
@@ -459,8 +459,8 @@ export default function DashboardPage() {
           {/* Top Categories */}
           <Card className="p-4 md:p-6 animate-slide-up" style={{ animationDelay: '0.35s' }}>
             <div className="flex items-center gap-2 mb-4">
-              <div className="p-2 rounded-xl bg-gradient-to-br from-teal-100 to-teal-50 dark:from-teal-900/40 dark:to-teal-900/20 shadow-sm">
-                <BarChart3 className="h-4 w-4 text-teal-600" />
+              <div className="p-2 rounded-xl bg-gradient-to-br from-emerald-100 to-emerald-50 dark:from-emerald-900/40 dark:to-emerald-900/20 shadow-sm">
+                <BarChart3 className="h-4 w-4 text-emerald-600" />
               </div>
               <h2 className="text-lg md:text-xl font-bold tracking-tight">Top Categories</h2>
             </div>
@@ -470,7 +470,7 @@ export default function DashboardPage() {
                   key={index} 
                   className="flex items-center gap-3 p-3 rounded-xl hover:bg-muted/50 transition-all duration-200 border border-transparent hover:border-border cursor-pointer"
                 >
-                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-teal-500 to-teal-600 text-white font-bold text-xs shadow-sm">
+                  <div className="flex items-center justify-center w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-emerald-600 text-white font-bold text-xs shadow-sm">
                     {index + 1}
                   </div>
                   <div className="flex-1 min-w-0">

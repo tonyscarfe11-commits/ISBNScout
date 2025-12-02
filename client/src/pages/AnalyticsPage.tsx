@@ -166,8 +166,8 @@ export default function AnalyticsPage() {
                   {periodStats.profitableBooks} of {periodStats.totalScans} books
                 </p>
               </div>
-              <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center">
-                <Target className="h-6 w-6 text-blue-600" />
+              <div className="h-12 w-12 rounded-full bg-emerald-500/10 flex items-center justify-center">
+                <Target className="h-6 w-6 text-emerald-600" />
               </div>
             </div>
           </Card>

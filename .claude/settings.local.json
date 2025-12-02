@@ -46,7 +46,19 @@
       "WebFetch(domain:chatgpt.com)",
       "Bash(xargs:*)",
       "Bash(npm start)",
-      "Bash(killall -9 node tsx npm)"
+      "Bash(killall -9 node tsx npm)",
+      "Bash(npx depcheck:*)",
+      "Bash(npx tsc:*)",
+      "Bash(ln:*)",
+      "Bash(npm run check:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(npm audit:*)",
+      "Bash(if [ -f .env ])",
+      "Bash(then echo \"=== Current Amazon Config ===\")",
+      "Bash(else echo \".env file not found\")",
+      "WebFetch(domain:auditmylisting.com)",
+      "WebFetch(domain:asellertool.com)",
+      "WebFetch(domain:bookscouter.com)"
     ],
     "deny": [],
     "ask": []

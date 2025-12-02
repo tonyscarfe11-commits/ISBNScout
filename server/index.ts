@@ -3,10 +3,16 @@ import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
 import cors from "cors";
-import { registerRoutes } from "./routes";
+import helmet from "helmet";
+import { registerRoutes } from "./routes/index";
 import { setupVite, serveStatic, log } from "./vite";
+import { apiLimiter } from "./middleware/rate-limit";
+import { initSentry, sentryErrorHandler } from "./sentry";
 
 const app = express();
+
+// Initialize error tracking
+initSentry(app);
 
 // Enable trust proxy for Replit
 app.set('trust proxy', 1);
@@ -52,8 +58,30 @@ if (isDev) {
     allowedHeaders: ['Content-Type', 'Authorization'],
   }));
 }
+
+// Security headers
+app.use(helmet({
+  contentSecurityPolicy: {
+    directives: {
+      defaultSrc: ["'self'"],
+      styleSrc: ["'self'", "'unsafe-inline'"], // Allow inline styles for Tailwind
+      scriptSrc: ["'self'", "'unsafe-inline'"], // Allow inline scripts for Vite in dev
+      imgSrc: ["'self'", "data:", "https:", "http:"], // Allow external images
+      connectSrc: ["'self'", "https:", "http:"], // Allow API calls
+      fontSrc: ["'self'", "data:"],
+      objectSrc: ["'none'"],
+      mediaSrc: ["'self'"],
+      frameSrc: ["'none'"],
+    },
+  },
+  crossOriginEmbedderPolicy: false, // Disable for external images
+}));
+
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
+
+// Apply global rate limiting to all API routes
+app.use('/api', apiLimiter);
 
 // Session configuration
 const MemoryStoreSession = MemoryStore(session);
@@ -147,6 +175,9 @@ app.use((req, res, next) => {
 
 (async () => {
   const server = await registerRoutes(app);
+
+  // Sentry error handler (must be before other error handlers)
+  app.use(sentryErrorHandler());
 
   app.use((err: any, _req: Request, res: Response, _next: NextFunction) => {
     const status = err.status || err.statusCode || 500;

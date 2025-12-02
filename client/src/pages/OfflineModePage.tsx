@@ -80,8 +80,8 @@ export default function OfflineModePage() {
               <Card key={index} className="p-8 border-slate-200 dark:border-slate-700">
                 <div className="space-y-4">
                   <div className="flex items-center gap-3">
-                    <Icon className="h-6 w-6 text-teal-600" />
-                    <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide">
+                    <Icon className="h-6 w-6 text-emerald-600" />
+                    <div className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">
                       {feature.section}
                     </div>
                   </div>
@@ -94,7 +94,7 @@ export default function OfflineModePage() {
                   <ul className="space-y-2">
                     {feature.points.map((point, i) => (
                       <li key={i} className="flex gap-2 text-sm text-muted-foreground">
-                        <span className="text-teal-600 font-bold">•</span>
+                        <span className="text-emerald-600 font-bold">•</span>
                         <span>{point}</span>
                       </li>
                     ))}
@@ -123,8 +123,8 @@ export default function OfflineModePage() {
                 <Card key={index} className="p-6 border-slate-200 dark:border-slate-700 hover:shadow-lg transition-shadow">
                   <div className="space-y-4">
                     <div className="flex items-center gap-2">
-                      <Icon className="h-5 w-5 text-teal-600" />
-                      <div className="text-xs text-teal-600 font-semibold uppercase tracking-wide">
+                      <Icon className="h-5 w-5 text-emerald-600" />
+                      <div className="text-xs text-emerald-600 font-semibold uppercase tracking-wide">
                         {workflow.section}
                       </div>
                     </div>
@@ -137,7 +137,7 @@ export default function OfflineModePage() {
                     <ul className="space-y-2">
                       {workflow.points.map((point, i) => (
                         <li key={i} className="flex gap-2 text-xs text-muted-foreground">
-                          <span className="text-teal-600 font-bold">•</span>
+                          <span className="text-emerald-600 font-bold">•</span>
                           <span>{point}</span>
                         </li>
                       ))}
@@ -160,7 +160,7 @@ export default function OfflineModePage() {
           <Button
             size="lg"
             onClick={() => setLocation("/auth")}
-            className="bg-teal-600 hover:bg-teal-700 text-white"
+            className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-offline-trial"
           >
             Start Free Trial
@@ -174,19 +174,19 @@ export default function OfflineModePage() {
           <div className="text-center text-xs text-muted-foreground space-y-2">
             <p>© 2025 ISBNScout. All rights reserved.</p>
             <div className="flex justify-center gap-6">
-              <button onClick={() => setLocation("/subscription")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/subscription")} className="hover:text-emerald-600">
                 Pricing
               </button>
-              <button onClick={() => setLocation("/blog")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/blog")} className="hover:text-emerald-600">
                 Docs
               </button>
-              <button onClick={() => setLocation("/faq")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/faq")} className="hover:text-emerald-600">
                 Contact
               </button>
-              <button onClick={() => setLocation("/privacy")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/privacy")} className="hover:text-emerald-600">
                 Privacy
               </button>
-              <button onClick={() => setLocation("/terms")} className="hover:text-teal-600">
+              <button onClick={() => setLocation("/terms")} className="hover:text-emerald-600">
                 Terms
               </button>
             </div>

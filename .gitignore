@@ -7,4 +7,4 @@ vite.config.ts.*
 
 # Local development files
 *.db
-.claude/settings.local.json
+.claude/settings.local.jsonlogs/

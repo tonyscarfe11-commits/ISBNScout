@@ -60,14 +60,14 @@ export default function AffiliatePage() {
       <div className="min-h-screen bg-background">
         <div className="max-w-2xl mx-auto px-4 py-16">
           <div className="text-center space-y-6">
-            <CheckCircle2 className="h-20 w-20 text-teal-500 mx-auto" />
+            <CheckCircle2 className="h-20 w-20 text-emerald-500 mx-auto" />
             <h1 className="text-3xl font-bold">Application Received!</h1>
             <p className="text-muted-foreground text-lg">
               Thanks for your interest in the ISBNScout Affiliate Program. We'll review your application and get back to you within 48 hours.
             </p>
             <Button
               onClick={() => setLocation("/")}
-              className="bg-teal-600 hover:bg-teal-700"
+              className="bg-emerald-600 hover:bg-emerald-700"
             >
               Back to Home
             </Button>
@@ -107,7 +107,7 @@ export default function AffiliatePage() {
 
         <div className="grid md:grid-cols-3 gap-6 mb-12">
           <Card className="p-6 text-center">
-            <Percent className="h-10 w-10 text-teal-500 mx-auto mb-4" />
+            <Percent className="h-10 w-10 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">25% Commission</h3>
             <p className="text-muted-foreground">
               Earn 25% of the first month's subscription for every referral
@@ -115,7 +115,7 @@ export default function AffiliatePage() {
           </Card>
 
           <Card className="p-6 text-center">
-            <Users className="h-10 w-10 text-teal-500 mx-auto mb-4" />
+            <Users className="h-10 w-10 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">30-Day Cookie</h3>
             <p className="text-muted-foreground">
               Get credit for referrals up to 30 days after they click your link
@@ -123,10 +123,10 @@ export default function AffiliatePage() {
           </Card>
 
           <Card className="p-6 text-center">
-            <PoundSterling className="h-10 w-10 text-teal-500 mx-auto mb-4" />
+            <PoundSterling className="h-10 w-10 text-emerald-500 mx-auto mb-4" />
             <h3 className="text-xl font-semibold mb-2">Monthly Payouts</h3>
             <p className="text-muted-foreground">
-              Receive payments via PayPal on the 1st of each month
+              Receive payments via PayPal on the 1st of each month (minimum £10)
             </p>
           </Card>
         </div>
@@ -213,7 +213,7 @@ export default function AffiliatePage() {
               type="submit"
               size="lg"
               disabled={isSubmitting}
-              className="w-full bg-teal-600 hover:bg-teal-700 text-white"
+              className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
               data-testid="button-submit-affiliate"
             >
               {isSubmitting ? (
@@ -229,7 +229,7 @@ export default function AffiliatePage() {
         </Card>
 
         <div className="mt-12 text-center text-muted-foreground">
-          <p>Questions? Email us at <a href="mailto:affiliates@isbnscout.com" className="text-teal-600 hover:underline">affiliates@isbnscout.com</a></p>
+          <p>Questions? Email us at <a href="mailto:affiliates@isbnscout.com" className="text-emerald-600 hover:underline">affiliates@isbnscout.com</a></p>
         </div>
       </main>
     </div>

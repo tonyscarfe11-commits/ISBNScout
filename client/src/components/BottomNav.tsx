@@ -25,8 +25,8 @@ export function BottomNav() {
               href={item.path}
               className={`flex flex-col items-center justify-center gap-1 px-4 py-2 rounded-xl transition-all duration-200 min-w-[72px] ${
                 isActive
-                  ? "text-teal-400 bg-teal-500/15 scale-105"
-                  : "text-slate-400 hover:text-teal-300 hover:bg-slate-800/60 active:scale-95"
+                  ? "text-emerald-400 bg-emerald-500/15 scale-105"
+                  : "text-slate-400 hover:text-emerald-300 hover:bg-slate-800/60 active:scale-95"
               }`}
               data-testid={`link-nav-${item.label.toLowerCase()}`}
             >

@@ -101,11 +101,11 @@ export function InstallPrompt() {
   }
 
   return (
-    <Card className="fixed bottom-20 left-4 right-4 z-50 p-4 shadow-lg border-teal-500 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
+    <Card className="fixed bottom-20 left-4 right-4 z-50 p-4 shadow-lg border-emerald-500 bg-gradient-to-r from-slate-900 to-slate-800 text-white">
       <div className="flex items-start gap-3">
         <div className="flex-shrink-0">
-          <div className="w-10 h-10 rounded-lg bg-teal-500/20 flex items-center justify-center">
-            <Download className="w-5 h-5 text-teal-400" />
+          <div className="w-10 h-10 rounded-lg bg-emerald-500/20 flex items-center justify-center">
+            <Download className="w-5 h-5 text-emerald-400" />
           </div>
         </div>
 
@@ -129,7 +129,7 @@ export function InstallPrompt() {
               <Button
                 size="sm"
                 onClick={handleInstallClick}
-                className="bg-teal-500 hover:bg-teal-600 text-white"
+                className="bg-emerald-500 hover:bg-emerald-600 text-white"
               >
                 Install Now
               </Button>

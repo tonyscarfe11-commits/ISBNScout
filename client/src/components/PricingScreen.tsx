@@ -7,7 +7,7 @@ const PricingScreen = () => {
 
       <div className="space-y-6">
 
-        <div className="bg-slate-900/60 p-5 rounded-xl border border-teal-500">
+        <div className="bg-slate-900/60 p-5 rounded-xl border border-emerald-500">
           <h2 className="text-xl font-semibold mb-1">Pro</h2>
           <p className="text-sm mb-3 text-slate-300">£14.99/month or £149/year</p>
           <ul className="text-sm text-slate-400 mb-3 space-y-1">
@@ -18,7 +18,7 @@ const PricingScreen = () => {
             <li>• Postage estimates</li>
             <li>• Scan history</li>
           </ul>
-          <button className="w-full bg-teal-400 text-black py-2 rounded-full font-semibold">
+          <button className="w-full bg-emerald-400 text-black py-2 rounded-full font-semibold">
             Start 14-Day Pro Trial
           </button>
         </div>
