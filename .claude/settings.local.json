@@ -58,7 +58,17 @@
       "Bash(else echo \".env file not found\")",
       "WebFetch(domain:auditmylisting.com)",
       "WebFetch(domain:asellertool.com)",
-      "WebFetch(domain:bookscouter.com)"
+      "WebFetch(domain:bookscouter.com)",
+      "Bash(if [ -f /home/runner/workspace/.env ])",
+      "Bash(then grep -c \"STRIPE_SECRET_KEY=sk_\" /home/runner/workspace/.env)",
+      "Bash(else echo \"No .env file\")",
+      "Bash(tsx scripts/test-email.ts:*)",
+      "Bash(tsx scripts/check-resend.ts:*)",
+      "Bash(tsx scripts/verify-resend-key.ts:*)",
+      "Bash(gh secret set:*)",
+      "Bash(then echo \"=== .env file exists ===\")",
+      "Bash(npm test)",
+      "Bash(git restore:*)"
     ],
     "deny": [],
     "ask": []
