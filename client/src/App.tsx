@@ -13,10 +13,6 @@ import ProfitCalculatorPage from "@/pages/ProfitCalculatorPage";
 import HistoryPage from "@/pages/HistoryPage";
 import AnalyticsPage from "@/pages/AnalyticsPage";
 import AlertsPage from "@/pages/AlertsPage";
-import InventoryPage from "@/pages/InventoryPage";
-import ListingsPage from "@/pages/ListingsPage";
-import RepricingPage from "@/pages/RepricingPage";
-import ProfitReportsPage from "@/pages/ProfitReportsPage";
 import SettingsPage from "@/pages/SettingsPage";
 import AuthPage from "@/pages/AuthPage";
 import SubscriptionPage from "@/pages/SubscriptionPage";
@@ -108,31 +104,6 @@ function Router() {
         <Route path="/app/alerts">
           <AppLayout>
             <AlertsPage />
-          </AppLayout>
-        </Route>
-        <Route path="/app/inventory">
-          <AppLayout>
-            <InventoryPage />
-          </AppLayout>
-        </Route>
-        <Route path="/app/listings">
-          <AppLayout>
-            <ListingsPage />
-          </AppLayout>
-        </Route>
-        <Route path="/app/listings/new">
-          <AppLayout>
-            <ListingsPage />
-          </AppLayout>
-        </Route>
-        <Route path="/app/repricing">
-          <AppLayout>
-            <RepricingPage />
-          </AppLayout>
-        </Route>
-        <Route path="/app/reports">
-          <AppLayout>
-            <ProfitReportsPage />
           </AppLayout>
         </Route>
         <Route path="/app/settings">
