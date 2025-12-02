@@ -196,11 +196,49 @@ export class HybridStorage implements IStorage {
 
         } catch (error: any) {
           const retryCount = (item.retry_count || 0) + 1;
-          const isPermanentError = 
+          const isDuplicateError =
             error.message?.includes('duplicate key') ||
-            error.message?.includes('foreign key constraint') ||
             error.message?.includes('unique constraint');
-          
+
+          // Handle duplicate errors intelligently
+          if (isDuplicateError && item.operation === 'create') {
+            try {
+              const rawData = JSON.parse(item.data);
+              const data = this.convertDates(rawData);
+              let alreadyExists = false;
+
+              // Check if the item already exists in remote
+              if (item.entity === 'user' && data.id) {
+                const existingUser = await this.remote!.getUserById(data.id);
+                alreadyExists = !!existingUser;
+              } else if (item.entity === 'book' && data.isbn) {
+                const existingBook = await this.remote!.getBook(data.isbn);
+                alreadyExists = !!existingBook;
+              } else if (item.entity === 'listing' && data.id) {
+                const existingListing = await this.remote!.getListing(data.id);
+                alreadyExists = !!existingListing;
+              } else if (item.entity === 'inventoryItem' && data.id) {
+                const existingItem = await this.remote!.getInventoryItem(data.id);
+                alreadyExists = !!existingItem;
+              }
+
+              if (alreadyExists) {
+                // Item already exists with same ID - treat as success
+                console.log(`[HybridStorage] ${item.entity} ${data.id} already exists in remote, marking as synced`);
+                this.local["db"]
+                  .prepare("UPDATE sync_queue SET synced = 1 WHERE id = ?")
+                  .run(item.id);
+                continue;
+              }
+            } catch (checkError) {
+              console.error(`[HybridStorage] Error checking for existing item:`, checkError);
+            }
+          }
+
+          const isPermanentError =
+            isDuplicateError ||
+            error.message?.includes('foreign key constraint');
+
           if (isPermanentError || retryCount >= 5) {
             // Mark as permanently failed (won't retry)
             console.warn(`[HybridStorage] Permanently failed ${item.id}: ${error.message}`);
