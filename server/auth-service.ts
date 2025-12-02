@@ -15,6 +15,11 @@ export class AuthService {
   }
 
   async signup(username: string, email: string, password: string): Promise<Omit<User, 'password'>> {
+    // Validate password strength
+    if (password.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+
     // Check if user already exists
     const existingUser = await storage.getUserByEmail(email);
     if (existingUser) {

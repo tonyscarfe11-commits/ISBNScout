@@ -471,11 +471,18 @@ import { PostgresStorage } from "./postgres-storage";
 import { HybridStorage } from "./hybrid-storage";
 
 // Use HybridStorage for offline-first with cloud sync
-export const storage = new HybridStorage(
-  "isbn-scout-offline.db",
-  process.env.DATABASE_URL
-);
+// Use simple MemStorage for tests to avoid async sync issues
+export const storage = process.env.NODE_ENV === 'test'
+  ? new MemStorage()
+  : new HybridStorage(
+      "isbn-scout-offline.db",
+      process.env.DATABASE_URL
+    );
 
-console.log(
-  `[Storage] Using HybridStorage - SQLite (offline) ${process.env.DATABASE_URL ? "+ PostgreSQL sync (cloud)" : "(local only)"}`
-);
+if (process.env.NODE_ENV === 'test') {
+  console.log('[Storage] Using MemStorage for tests (in-memory, no sync)');
+} else {
+  console.log(
+    `[Storage] Using HybridStorage - SQLite (offline) ${process.env.DATABASE_URL ? "+ PostgreSQL sync (cloud)" : "(local only)"}`
+  );
+}

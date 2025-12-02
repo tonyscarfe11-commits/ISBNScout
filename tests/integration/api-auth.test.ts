@@ -1,7 +1,9 @@
 import { describe, it, expect, beforeAll } from 'vitest';
 import request from 'supertest';
 import express from 'express';
+import session from 'express-session';
 import authRouter from '../../server/routes/auth';
+import { generateTestEmail, generateTestUsername } from '../helpers/db-cleanup';
 
 describe('Auth API Endpoints', () => {
   let app: express.Application;
@@ -9,23 +11,39 @@ describe('Auth API Endpoints', () => {
   beforeAll(() => {
     app = express();
     app.use(express.json());
+
+    // Add session middleware for tests
+    app.use(session({
+      secret: 'test-secret',
+      resave: false,
+      saveUninitialized: false,
+      cookie: { secure: false }
+    }));
+
     app.use('/api/auth', authRouter);
   });
 
   describe('POST /api/auth/signup', () => {
     it('should create a new user', async () => {
+      const username = generateTestUsername();
+      const email = generateTestEmail();
+
       const response = await request(app)
         .post('/api/auth/signup')
         .send({
-          username: 'apitest',
-          email: 'apitest@example.com',
+          username,
+          email,
           password: 'TestPassword123!',
         });
+
+      if (response.status !== 200) {
+        console.log('Error response:', response.body);
+      }
 
       expect(response.status).toBe(200);
       expect(response.body.user).toBeDefined();
       expect(response.body.authToken).toBeDefined();
-      expect(response.body.user.email).toBe('apitest@example.com');
+      expect(response.body.user.email).toBe(email);
     });
 
     it('should reject missing fields', async () => {
