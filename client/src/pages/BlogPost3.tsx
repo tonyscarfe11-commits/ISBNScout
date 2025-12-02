@@ -74,7 +74,7 @@ export default function BlogPost3() {
             <li><strong>Manual fulfillment:</strong> You pack every order, print labels, and make post office trips.</li>
             <li><strong>Variable sell-through:</strong> Fulfillment by merchant can affect conversion rates.</li>
             <li><strong>Customer service:</strong> You handle all inquiries, returns, and issues directly.</li>
-            <li><strong>Shipping costs:</strong> Royal Mail adds £2-4 per book, eating into the fee savings.</li>
+            <li><strong>Time investment:</strong> Processing orders, buying postage, and trips to the post office add up.</li>
           </ul>
 
           <h3 className="text-xl font-bold mb-3 mt-6">Best For:</h3>
@@ -97,7 +97,7 @@ export default function BlogPost3() {
             <li><strong>Auction and Best Offer:</strong> Unique features can drive competitive bidding on rare books.</li>
             <li><strong>International reach:</strong> eBay's global shipping program makes worldwide sales easy.</li>
             <li><strong>Better for unique items:</strong> Signed books, first editions, and collectibles often fetch higher prices on eBay.</li>
-            <li><strong>Customer pays shipping:</strong> Unlike Amazon, you can charge actual shipping costs or profit from it.</li>
+            <li><strong>Flexible shipping options:</strong> You can charge actual shipping costs, offer free postage, or build shipping into the price.</li>
             <li><strong>More listing flexibility:</strong> Write longer descriptions, add multiple photos, tell the book's story.</li>
           </ul>
 
@@ -122,15 +122,17 @@ export default function BlogPost3() {
             <div className="space-y-3">
               <div className="border-b pb-2">
                 <p className="font-semibold">Amazon FBM</p>
-                <p className="text-muted-foreground text-sm">Commission: £3.00 (15%)</p>
-                <p className="text-muted-foreground text-sm">Shipping: £2.50</p>
-                <p className="font-bold mt-1">Net: £14.50 (72.5%)</p>
+                <p className="text-muted-foreground text-sm">Sale price: £20.00</p>
+                <p className="text-muted-foreground text-sm">Commission: -£3.00 (15%)</p>
+                <p className="text-muted-foreground text-sm">Postage: £0 (buyer pays)</p>
+                <p className="font-bold mt-1">Your profit: £17.00 (85%)</p>
               </div>
               <div>
                 <p className="font-semibold">eBay</p>
-                <p className="text-muted-foreground text-sm">Fees: £2.86 (12.8% + £0.30)</p>
-                <p className="text-muted-foreground text-sm">Shipping: £0 (buyer pays)</p>
-                <p className="font-bold mt-1">Net: £17.14 (85.7%)</p>
+                <p className="text-muted-foreground text-sm">Sale price: £20.00</p>
+                <p className="text-muted-foreground text-sm">Fees: -£2.86 (12.8% + £0.30)</p>
+                <p className="text-muted-foreground text-sm">Postage: £0 (buyer pays)</p>
+                <p className="font-bold mt-1">Your profit: £17.14 (85.7%)</p>
               </div>
             </div>
           </Card>
@@ -148,16 +150,16 @@ export default function BlogPost3() {
           </ul>
 
           <p className="text-muted-foreground leading-relaxed mt-4">
-            Tools like ISBNScout let you cross-list to all platforms simultaneously, maximizing your chances of selling while optimizing for each platform's strengths.
+            Tools like ISBNScout help you analyze pricing and profitability across platforms, making it easier to decide where to list each book for maximum returns.
           </p>
 
           <div className="bg-primary/5 p-6 rounded-lg mt-8">
-            <h3 className="text-xl font-bold mb-3">List Smarter Across All Platforms</h3>
+            <h3 className="text-xl font-bold mb-3">Ready to Maximize Your Book Profits?</h3>
             <p className="text-muted-foreground mb-4">
-              ISBNScout automatically optimizes listings for Amazon FBM and eBay. One-click cross-posting with platform-specific titles, keywords, and pricing strategies.
+              ISBNScout helps you find profitable books faster with instant pricing, offline scanning, and smart profit calculations.
             </p>
             <Button onClick={() => setLocation("/auth")}>
-              Start Multi-Platform Selling Today
+              Start Your Free Trial Today
             </Button>
           </div>
         </div>

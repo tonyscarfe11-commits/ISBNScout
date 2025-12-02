@@ -31,8 +31,8 @@ export default function BlogPage() {
       slug: "/blog/ai-transforming-book-selling",
     },
     {
-      title: "Amazon FBA vs FBM vs eBay: Which Platform is Right for You?",
-      excerpt: "A comprehensive comparison of the major platforms for selling books online, including Amazon FBA, FBM, and eBay - covering fees, reach, and seller support for UK sellers.",
+      title: "Amazon FBM vs eBay: Which Platform is Right for You?",
+      excerpt: "A comprehensive comparison of the major platforms for selling books online - Amazon FBM and eBay. Covering fees, reach, and seller support for UK sellers.",
       date: "January 5, 2025",
       readTime: "10 min read",
       category: "Platforms",
