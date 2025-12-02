@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import logoImage from "@assets/isbnscout_transparent_512_1763981059394.png";
+import { useAnalytics } from "@/lib/analytics";
 
 const plans = [
   {
@@ -53,6 +54,7 @@ const trialFeatures = [
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
+  const { track } = useAnalytics();
   const [, setLocation] = useLocation();
   const [isLoading, setIsLoading] = useState<string | null>(null);
 
@@ -64,12 +66,19 @@ export default function SubscriptionPage() {
     const cancelled = urlParams.get('cancelled');
 
     if (sessionId) {
+      track('Subscription Created', {
+        sessionId,
+        source: 'stripe_checkout',
+      });
       toast({
         title: "Payment Successful!",
         description: "Your 14-day free trial has started. Welcome aboard!",
       });
       window.history.replaceState({}, '', '/subscription');
     } else if (cancelled) {
+      track('Checkout Cancelled', {
+        source: 'stripe_checkout',
+      });
       toast({
         title: "Payment Cancelled",
         description: "Your payment was cancelled. You can try again anytime.",
@@ -81,6 +90,12 @@ export default function SubscriptionPage() {
 
   const handleSubscribe = async (planId: string) => {
     setIsLoading(planId);
+
+    // Track checkout initiated
+    track('Checkout Started', {
+      planId,
+      planType: 'monthly',
+    });
 
     try {
       const response = await fetch("/api/subscription/checkout", {
@@ -96,6 +111,9 @@ export default function SubscriptionPage() {
       const data = await response.json();
 
       if (data.checkoutUrl) {
+        track('Redirected to Stripe', {
+          planId,
+        });
         window.location.href = data.checkoutUrl;
       } else {
         toast({
@@ -104,6 +122,10 @@ export default function SubscriptionPage() {
         });
       }
     } catch (error: any) {
+      track('Checkout Failed', {
+        planId,
+        error: error.message,
+      });
       toast({
         title: "Error",
         description: error.message || "Failed to process subscription",

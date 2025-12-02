@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { BrandText } from "@/components/icons";
 import { Mail, Lock, User } from "lucide-react";
 import { setAuthToken } from "@/lib/queryClient";
+import { useAnalytics } from "@/lib/analytics";
 
 function getReferralCookie(): { affiliateId: string; referralCode: string } | null {
   const match = document.cookie.match(/(^| )isbn_ref=([^;]+)/);
@@ -22,6 +23,7 @@ function getReferralCookie(): { affiliateId: string; referralCode: string } | nu
 export default function AuthPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
+  const { identify, track } = useAnalytics();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -64,6 +66,17 @@ export default function AuthPage() {
       if (data.authToken) {
         setAuthToken(data.authToken);
       }
+
+      // Track user login
+      identify(data.user.id, {
+        username: data.user.username,
+        email: data.user.email,
+        subscriptionTier: data.user.subscriptionTier,
+        subscriptionStatus: data.user.subscriptionStatus,
+      });
+      track('User Logged In', {
+        loginMethod: 'email',
+      });
 
       toast({
         title: "Welcome back!",
@@ -130,6 +143,24 @@ export default function AuthPage() {
       if (data.authToken) {
         setAuthToken(data.authToken);
       }
+
+      // Track user signup and identification
+      identify(data.user.id, {
+        username: data.user.username,
+        email: data.user.email,
+        subscriptionTier: data.user.subscriptionTier,
+        subscriptionStatus: data.user.subscriptionStatus,
+        trialStartedAt: data.user.trialStartedAt,
+        trialEndsAt: data.user.trialEndsAt,
+      });
+      track('User Signed Up', {
+        signupMethod: 'email',
+        referralSource: referral?.affiliateId ? 'affiliate' : 'direct',
+      });
+      track('Trial Started', {
+        trialLength: 14,
+        trialEndsAt: data.user.trialEndsAt,
+      });
 
       toast({
         title: "Account created!",
