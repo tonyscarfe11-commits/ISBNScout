@@ -164,10 +164,10 @@ export default function AuthPage() {
 
       toast({
         title: "Account created!",
-        description: `Welcome, ${data.user.username}! Your 14-day free trial has started.`,
+        description: `Welcome, ${data.user.username}! Please verify your email to continue.`,
       });
 
-      setLocation("/app");
+      setLocation("/verify-email");
     } catch (error: any) {
       toast({
         title: "Signup failed",

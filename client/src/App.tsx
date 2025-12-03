@@ -7,6 +7,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { BottomNav } from "@/components/BottomNav";
 import { UpdateNotification } from "@/components/UpdateNotification";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 
 // Lazy load pages for code splitting
 const LandingPage = lazy(() => import("@/pages/LandingPage"));
@@ -33,6 +34,7 @@ const OfflineModePage = lazy(() => import("@/pages/OfflineModePage"));
 const AmazonRedirectPage = lazy(() => import("@/pages/AmazonRedirectPage"));
 const AffiliatePage = lazy(() => import("@/pages/AffiliatePage"));
 const AffiliateDashboard = lazy(() => import("@/pages/AffiliateDashboard"));
+const VerifyEmailPage = lazy(() => import("@/pages/VerifyEmailPage"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Loading fallback component
@@ -63,6 +65,7 @@ function Router() {
         
         {/* Public routes */}
         <Route path="/auth" component={AuthPage} />
+        <Route path="/verify-email" component={VerifyEmailPage} />
         <Route path="/subscription" component={SubscriptionPage} />
         <Route path="/subscription/success" component={SubscriptionSuccessPage} />
         <Route path="/about" component={AboutPage} />
@@ -83,46 +86,62 @@ function Router() {
         <Route path="/shop" component={AmazonRedirectPage} />
         <Route path="/amazon" component={AmazonRedirectPage} />
 
-        {/* App routes */}
+        {/* App routes - Protected */}
         <Route path="/app">
-          <AppLayout>
-            <DashboardPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <DashboardPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/dashboard">
-          <AppLayout>
-            <DashboardPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <DashboardPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/scan">
-          <AppLayout>
-            <ScanPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <ScanPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/calculator">
-          <AppLayout>
-            <ProfitCalculatorPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <ProfitCalculatorPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/history">
-          <AppLayout>
-            <HistoryPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <HistoryPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/analytics">
-          <AppLayout>
-            <AnalyticsPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <AnalyticsPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/alerts">
-          <AppLayout>
-            <AlertsPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <AlertsPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
         <Route path="/app/settings">
-          <AppLayout>
-            <SettingsPage />
-          </AppLayout>
+          <ProtectedRoute>
+            <AppLayout>
+              <SettingsPage />
+            </AppLayout>
+          </ProtectedRoute>
         </Route>
 
         <Route component={NotFound} />

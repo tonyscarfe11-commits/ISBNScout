@@ -187,7 +187,7 @@ export default function LandingPage() {
             {/* Left Column */}
             <div className="space-y-6">
               <Badge className="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-600 w-fit font-semibold">
-                UK's premier scouting app
+                UK's Premier Book Scouting App
               </Badge>
 
               <h1 className="text-4xl md:text-5xl font-bold text-slate-700 dark:text-slate-200 leading-tight">
