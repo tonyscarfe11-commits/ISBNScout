@@ -28,7 +28,8 @@ if (isDev) {
     origin: true, // Allow all origins in development
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+    exposedHeaders: ['X-CSRF-Token'], // Allow client to read CSRF token from response headers
   }));
 } else {
   // Production: Whitelist specific origins only
@@ -40,6 +41,10 @@ if (isDev) {
   app.use(cors({
     origin: (origin, callback) => {
       // Allow requests with no origin (like mobile apps, Postman, curl)
+      // SECURITY NOTE: This is safe because:
+      // 1. Requests without origin cannot be forged by malicious websites (browser security)
+      // 2. CSRF protection middleware handles requests WITH origin
+      // 3. Mobile apps and server-to-server calls naturally have no origin
       if (!origin) {
         return callback(null, true);
       }
@@ -56,7 +61,8 @@ if (isDev) {
     },
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-CSRF-Token'],
+    exposedHeaders: ['X-CSRF-Token'], // Allow client to read CSRF token from response headers
   }));
 }
 
@@ -93,6 +99,9 @@ app.use(express.urlencoded({ extended: false }));
 
 // Apply global rate limiting to all API routes
 app.use('/api', apiLimiter);
+
+// Import CSRF middleware after app initialization
+import { requireCsrfToken, provideCsrfToken } from './middleware/csrf';
 
 // Session configuration
 const isDevelopment = process.env.NODE_ENV === 'development';
@@ -201,6 +210,15 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // CSRF token endpoint - must be before registerRoutes
+  app.get('/api/csrf-token', provideCsrfToken, (req, res) => {
+    res.json({ csrfToken: res.locals.csrfToken });
+  });
+
+  // Apply CSRF protection globally to all state-changing API operations
+  // This is applied before routes so it protects all endpoints
+  app.use('/api', requireCsrfToken);
+
   const server = await registerRoutes(app);
 
   // Sentry error handler (must be before other error handlers)
