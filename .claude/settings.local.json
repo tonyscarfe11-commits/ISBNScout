@@ -68,7 +68,9 @@
       "Bash(gh secret set:*)",
       "Bash(then echo \"=== .env file exists ===\")",
       "Bash(npm test)",
-      "Bash(git restore:*)"
+      "Bash(git restore:*)",
+      "Bash(npm outdated:*)",
+      "Bash(then echo \"=== Checking critical env vars ===\")"
     ],
     "deny": [],
     "ask": []

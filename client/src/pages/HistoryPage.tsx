@@ -362,7 +362,6 @@ export default function HistoryPage() {
         book={selectedBook}
         open={detailsOpen}
         onOpenChange={setDetailsOpen}
-        onList={handleListFromModal}
       />
     </div>
   );

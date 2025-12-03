@@ -36,7 +36,7 @@ router.get("/user/me", async (req, res) => {
       if (authHeader?.startsWith('Bearer ')) {
         const token = authHeader.substring(7);
         const { validateAuthToken } = await import("../middleware/auth");
-        userId = validateAuthToken(token) || undefined;
+        userId = await validateAuthToken(token) || undefined;
         if (userId) {
           // Store in session for this request
           req.session.userId = userId;

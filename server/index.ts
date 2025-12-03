@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import session from "express-session";
 import MemoryStore from "memorystore";
+import connectPgSimple from "connect-pg-simple";
 import cors from "cors";
 import helmet from "helmet";
 import { registerRoutes } from "./routes/index";
@@ -94,20 +95,36 @@ app.use(express.urlencoded({ extended: false }));
 app.use('/api', apiLimiter);
 
 // Session configuration
-const MemoryStoreSession = MemoryStore(session);
 const isDevelopment = process.env.NODE_ENV === 'development';
 
-// Check if request is from mobile app or browser
-// We'll set this dynamically per-request, but default to auto (lets browser decide)
+// Use PostgreSQL session store in production, memory store in development
+let sessionStore;
+if (process.env.DATABASE_URL) {
+  // Production: PostgreSQL session store for persistence
+  const PgSession = connectPgSimple(session);
+  sessionStore = new PgSession({
+    conString: process.env.DATABASE_URL,
+    tableName: 'session', // Table name for sessions
+    createTableIfMissing: true, // Auto-create table
+    pruneSessionInterval: 60 * 15, // Cleanup expired sessions every 15 minutes
+  });
+  console.log('[Session] Using PostgreSQL session store');
+} else {
+  // Development: Memory store (sessions lost on restart)
+  const MemoryStoreSession = MemoryStore(session);
+  sessionStore = new MemoryStoreSession({
+    checkPeriod: 86400000, // 24 hours
+  });
+  console.log('[Session] Using memory session store (development only)');
+}
+
 app.use(
   session({
     secret: process.env.SESSION_SECRET || "dev-secret-change-in-production",
-    resave: true, // Force session to be saved back to store
-    saveUninitialized: true, // Force session to be saved even if unmodified
+    resave: false, // Don't save session if unmodified (changed from true for efficiency)
+    saveUninitialized: false, // Don't create session until something stored (security best practice)
     rolling: true, // Reset expiry on every request
-    store: new MemoryStoreSession({
-      checkPeriod: 86400000, // 24 hours
-    }),
+    store: sessionStore,
     cookie: {
       secure: true, // Always secure (Replit uses HTTPS proxy)
       httpOnly: true, // ✅ SECURITY: Prevent JavaScript access (XSS protection)
@@ -120,7 +137,7 @@ app.use(
 );
 
 // Log session configuration
-log(`Session configured: secure=true, httpOnly=true, sameSite=none, maxAge=30days, proxy=true, resave=true`);
+log(`Session configured: secure=true, httpOnly=true, sameSite=none, maxAge=30days, proxy=true, resave=false, store=${process.env.DATABASE_URL ? 'PostgreSQL' : 'Memory'}`);
 
 app.use((req, res, next) => {
   const start = Date.now();

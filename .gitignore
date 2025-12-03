@@ -5,6 +5,13 @@ server/public
 vite.config.ts.*
 *.tar.gz
 
+# Environment files (contain secrets!)
+.env
+.env.test
+.env.local
+.env.*.local
+
 # Local development files
 *.db
-.claude/settings.local.jsonlogs/
+.claude/settings.local.json
+logs/

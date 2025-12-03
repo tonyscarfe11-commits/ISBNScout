@@ -70,7 +70,7 @@ router.post("/login", async (req, res) => {
       });
     }
 
-    const affiliateToken = generateAffiliateToken(result.affiliate.id);
+    const affiliateToken = await generateAffiliateToken(result.affiliate.id);
 
     res.json({
       success: true,
@@ -130,7 +130,7 @@ router.get("/dashboard", async (req, res) => {
     }
 
     const token = authHeader.substring(7);
-    const affiliateId = validateAffiliateToken(token);
+    const affiliateId = await validateAffiliateToken(token);
 
     if (!affiliateId) {
       return res.status(401).json({ message: "Invalid or expired token" });

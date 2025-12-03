@@ -1,6 +1,6 @@
 import * as Sentry from "@sentry/node";
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
-import type { Express } from "express";
+import type { Express, Request, Response, NextFunction } from "express";
 
 let isSentryInitialized = false;
 
@@ -44,12 +44,8 @@ export function initSentry(app: Express) {
     },
   });
 
-  // The request handler must be the first middleware
-  app.use(Sentry.Handlers.requestHandler());
-
-  // TracingHandler creates a trace for every incoming request
-  app.use(Sentry.Handlers.tracingHandler());
-
+  // Note: In Sentry SDK v8+, request/tracing handlers are set up automatically
+  // The middleware setup has changed, so we'll use the setupExpressErrorHandler instead
   console.log(`[Sentry] Error tracking initialized for ${process.env.NODE_ENV} environment`);
 }
 
@@ -60,9 +56,13 @@ export function initSentry(app: Express) {
 export function sentryErrorHandler() {
   if (!isSentryInitialized) {
     // Return a no-op middleware if Sentry is not initialized
-    return (_req: any, _res: any, next: any) => next();
+    return (_req: Request, _res: Response, next: NextFunction) => next();
   }
-  return Sentry.Handlers.errorHandler();
+  // In Sentry SDK v8+, use setupExpressErrorHandler or manual error capture
+  return (err: Error, _req: Request, res: Response, next: NextFunction) => {
+    Sentry.captureException(err);
+    next(err);
+  };
 }
 
 /**

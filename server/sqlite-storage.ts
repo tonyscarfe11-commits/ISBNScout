@@ -7,19 +7,11 @@ import {
   type InsertApiCredentials,
   type Book,
   type InsertBook,
-  type Listing,
-  type InsertListing,
-  type InventoryItem,
-  type InsertInventoryItem,
-  type RepricingRule,
-  type InsertRepricingRule,
-  type RepricingHistory,
-  type InsertRepricingHistory,
 } from "@shared/schema";
 import type { IStorage } from "./storage";
 
 export class SQLiteStorage implements IStorage {
-  private db: Database.Database;
+  public db: Database.Database;
 
   constructor(dbPath: string = "isbn-scout.db") {
     this.db = new Database(dbPath);
@@ -42,6 +34,7 @@ export class SQLiteStorage implements IStorage {
         trialEndsAt TEXT,
         stripeCustomerId TEXT,
         stripeSubscriptionId TEXT,
+        referredByAffiliateId TEXT,
         createdAt TEXT NOT NULL,
         updatedAt TEXT NOT NULL
       )
@@ -59,6 +52,11 @@ export class SQLiteStorage implements IStorage {
     if (!columns.includes("trialEndsAt")) {
       this.db.exec("ALTER TABLE users ADD COLUMN trialEndsAt TEXT");
       console.log("[SQLite] Added trialEndsAt column to users table");
+    }
+
+    if (!columns.includes("referredByAffiliateId")) {
+      this.db.exec("ALTER TABLE users ADD COLUMN referredByAffiliateId TEXT");
+      console.log("[SQLite] Added referredByAffiliateId column to users table");
     }
 
     // API Credentials table
@@ -100,134 +98,6 @@ export class SQLiteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_books_isbn ON books(isbn)
     `);
 
-    // Listings table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS listings (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        bookId TEXT NOT NULL,
-        platform TEXT NOT NULL,
-        platformListingId TEXT,
-        price TEXT NOT NULL,
-        condition TEXT NOT NULL,
-        description TEXT,
-        quantity TEXT NOT NULL,
-        status TEXT NOT NULL,
-        errorMessage TEXT,
-        listedAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE
-      )
-    `);
-
-    // Inventory Items table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS inventory_items (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        bookId TEXT NOT NULL,
-        listingId TEXT,
-        sku TEXT,
-        purchaseDate TEXT NOT NULL,
-        purchaseCost TEXT NOT NULL,
-        purchaseSource TEXT,
-        condition TEXT NOT NULL,
-        location TEXT,
-        soldDate TEXT,
-        salePrice TEXT,
-        soldPlatform TEXT,
-        actualProfit TEXT,
-        status TEXT NOT NULL DEFAULT 'in_stock',
-        notes TEXT,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (bookId) REFERENCES books(id) ON DELETE CASCADE,
-        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE SET NULL
-      )
-    `);
-
-    // Create indices for inventory_items
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_inventory_items_user_id ON inventory_items(userId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_inventory_items_book_id ON inventory_items(bookId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_inventory_items_status ON inventory_items(status)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_inventory_items_listing_id ON inventory_items(listingId)
-    `);
-
-    // Repricing Rules table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS repricing_rules (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        listingId TEXT,
-        platform TEXT NOT NULL,
-        strategy TEXT NOT NULL,
-        strategyValue TEXT,
-        minPrice TEXT NOT NULL,
-        maxPrice TEXT NOT NULL,
-        isActive TEXT NOT NULL DEFAULT 'true',
-        runFrequency TEXT NOT NULL DEFAULT 'hourly',
-        lastRun TEXT,
-        createdAt TEXT NOT NULL,
-        updatedAt TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE CASCADE
-      )
-    `);
-
-    // Create indices for repricing_rules
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_rules_user_id ON repricing_rules(userId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_rules_listing_id ON repricing_rules(listingId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_rules_platform ON repricing_rules(platform)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_rules_is_active ON repricing_rules(isActive)
-    `);
-
-    // Repricing History table
-    this.db.exec(`
-      CREATE TABLE IF NOT EXISTS repricing_history (
-        id TEXT PRIMARY KEY,
-        userId TEXT NOT NULL,
-        listingId TEXT NOT NULL,
-        ruleId TEXT,
-        oldPrice TEXT NOT NULL,
-        newPrice TEXT NOT NULL,
-        competitorPrice TEXT,
-        reason TEXT NOT NULL,
-        success TEXT NOT NULL DEFAULT 'true',
-        errorMessage TEXT,
-        createdAt TEXT NOT NULL,
-        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE,
-        FOREIGN KEY (listingId) REFERENCES listings(id) ON DELETE CASCADE,
-        FOREIGN KEY (ruleId) REFERENCES repricing_rules(id) ON DELETE SET NULL
-      )
-    `);
-
-    // Create indices for repricing_history
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_history_user_id ON repricing_history(userId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_history_listing_id ON repricing_history(listingId)
-    `);
-    this.db.exec(`
-      CREATE INDEX IF NOT EXISTS idx_repricing_history_created_at ON repricing_history(createdAt)
-    `);
-
     // API Usage tracking table
     this.db.exec(`
       CREATE TABLE IF NOT EXISTS api_usage (
@@ -237,6 +107,23 @@ export class SQLiteStorage implements IStorage {
         callCount INTEGER NOT NULL DEFAULT 0,
         UNIQUE(service, date)
       )
+    `);
+
+    // Auth tokens table for persistent authentication
+    this.db.exec(`
+      CREATE TABLE IF NOT EXISTS auth_tokens (
+        token TEXT PRIMARY KEY,
+        userId TEXT NOT NULL,
+        type TEXT NOT NULL,
+        expiresAt TEXT NOT NULL,
+        createdAt TEXT NOT NULL,
+        FOREIGN KEY (userId) REFERENCES users(id) ON DELETE CASCADE
+      )
+    `);
+
+    // Create index for faster token lookups and cleanup
+    this.db.exec(`
+      CREATE INDEX IF NOT EXISTS idx_auth_tokens_expires ON auth_tokens(expiresAt)
     `);
 
     // Create or update default user
@@ -344,6 +231,7 @@ export class SQLiteStorage implements IStorage {
       trialEndsAt: trialEnds,
       stripeCustomerId: null,
       stripeSubscriptionId: null,
+      referredByAffiliateId: null,
       createdAt: now,
       updatedAt: now,
     };
@@ -351,8 +239,8 @@ export class SQLiteStorage implements IStorage {
     const stmt = this.db.prepare(`
       INSERT INTO users (
         id, username, email, password, subscriptionTier, subscriptionStatus,
-        subscriptionExpiresAt, trialStartedAt, trialEndsAt, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        subscriptionExpiresAt, trialStartedAt, trialEndsAt, stripeCustomerId, stripeSubscriptionId, referredByAffiliateId, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -367,6 +255,7 @@ export class SQLiteStorage implements IStorage {
       user.trialEndsAt?.toISOString(),
       user.stripeCustomerId,
       user.stripeSubscriptionId,
+      user.referredByAffiliateId,
       now.toISOString(),
       now.toISOString()
     );
@@ -531,517 +420,87 @@ export class SQLiteStorage implements IStorage {
     return updatedBook;
   }
 
-  // Listing methods
-  async createListing(insertListing: InsertListing): Promise<Listing> {
-    const id = randomUUID();
-    const now = new Date().toISOString();
-
-    const stmt = this.db.prepare(`
-      INSERT INTO listings (
-        id, userId, bookId, platform, platformListingId, price, condition,
-        description, quantity, status, errorMessage, listedAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
-      id,
-      insertListing.userId,
-      insertListing.bookId,
-      insertListing.platform,
-      insertListing.platformListingId || null,
-      insertListing.price,
-      insertListing.condition,
-      insertListing.description || null,
-      insertListing.quantity || "1",
-      insertListing.status,
-      insertListing.errorMessage || null,
-      now,
-      now
-    );
-
-    return {
-      id,
-      userId: insertListing.userId,
-      bookId: insertListing.bookId,
-      platform: insertListing.platform,
-      platformListingId: insertListing.platformListingId || null,
-      price: insertListing.price,
-      condition: insertListing.condition,
-      description: insertListing.description || null,
-      quantity: insertListing.quantity || "1",
-      status: insertListing.status,
-      errorMessage: insertListing.errorMessage || null,
-      listedAt: new Date(now),
-      updatedAt: new Date(now),
-    };
-  }
-
-  async getListings(userId: string): Promise<Listing[]> {
-    const stmt = this.db.prepare("SELECT * FROM listings WHERE userId = ? ORDER BY listedAt DESC");
-    const rows = stmt.all(userId) as any[];
-    return rows.map(row => this.deserializeListing(row));
-  }
-
-  async getListingById(id: string): Promise<Listing | undefined> {
-    const row = this.db.prepare("SELECT * FROM listings WHERE id = ?").get(id) as any;
-    return row ? this.deserializeListing(row) : undefined;
-  }
-
-  async getListingsByBook(userId: string, bookId: string): Promise<Listing[]> {
-    const stmt = this.db.prepare("SELECT * FROM listings WHERE userId = ? AND bookId = ? ORDER BY listedAt DESC");
-    const rows = stmt.all(userId, bookId) as any[];
-    return rows.map(row => this.deserializeListing(row));
-  }
-
-  async updateListingStatus(id: string, status: string, errorMessage?: string): Promise<Listing | undefined> {
-    const stmt = this.db.prepare("SELECT * FROM listings WHERE id = ?");
-    const row = stmt.get(id) as any;
-    if (!row) return undefined;
-
-    const now = new Date().toISOString();
-    const updateStmt = this.db.prepare(`
-      UPDATE listings SET status = ?, errorMessage = ?, updatedAt = ? WHERE id = ?
-    `);
-    updateStmt.run(status, errorMessage || null, now, id);
-
-    const listing = this.deserializeListing(row);
-    listing.status = status;
-    listing.errorMessage = errorMessage || null;
-    listing.updatedAt = new Date(now);
-    return listing;
-  }
-
-  // Helper methods to convert database rows to typed objects
+  // Deserialize methods - convert SQLite rows to typed objects
   private deserializeUser(row: any): User {
     return {
       id: row.id,
       username: row.username,
       email: row.email,
       password: row.password,
-      subscriptionTier: row.subscriptionTier,
-      subscriptionStatus: row.subscriptionStatus,
-      subscriptionExpiresAt: row.subscriptionExpiresAt ? new Date(row.subscriptionExpiresAt) : null,
-      trialStartedAt: row.trialStartedAt ? new Date(row.trialStartedAt) : null,
-      trialEndsAt: row.trialEndsAt ? new Date(row.trialEndsAt) : null,
-      stripeCustomerId: row.stripeCustomerId,
-      stripeSubscriptionId: row.stripeSubscriptionId,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      subscriptionTier: row.subscriptionTier || row.subscription_tier,
+      subscriptionStatus: row.subscriptionStatus || row.subscription_status,
+      subscriptionExpiresAt: row.subscriptionExpiresAt || row.subscription_expires_at ? new Date(row.subscriptionExpiresAt || row.subscription_expires_at) : null,
+      trialStartedAt: row.trialStartedAt || row.trial_started_at ? new Date(row.trialStartedAt || row.trial_started_at) : null,
+      trialEndsAt: row.trialEndsAt || row.trial_ends_at ? new Date(row.trialEndsAt || row.trial_ends_at) : null,
+      stripeCustomerId: row.stripeCustomerId || row.stripe_customer_id || null,
+      stripeSubscriptionId: row.stripeSubscriptionId || row.stripe_subscription_id || null,
+      referredByAffiliateId: row.referredByAffiliateId || row.referred_by_affiliate_id || null,
+      createdAt: new Date(row.createdAt || row.created_at),
+      updatedAt: new Date(row.updatedAt || row.updated_at),
     };
   }
 
   private deserializeApiCredentials(row: any): ApiCredentials {
     return {
       id: row.id,
-      userId: row.userId,
+      userId: row.userId || row.user_id,
       platform: row.platform,
-      credentials: JSON.parse(row.credentials),
-      isActive: row.isActive,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
+      credentials: typeof row.credentials === 'string' ? JSON.parse(row.credentials) : row.credentials,
+      isActive: row.isActive || row.is_active,
+      createdAt: new Date(row.createdAt || row.created_at),
+      updatedAt: new Date(row.updatedAt || row.updated_at),
     };
   }
 
   private deserializeBook(row: any): Book {
     return {
       id: row.id,
-      userId: row.userId,
+      userId: row.userId || row.user_id,
       isbn: row.isbn,
       title: row.title,
-      author: row.author,
-      thumbnail: row.thumbnail,
-      amazonPrice: row.amazonPrice,
-      ebayPrice: row.ebayPrice,
-      yourCost: row.yourCost,
-      profit: row.profit,
+      author: row.author || null,
+      thumbnail: row.thumbnail || null,
+      amazonPrice: row.amazonPrice || row.amazon_price || null,
+      ebayPrice: row.ebayPrice || row.ebay_price || null,
+      yourCost: row.yourCost || row.your_cost || null,
+      profit: row.profit || null,
       status: row.status,
-      scannedAt: new Date(row.scannedAt),
+      scannedAt: new Date(row.scannedAt || row.scanned_at),
     };
   }
 
-  private deserializeListing(row: any): Listing {
+  // Auth token methods
+  async saveAuthToken(token: string, userId: string, type: 'user' | 'affiliate', expiresAt: Date): Promise<void> {
+    const now = new Date().toISOString();
+    const stmt = this.db.prepare(`
+      INSERT OR REPLACE INTO auth_tokens (token, userId, type, expiresAt, createdAt)
+      VALUES (?, ?, ?, ?, ?)
+    `);
+    stmt.run(token, userId, type, expiresAt.toISOString(), now);
+  }
+
+  async getAuthToken(token: string): Promise<{ userId: string; type: string; expiresAt: Date } | null> {
+    const stmt = this.db.prepare("SELECT * FROM auth_tokens WHERE token = ?");
+    const row = stmt.get(token) as any;
+    if (!row) return null;
+
     return {
-      id: row.id,
       userId: row.userId,
-      bookId: row.bookId,
-      platform: row.platform,
-      platformListingId: row.platformListingId,
-      price: row.price,
-      condition: row.condition,
-      description: row.description,
-      quantity: row.quantity,
-      status: row.status,
-      errorMessage: row.errorMessage,
-      listedAt: new Date(row.listedAt),
-      updatedAt: new Date(row.updatedAt),
+      type: row.type,
+      expiresAt: new Date(row.expiresAt),
     };
   }
 
-  // API Usage tracking methods
-  incrementApiCall(service: string): void {
-    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
-    const id = `${service}-${today}`;
-
-    const existing = this.db.prepare("SELECT * FROM api_usage WHERE id = ?").get(id);
-
-    if (existing) {
-      this.db.prepare("UPDATE api_usage SET callCount = callCount + 1 WHERE id = ?").run(id);
-    } else {
-      this.db.prepare(`
-        INSERT INTO api_usage (id, service, date, callCount) VALUES (?, ?, ?, ?)
-      `).run(id, service, today, 1);
-    }
+  async deleteAuthToken(token: string): Promise<void> {
+    const stmt = this.db.prepare("DELETE FROM auth_tokens WHERE token = ?");
+    stmt.run(token);
   }
 
-  getApiUsage(service: string, date?: string): { service: string; date: string; callCount: number } | undefined {
-    const targetDate = date || new Date().toISOString().split('T')[0];
-    const id = `${service}-${targetDate}`;
-    const row = this.db.prepare("SELECT * FROM api_usage WHERE id = ?").get(id) as any;
-
-    if (!row) return undefined;
-
-    return {
-      service: row.service,
-      date: row.date,
-      callCount: row.callCount
-    };
-  }
-
-  getAllApiUsage(): Array<{ service: string; date: string; callCount: number }> {
-    const rows = this.db.prepare("SELECT * FROM api_usage ORDER BY date DESC, service").all() as any[];
-    return rows.map(row => ({
-      service: row.service,
-      date: row.date,
-      callCount: row.callCount
-    }));
-  }
-
-  // Inventory Items methods
-  async createInventoryItem(insertItem: InsertInventoryItem): Promise<InventoryItem> {
-    const id = randomUUID();
+  async cleanupExpiredTokens(): Promise<number> {
     const now = new Date().toISOString();
-
-    const stmt = this.db.prepare(`
-      INSERT INTO inventory_items (
-        id, userId, bookId, listingId, sku, purchaseDate, purchaseCost,
-        purchaseSource, condition, location, soldDate, salePrice,
-        soldPlatform, actualProfit, status, notes, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
-      id,
-      insertItem.userId,
-      insertItem.bookId,
-      insertItem.listingId || null,
-      insertItem.sku || null,
-      insertItem.purchaseDate.toISOString(),
-      insertItem.purchaseCost,
-      insertItem.purchaseSource || null,
-      insertItem.condition,
-      insertItem.location || null,
-      insertItem.soldDate?.toISOString() || null,
-      insertItem.salePrice || null,
-      insertItem.soldPlatform || null,
-      insertItem.actualProfit || null,
-      insertItem.status || "in_stock",
-      insertItem.notes || null,
-      now,
-      now
-    );
-
-    return {
-      id,
-      userId: insertItem.userId,
-      bookId: insertItem.bookId,
-      listingId: insertItem.listingId || null,
-      sku: insertItem.sku || null,
-      purchaseDate: insertItem.purchaseDate,
-      purchaseCost: insertItem.purchaseCost,
-      purchaseSource: insertItem.purchaseSource || null,
-      condition: insertItem.condition,
-      location: insertItem.location || null,
-      soldDate: insertItem.soldDate || null,
-      salePrice: insertItem.salePrice || null,
-      soldPlatform: insertItem.soldPlatform || null,
-      actualProfit: insertItem.actualProfit || null,
-      status: insertItem.status || "in_stock",
-      notes: insertItem.notes || null,
-      createdAt: new Date(now),
-      updatedAt: new Date(now),
-    };
-  }
-
-  async getInventoryItems(userId: string): Promise<InventoryItem[]> {
-    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE userId = ? ORDER BY createdAt DESC");
-    const rows = stmt.all(userId) as any[];
-    return rows.map(row => this.deserializeInventoryItem(row));
-  }
-
-  async getInventoryItemById(id: string): Promise<InventoryItem | undefined> {
-    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE id = ?");
-    const row = stmt.get(id) as any;
-    return row ? this.deserializeInventoryItem(row) : undefined;
-  }
-
-  async getInventoryItemsByBook(userId: string, bookId: string): Promise<InventoryItem[]> {
-    const stmt = this.db.prepare("SELECT * FROM inventory_items WHERE userId = ? AND bookId = ? ORDER BY createdAt DESC");
-    const rows = stmt.all(userId, bookId) as any[];
-    return rows.map(row => this.deserializeInventoryItem(row));
-  }
-
-  async updateInventoryItem(id: string, updates: Partial<Omit<InventoryItem, 'id' | 'userId' | 'createdAt'>>): Promise<InventoryItem | undefined> {
-    const item = await this.getInventoryItemById(id);
-    if (!item) return undefined;
-
-    const updatedItem = { ...item, ...updates };
-    const now = new Date().toISOString();
-
-    const stmt = this.db.prepare(`
-      UPDATE inventory_items SET
-        bookId = ?, listingId = ?, sku = ?, purchaseDate = ?, purchaseCost = ?,
-        purchaseSource = ?, condition = ?, location = ?, soldDate = ?,
-        salePrice = ?, soldPlatform = ?, actualProfit = ?, status = ?,
-        notes = ?, updatedAt = ?
-      WHERE id = ?
-    `);
-
-    stmt.run(
-      updatedItem.bookId,
-      updatedItem.listingId,
-      updatedItem.sku,
-      updatedItem.purchaseDate.toISOString(),
-      updatedItem.purchaseCost,
-      updatedItem.purchaseSource,
-      updatedItem.condition,
-      updatedItem.location,
-      updatedItem.soldDate?.toISOString() || null,
-      updatedItem.salePrice,
-      updatedItem.soldPlatform,
-      updatedItem.actualProfit,
-      updatedItem.status,
-      updatedItem.notes,
-      now,
-      id
-    );
-
-    updatedItem.updatedAt = new Date(now);
-    return updatedItem;
-  }
-
-  async deleteInventoryItem(id: string): Promise<boolean> {
-    const stmt = this.db.prepare("DELETE FROM inventory_items WHERE id = ?");
-    const result = stmt.run(id);
-    return result.changes > 0;
-  }
-
-  private deserializeInventoryItem(row: any): InventoryItem {
-    return {
-      id: row.id,
-      userId: row.userId,
-      bookId: row.bookId,
-      listingId: row.listingId,
-      sku: row.sku,
-      purchaseDate: new Date(row.purchaseDate),
-      purchaseCost: row.purchaseCost,
-      purchaseSource: row.purchaseSource,
-      condition: row.condition,
-      location: row.location,
-      soldDate: row.soldDate ? new Date(row.soldDate) : null,
-      salePrice: row.salePrice,
-      soldPlatform: row.soldPlatform,
-      actualProfit: row.actualProfit,
-      status: row.status,
-      notes: row.notes,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    };
-  }
-
-  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
-    const now = new Date().toISOString();
-    const stmt = this.db.prepare("UPDATE listings SET price = ?, updatedAt = ? WHERE id = ?");
-    const result = stmt.run(newPrice, now, id);
-    
-    if (result.changes === 0) return undefined;
-    
-    const row = this.db.prepare("SELECT * FROM listings WHERE id = ?").get(id) as any;
-    return row ? this.deserializeListing(row) : undefined;
-  }
-
-  async createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule> {
-    const id = randomUUID();
-    const now = new Date().toISOString();
-    
-    const stmt = this.db.prepare(`
-      INSERT INTO repricing_rules (
-        id, userId, listingId, platform, strategy, strategyValue,
-        minPrice, maxPrice, isActive, runFrequency, lastRun, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
-      id,
-      rule.userId,
-      rule.listingId || null,
-      rule.platform,
-      rule.strategy,
-      rule.strategyValue || null,
-      rule.minPrice,
-      rule.maxPrice,
-      rule.isActive || "true",
-      rule.runFrequency || "hourly",
-      null,
-      now,
-      now
-    );
-
-    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
-    return this.deserializeRepricingRule(row);
-  }
-
-  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
-    const stmt = this.db.prepare("SELECT * FROM repricing_rules WHERE userId = ? ORDER BY createdAt DESC");
-    const rows = stmt.all(userId) as any[];
-    return rows.map((row) => this.deserializeRepricingRule(row));
-  }
-
-  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
-    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
-    return row ? this.deserializeRepricingRule(row) : undefined;
-  }
-
-  async getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]> {
-    const stmt = this.db.prepare(`
-      SELECT * FROM repricing_rules 
-      WHERE userId = ? 
-        AND isActive = 'true'
-        AND (listingId IS NULL OR listingId = ?)
-        AND (platform = 'all' OR platform = ?)
-      ORDER BY CASE WHEN listingId IS NOT NULL THEN 0 ELSE 1 END
-    `);
-    const rows = stmt.all(userId, listingId, platform) as any[];
-    return rows.map((row) => this.deserializeRepricingRule(row));
-  }
-
-  async updateRepricingRule(
-    id: string,
-    updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>
-  ): Promise<RepricingRule | undefined> {
-    const rule = await this.getRepricingRuleById(id);
-    if (!rule) return undefined;
-
-    const now = new Date().toISOString();
-    const updatedRule = { ...rule, ...updates };
-
-    const stmt = this.db.prepare(`
-      UPDATE repricing_rules SET
-        listingId = ?, platform = ?, strategy = ?, strategyValue = ?,
-        minPrice = ?, maxPrice = ?, isActive = ?, runFrequency = ?,
-        lastRun = ?, updatedAt = ?
-      WHERE id = ?
-    `);
-
-    stmt.run(
-      updatedRule.listingId,
-      updatedRule.platform,
-      updatedRule.strategy,
-      updatedRule.strategyValue,
-      updatedRule.minPrice,
-      updatedRule.maxPrice,
-      updatedRule.isActive,
-      updatedRule.runFrequency,
-      updatedRule.lastRun ? new Date(updatedRule.lastRun).toISOString() : null,
-      now,
-      id
-    );
-
-    const row = this.db.prepare("SELECT * FROM repricing_rules WHERE id = ?").get(id) as any;
-    return row ? this.deserializeRepricingRule(row) : undefined;
-  }
-
-  async deleteRepricingRule(id: string): Promise<boolean> {
-    const stmt = this.db.prepare("DELETE FROM repricing_rules WHERE id = ?");
-    const result = stmt.run(id);
-    return result.changes > 0;
-  }
-
-  async createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory> {
-    const id = randomUUID();
-    const now = new Date().toISOString();
-    
-    const stmt = this.db.prepare(`
-      INSERT INTO repricing_history (
-        id, userId, listingId, ruleId, oldPrice, newPrice,
-        competitorPrice, reason, success, errorMessage, createdAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-    `);
-
-    stmt.run(
-      id,
-      history.userId,
-      history.listingId,
-      history.ruleId || null,
-      history.oldPrice,
-      history.newPrice,
-      history.competitorPrice || null,
-      history.reason,
-      history.success || "true",
-      history.errorMessage || null,
-      now
-    );
-
-    const row = this.db.prepare("SELECT * FROM repricing_history WHERE id = ?").get(id) as any;
-    return this.deserializeRepricingHistory(row);
-  }
-
-  async getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]> {
-    let stmt;
-    let rows;
-    
-    if (listingId) {
-      stmt = this.db.prepare("SELECT * FROM repricing_history WHERE userId = ? AND listingId = ? ORDER BY createdAt DESC");
-      rows = stmt.all(userId, listingId) as any[];
-    } else {
-      stmt = this.db.prepare("SELECT * FROM repricing_history WHERE userId = ? ORDER BY createdAt DESC");
-      rows = stmt.all(userId) as any[];
-    }
-    
-    return rows.map((row) => this.deserializeRepricingHistory(row));
-  }
-
-  private deserializeRepricingRule(row: any): RepricingRule {
-    return {
-      id: row.id,
-      userId: row.userId,
-      listingId: row.listingId,
-      platform: row.platform,
-      strategy: row.strategy,
-      strategyValue: row.strategyValue,
-      minPrice: row.minPrice,
-      maxPrice: row.maxPrice,
-      isActive: row.isActive,
-      runFrequency: row.runFrequency,
-      lastRun: row.lastRun ? new Date(row.lastRun) : null,
-      createdAt: new Date(row.createdAt),
-      updatedAt: new Date(row.updatedAt),
-    };
-  }
-
-  private deserializeRepricingHistory(row: any): RepricingHistory {
-    return {
-      id: row.id,
-      userId: row.userId,
-      listingId: row.listingId,
-      ruleId: row.ruleId,
-      oldPrice: row.oldPrice,
-      newPrice: row.newPrice,
-      competitorPrice: row.competitorPrice,
-      reason: row.reason,
-      success: row.success,
-      errorMessage: row.errorMessage,
-      createdAt: new Date(row.createdAt),
-    };
+    const stmt = this.db.prepare("DELETE FROM auth_tokens WHERE expiresAt < ?");
+    const result = stmt.run(now);
+    return result.changes;
   }
 
   // Close database connection

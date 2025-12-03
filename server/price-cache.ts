@@ -421,6 +421,7 @@ export class PriceCache {
       title: row.title,
       author: row.author,
       publisher: row.publisher,
+      thumbnail: row.thumbnail || null,
       ebayPrice: row.ebayPrice,
       amazonPrice: row.amazonPrice,
       cachedAt: new Date(row.cachedAt),

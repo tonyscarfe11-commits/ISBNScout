@@ -31,7 +31,7 @@ router.post("/signup", signupLimiter, async (req, res) => {
     req.session.userId = user.id;
 
     // Generate token for localStorage fallback
-    const authToken = generateAuthToken(user.id);
+    const authToken = await generateAuthToken(user.id);
 
     // Explicitly save session
     await new Promise<void>((resolve, reject) => {
@@ -62,7 +62,7 @@ router.post("/login", loginLimiter, async (req, res) => {
     req.session.userId = user.id;
 
     // Generate token for localStorage fallback (for embedded contexts)
-    const authToken = generateAuthToken(user.id);
+    const authToken = await generateAuthToken(user.id);
 
     // Explicitly save session
     await new Promise<void>((resolve, reject) => {
@@ -84,12 +84,12 @@ router.post("/login", loginLimiter, async (req, res) => {
 });
 
 // POST /api/auth/logout
-router.post("/logout", (req, res) => {
+router.post("/logout", async (req, res) => {
   // Remove token if provided in Authorization header
   const authHeader = req.headers.authorization;
   if (authHeader?.startsWith('Bearer ')) {
     const token = authHeader.substring(7);
-    removeAuthToken(token);
+    await removeAuthToken(token);
   }
 
   req.session.destroy((err) => {

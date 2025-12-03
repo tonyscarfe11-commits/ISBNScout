@@ -235,9 +235,10 @@ export class EbayPricingService {
       }
 
       // Track API usage
-      if (this.storage) {
-        this.storage.incrementApiCall('ebay');
-      }
+      // TODO: Re-implement API usage tracking
+      // if (this.storage) {
+      //   this.storage.incrementApiCall('ebay');
+      // }
 
       const data = await response.json();
 
@@ -302,9 +303,10 @@ export class EbayPricingService {
       }
 
       // Track API usage
-      if (this.storage) {
-        this.storage.incrementApiCall('ebay');
-      }
+      // TODO: Re-implement API usage tracking
+      // if (this.storage) {
+      //   this.storage.incrementApiCall('ebay');
+      // }
 
       const data = await response.json();
       const items = data.itemSummaries || [];

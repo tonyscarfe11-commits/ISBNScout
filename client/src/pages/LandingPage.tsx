@@ -254,7 +254,8 @@ export default function LandingPage() {
                   <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-700">
                     <div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit</div>
-                      <div className="text-2xl font-bold text-amber-500">£7.90</div>
+                      <div className="text-2xl font-bold text-amber-500">£7.68</div>
+                      <div className="text-xs text-slate-500 mt-0.5">Best: Amazon</div>
                     </div>
                     <div>
                       <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Sales Velocity</div>
@@ -276,12 +277,16 @@ export default function LandingPage() {
                           <span className="text-slate-300">-£2.72</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
+                          <span>Your cost</span>
+                          <span className="text-slate-300">-£2.50</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
                           <span>Postage</span>
-                          <span className="text-slate-300">-£2.80</span>
+                          <span className="text-green-400 text-xs">Buyer pays</span>
                         </div>
                         <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-amber-500">
                           <span>Net</span>
-                          <span>£4.88</span>
+                          <span>£7.68</span>
                         </div>
                       </div>
                     </div>
@@ -297,12 +302,16 @@ export default function LandingPage() {
                           <span className="text-slate-300">-£1.86</span>
                         </div>
                         <div className="flex justify-between text-slate-400">
+                          <span>Your cost</span>
+                          <span className="text-slate-300">-£2.50</span>
+                        </div>
+                        <div className="flex justify-between text-slate-400">
                           <span>Postage</span>
-                          <span className="text-slate-300">-£2.80</span>
+                          <span className="text-green-400 text-xs">Buyer pays</span>
                         </div>
                         <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-amber-500">
                           <span>Net</span>
-                          <span>£4.34</span>
+                          <span>£7.14</span>
                         </div>
                       </div>
                     </div>

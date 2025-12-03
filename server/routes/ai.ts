@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { aiService } from "../ai-service";
 import { aiLimiter } from "../middleware/rate-limit";
+import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
@@ -8,7 +9,7 @@ const router = Router();
 router.use(aiLimiter);
 
 // AI: Analyze single book image
-router.post("/analyze-image", async (req, res) => {
+router.post("/analyze-image", requireAuth, async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
@@ -25,7 +26,7 @@ router.post("/analyze-image", async (req, res) => {
 });
 
 // Multi-book scanning (SHELF SCANNING - killer feature!)
-router.post("/analyze-shelf", async (req, res) => {
+router.post("/analyze-shelf", requireAuth, async (req, res) => {
   try {
     const { imageUrl } = req.body;
 
@@ -45,7 +46,7 @@ router.post("/analyze-shelf", async (req, res) => {
 });
 
 // AI: Optimize listing keywords
-router.post("/optimize-keywords", async (req, res) => {
+router.post("/optimize-keywords", requireAuth, async (req, res) => {
   try {
     const { title, author, isbn, condition, platform } = req.body;
 
@@ -68,7 +69,7 @@ router.post("/optimize-keywords", async (req, res) => {
 });
 
 // AI: Generate listing description
-router.post("/generate-description", async (req, res) => {
+router.post("/generate-description", requireAuth, async (req, res) => {
   try {
     const { title, author, condition, additionalNotes } = req.body;
 

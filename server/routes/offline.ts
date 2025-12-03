@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { getPriceCache } from "../price-cache";
+import { requireAuth } from "../middleware/auth";
 
 const router = Router();
 
@@ -7,7 +8,7 @@ const router = Router();
  * Offline price lookup endpoint
  * Works even without internet by using cached data
  */
-router.post("/offline/lookup", async (req, res) => {
+router.post("/offline/lookup", requireAuth, async (req, res) => {
   try {
     const { isbn, title, author, publisher } = req.body;
 
@@ -60,7 +61,7 @@ router.get("/offline/export", (req, res) => {
 /**
  * Import cache from backup
  */
-router.post("/offline/import", (req, res) => {
+router.post("/offline/import", requireAuth, (req, res) => {
   try {
     const { data } = req.body;
 
@@ -81,7 +82,7 @@ router.post("/offline/import", (req, res) => {
 /**
  * Clear old cache entries
  */
-router.post("/offline/cleanup", (req, res) => {
+router.post("/offline/cleanup", requireAuth, (req, res) => {
   try {
     const priceCache = getPriceCache();
     const deleted = priceCache.clearOldCache();

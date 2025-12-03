@@ -217,9 +217,9 @@ router.post("/webhooks/stripe", express.raw({ type: 'application/json' }), async
           // Send subscription confirmation email
           const plan = SUBSCRIPTION_PLANS[planId || 'pro_monthly'];
           if (plan) {
-            const subscription = await stripeService.getSubscription(subscriptionId);
-            const nextBillingDate = subscription?.currentPeriodEnd
-              ? new Date(subscription.currentPeriodEnd * 1000)
+            const subscription = await stripeService.getSubscription(subscriptionId) as any;
+            const nextBillingDate = subscription?.current_period_end
+              ? new Date(subscription.current_period_end * 1000)
               : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default to 30 days
 
             emailService.sendSubscriptionConfirmation({
@@ -256,14 +256,14 @@ router.post("/webhooks/stripe", express.raw({ type: 'application/json' }), async
       }
 
       case 'subscription_updated': {
-        const { customerId, status, currentPeriodEnd } = result.data;
+        const { customerId, status, currentPeriodEnd } = result.data as any;
 
         const user = await storage.getUserByStripeCustomerId(customerId);
 
         if (user) {
           await storage.updateUser(user.id, {
             subscriptionStatus: status,
-            subscriptionExpiresAt: currentPeriodEnd,
+            subscriptionExpiresAt: currentPeriodEnd as Date,
           });
           console.log(`[Stripe Webhook] Updated user ${user.id} subscription status to ${status}`);
         }

@@ -7,14 +7,6 @@ import type {
   ApiCredentials,
   Book,
   InsertBook,
-  Listing,
-  InsertListing,
-  InventoryItem,
-  InsertInventoryItem,
-  RepricingRule,
-  InsertRepricingRule,
-  RepricingHistory,
-  InsertRepricingHistory,
 } from "@shared/schema";
 
 /**
@@ -156,28 +148,6 @@ export class HybridStorage implements IStorage {
               }
               break;
 
-            case "listing":
-              if (item.operation === "create") {
-                await this.remote.createListing(data);
-              } else if (item.operation === "updateStatus") {
-                await this.remote.updateListingStatus(
-                  data.id,
-                  data.status,
-                  data.errorMessage
-                );
-              }
-              break;
-
-            case "inventoryItem":
-              if (item.operation === "create") {
-                await this.remote.createInventoryItem(data);
-              } else if (item.operation === "update") {
-                await this.remote.updateInventoryItem(data.id, this.convertDates(data.updates));
-              } else if (item.operation === "delete") {
-                await this.remote.deleteInventoryItem(data.id);
-              }
-              break;
-
             case "apiCredentials":
               if (item.operation === "save") {
                 await this.remote.saveApiCredentials(
@@ -212,14 +182,8 @@ export class HybridStorage implements IStorage {
                 const existingUser = await this.remote!.getUserById(data.id);
                 alreadyExists = !!existingUser;
               } else if (item.entity === 'book' && data.isbn) {
-                const existingBook = await this.remote!.getBook(data.isbn);
+                const existingBook = await this.remote!.getBookByISBN(data.isbn);
                 alreadyExists = !!existingBook;
-              } else if (item.entity === 'listing' && data.id) {
-                const existingListing = await this.remote!.getListing(data.id);
-                alreadyExists = !!existingListing;
-              } else if (item.entity === 'inventoryItem' && data.id) {
-                const existingItem = await this.remote!.getInventoryItem(data.id);
-                alreadyExists = !!existingItem;
               }
 
               if (alreadyExists) {
@@ -431,141 +395,6 @@ export class HybridStorage implements IStorage {
     return updated;
   }
 
-  // Listings
-  async createListing(listing: InsertListing): Promise<Listing> {
-    const created = await this.local.createListing(listing);
-    await this.queueSync("create", "listing", listing);
-    return created;
-  }
-
-  async getListings(userId: string): Promise<Listing[]> {
-    return this.local.getListings(userId);
-  }
-
-  async getListingById(id: string): Promise<Listing | undefined> {
-    return this.local.getListingById(id);
-  }
-
-  async getListingsByBook(
-    userId: string,
-    bookId: string
-  ): Promise<Listing[]> {
-    return this.local.getListingsByBook(userId, bookId);
-  }
-
-  async updateListingStatus(
-    id: string,
-    status: string,
-    errorMessage?: string
-  ): Promise<Listing | undefined> {
-    const updated = await this.local.updateListingStatus(
-      id,
-      status,
-      errorMessage
-    );
-    if (updated) {
-      await this.queueSync("updateStatus", "listing", {
-        id,
-        status,
-        errorMessage,
-      });
-    }
-    return updated;
-  }
-
-  // Inventory Items
-  async createInventoryItem(item: InsertInventoryItem): Promise<InventoryItem> {
-    const created = await this.local.createInventoryItem(item);
-    await this.queueSync("create", "inventoryItem", item);
-    return created;
-  }
-
-  async getInventoryItems(userId: string): Promise<InventoryItem[]> {
-    return this.local.getInventoryItems(userId);
-  }
-
-  async getInventoryItemById(id: string): Promise<InventoryItem | undefined> {
-    return this.local.getInventoryItemById(id);
-  }
-
-  async getInventoryItemsByBook(
-    userId: string,
-    bookId: string
-  ): Promise<InventoryItem[]> {
-    return this.local.getInventoryItemsByBook(userId, bookId);
-  }
-
-  async updateInventoryItem(
-    id: string,
-    updates: Partial<Omit<InventoryItem, "id" | "userId" | "createdAt">>
-  ): Promise<InventoryItem | undefined> {
-    const updated = await this.local.updateInventoryItem(id, updates);
-    if (updated) {
-      await this.queueSync("update", "inventoryItem", { id, updates });
-    }
-    return updated;
-  }
-
-  async deleteInventoryItem(id: string): Promise<boolean> {
-    const deleted = await this.local.deleteInventoryItem(id);
-    if (deleted) {
-      await this.queueSync("delete", "inventoryItem", { id });
-    }
-    return deleted;
-  }
-
-  async updateListingPrice(id: string, newPrice: string): Promise<Listing | undefined> {
-    const updated = await this.local.updateListingPrice(id, newPrice);
-    if (updated) {
-      await this.queueSync("update", "listing", { id, price: newPrice });
-    }
-    return updated;
-  }
-
-  async createRepricingRule(rule: InsertRepricingRule): Promise<RepricingRule> {
-    const created = await this.local.createRepricingRule(rule);
-    await this.queueSync("create", "repricingRule", rule);
-    return created;
-  }
-
-  async getRepricingRules(userId: string): Promise<RepricingRule[]> {
-    return this.local.getRepricingRules(userId);
-  }
-
-  async getRepricingRuleById(id: string): Promise<RepricingRule | undefined> {
-    return this.local.getRepricingRuleById(id);
-  }
-
-  async getActiveRulesForListing(userId: string, listingId: string, platform: string): Promise<RepricingRule[]> {
-    return this.local.getActiveRulesForListing(userId, listingId, platform);
-  }
-
-  async updateRepricingRule(id: string, updates: Partial<Omit<RepricingRule, 'id' | 'userId' | 'createdAt'>>): Promise<RepricingRule | undefined> {
-    const updated = await this.local.updateRepricingRule(id, updates);
-    if (updated) {
-      await this.queueSync("update", "repricingRule", { id, updates });
-    }
-    return updated;
-  }
-
-  async deleteRepricingRule(id: string): Promise<boolean> {
-    const deleted = await this.local.deleteRepricingRule(id);
-    if (deleted) {
-      await this.queueSync("delete", "repricingRule", { id });
-    }
-    return deleted;
-  }
-
-  async createRepricingHistory(history: InsertRepricingHistory): Promise<RepricingHistory> {
-    const created = await this.local.createRepricingHistory(history);
-    await this.queueSync("create", "repricingHistory", history);
-    return created;
-  }
-
-  async getRepricingHistory(userId: string, listingId?: string): Promise<RepricingHistory[]> {
-    return this.local.getRepricingHistory(userId, listingId);
-  }
-
   // Sync control methods
   setOnlineStatus(isOnline: boolean) {
     this.isOnline = isOnline;
@@ -614,6 +443,23 @@ export class HybridStorage implements IStorage {
     return {
       syncedCount: pendingBefore - pendingAfter,
     };
+  }
+
+  // Auth token methods - delegate to local storage (no sync needed for ephemeral tokens)
+  async saveAuthToken(token: string, userId: string, type: 'user' | 'affiliate', expiresAt: Date): Promise<void> {
+    return this.local.saveAuthToken(token, userId, type, expiresAt);
+  }
+
+  async getAuthToken(token: string): Promise<{ userId: string; type: string; expiresAt: Date } | null> {
+    return this.local.getAuthToken(token);
+  }
+
+  async deleteAuthToken(token: string): Promise<void> {
+    return this.local.deleteAuthToken(token);
+  }
+
+  async cleanupExpiredTokens(): Promise<number> {
+    return this.local.cleanupExpiredTokens();
   }
 }
 
