@@ -126,54 +126,6 @@ export class SQLiteStorage implements IStorage {
       CREATE INDEX IF NOT EXISTS idx_auth_tokens_expires ON auth_tokens(expiresAt)
     `);
 
-    // Create or update default user
-    const defaultUser = this.db.prepare("SELECT * FROM users WHERE id = ?").get("default-user");
-    const now = new Date();
-    const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
-
-    if (!defaultUser) {
-      this.db.prepare(`
-        INSERT INTO users (
-          id, username, email, password, subscriptionTier, subscriptionStatus,
-          subscriptionExpiresAt, trialStartedAt, trialEndsAt, stripeCustomerId, stripeSubscriptionId, createdAt, updatedAt
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-      `).run(
-        "default-user",
-        "default",
-        "default@isbnscout.com",
-        "default-password-change-in-production",
-        "trial",
-        "trialing",
-        null,
-        now.toISOString(),
-        trialEnds.toISOString(),
-        null,
-        null,
-        now.toISOString(),
-        now.toISOString()
-      );
-      console.log("[SQLite] Created default user with 14-day trial");
-    } else if (!(defaultUser as any).trialEndsAt) {
-      // Migrate existing users without trial dates
-      this.db.prepare(`
-        UPDATE users SET
-          subscriptionTier = ?,
-          subscriptionStatus = ?,
-          trialStartedAt = ?,
-          trialEndsAt = ?,
-          updatedAt = ?
-        WHERE id = ?
-      `).run(
-        "trial",
-        "trialing",
-        now.toISOString(),
-        trialEnds.toISOString(),
-        now.toISOString(),
-        "default-user"
-      );
-      console.log("[SQLite] Migrated default user to 14-day trial");
-    }
-
     console.log("[SQLite] Database initialized successfully");
   }
 

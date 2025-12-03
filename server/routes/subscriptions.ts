@@ -55,19 +55,9 @@ router.post("/checkout", requireAuth, async (req, res) => {
 });
 
 // POST /api/subscription/verify
-router.post("/verify", async (req, res) => {
+router.post("/verify", requireAuth, async (req, res) => {
   try {
-    let userId = req.session.userId;
-
-    // If no session, try to find the default user
-    if (!userId) {
-      const defaultUser = await storage.getUserByUsername("default");
-      if (defaultUser) {
-        userId = defaultUser.id;
-        req.session.userId = userId;
-      }
-    }
-
+    const userId = getUserId(req);
     const { sessionId } = req.body;
 
     console.log('[Stripe Verify] Session ID:', sessionId);
