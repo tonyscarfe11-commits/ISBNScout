@@ -447,6 +447,33 @@ export class HybridStorage implements IStorage {
 
   // Auth token methods - delegate to local storage (no sync needed for ephemeral tokens)
   async saveAuthToken(token: string, userId: string, type: 'user' | 'affiliate', expiresAt: Date): Promise<void> {
+    // Ensure user exists in local storage to avoid foreign key constraint errors
+    if (type === 'user') {
+      const localUser = await this.local.getUser(userId);
+      if (!localUser && this.remote) {
+        // User exists in remote but not local - try to sync them down
+        try {
+          const remoteUser = await this.remote.getUserById(userId);
+          if (remoteUser) {
+            // Check if user with this email already exists locally (duplicate scenario)
+            const existingByEmail = await this.local.getUserByEmail(remoteUser.email);
+            if (!existingByEmail) {
+              // Safe to create - no conflicts
+              await this.local.createUser(remoteUser as any);
+              console.log(`[HybridStorage] Synced user ${userId} to local storage for auth token`);
+            } else if (existingByEmail.id !== userId) {
+              // User exists locally with different ID - this is a data inconsistency
+              // This can happen if databases got out of sync
+              console.warn(`[HybridStorage] User data inconsistency: ${userId} in remote has same email as ${existingByEmail.id} in local`);
+              throw new Error(`User data inconsistency - cannot save auth token`);
+            }
+          }
+        } catch (error) {
+          console.warn(`[HybridStorage] Failed to sync user ${userId} to local storage - auth token save may fail:`, error);
+          throw error; // Re-throw so login handler can catch and continue
+        }
+      }
+    }
     return this.local.saveAuthToken(token, userId, type, expiresAt);
   }
 

@@ -62,7 +62,14 @@ router.post("/login", loginLimiter, async (req, res) => {
     req.session.userId = user.id;
 
     // Generate token for localStorage fallback (for embedded contexts)
-    const authToken = await generateAuthToken(user.id);
+    // Non-blocking - don't fail login if token generation fails
+    let authToken: string | null = null;
+    try {
+      authToken = await generateAuthToken(user.id);
+    } catch (error) {
+      console.error(`[Auth] Failed to generate auth token for user ${user.id}:`, error);
+      // Continue with login anyway - session is the primary auth method
+    }
 
     // Explicitly save session
     await new Promise<void>((resolve, reject) => {
