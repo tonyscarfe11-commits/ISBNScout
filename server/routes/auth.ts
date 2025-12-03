@@ -128,4 +128,46 @@ router.get("/me", async (req, res) => {
   }
 });
 
+// POST /api/auth/verify-email
+router.post("/verify-email", async (req, res) => {
+  try {
+    const { token } = req.body;
+
+    if (!token) {
+      return res.status(400).json({ message: "Verification token is required" });
+    }
+
+    const success = await authService.verifyEmail(token);
+
+    if (!success) {
+      return res.status(400).json({ message: "Invalid or expired verification token" });
+    }
+
+    res.json({ message: "Email verified successfully" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST /api/auth/resend-verification
+router.post("/resend-verification", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    const success = await authService.resendVerificationEmail(email);
+
+    if (!success) {
+      return res.status(400).json({ message: "Email not found or already verified" });
+    }
+
+    res.json({ message: "Verification email sent" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
 export default router;

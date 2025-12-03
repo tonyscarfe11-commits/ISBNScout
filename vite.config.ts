@@ -30,6 +30,21 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // React core
+          'vendor-react': ['react', 'react-dom'],
+          // UI libraries
+          'vendor-ui': ['wouter', 'lucide-react'],
+          // Heavy libraries
+          'vendor-scanner': ['html5-qrcode'],
+          // Utilities
+          'vendor-utils': ['date-fns'],
+        },
+      },
+    },
+    chunkSizeWarningLimit: 600,
   },
   server: {
     fs: {

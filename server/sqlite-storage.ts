@@ -27,6 +27,9 @@ export class SQLiteStorage implements IStorage {
         username TEXT UNIQUE NOT NULL,
         email TEXT UNIQUE NOT NULL,
         password TEXT NOT NULL,
+        email_verified TEXT NOT NULL DEFAULT 'false',
+        email_verification_token TEXT,
+        email_verification_expires TEXT,
         subscriptionTier TEXT NOT NULL DEFAULT 'trial',
         subscriptionStatus TEXT NOT NULL DEFAULT 'trialing',
         subscriptionExpiresAt TEXT,
@@ -40,9 +43,19 @@ export class SQLiteStorage implements IStorage {
       )
     `);
 
-    // Migration: Add trial fields to existing users table if they don't exist
+    // Migration: Add email verification and trial fields to existing users table if they don't exist
     const tableInfo = this.db.pragma("table_info(users)");
     const columns = (tableInfo as any[]).map((col: any) => col.name);
+
+    if (!columns.includes('email_verified')) {
+      this.db.exec("ALTER TABLE users ADD COLUMN email_verified TEXT NOT NULL DEFAULT 'false'");
+    }
+    if (!columns.includes('email_verification_token')) {
+      this.db.exec("ALTER TABLE users ADD COLUMN email_verification_token TEXT");
+    }
+    if (!columns.includes('email_verification_expires')) {
+      this.db.exec("ALTER TABLE users ADD COLUMN email_verification_expires TEXT");
+    }
 
     if (!columns.includes("trialStartedAt")) {
       this.db.exec("ALTER TABLE users ADD COLUMN trialStartedAt TEXT");
@@ -155,6 +168,12 @@ export class SQLiteStorage implements IStorage {
   async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
     const stmt = this.db.prepare("SELECT * FROM users WHERE stripe_customer_id = ?");
     const row = stmt.get(stripeCustomerId) as any;
+    return row ? this.deserializeUser(row) : undefined;
+  }
+
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const stmt = this.db.prepare("SELECT * FROM users WHERE email_verification_token = ?");
+    const row = stmt.get(token) as any;
     return row ? this.deserializeUser(row) : undefined;
   }
 

@@ -63,6 +63,15 @@ export class PostgresStorage implements IStorage {
     return result[0];
   }
 
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    const result = await this.db
+      .select()
+      .from(users)
+      .where(eq(users.emailVerificationToken, token))
+      .limit(1);
+    return result[0];
+  }
+
   async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
     const result = await this.db
       .select()

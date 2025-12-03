@@ -61,6 +61,12 @@ export interface PaymentReceiptData {
   paidAt: Date;
 }
 
+export interface EmailVerificationData {
+  username: string;
+  email: string;
+  verificationToken: string;
+}
+
 export class EmailService {
   private resend: Resend | null = null;
   private config: EmailConfig;
@@ -238,6 +244,34 @@ export class EmailService {
       return true;
     } catch (error) {
       console.error('[Email] Failed to send payment receipt:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Send email verification
+   */
+  async sendEmailVerification(data: EmailVerificationData): Promise<boolean> {
+    if (!this.enabled || !this.resend) {
+      console.log('[Email] Would send email verification to:', data.email);
+      return false;
+    }
+
+    try {
+      const verifyUrl = `${process.env.APP_URL}/verify-email?token=${data.verificationToken}`;
+
+      await this.resend.emails.send({
+        from: this.config.from,
+        replyTo: this.config.replyTo,
+        to: data.email,
+        subject: 'Verify your email address - ISBN Scout',
+        html: this.getEmailVerificationTemplate(data.username, verifyUrl),
+      });
+
+      console.log('[Email] Email verification sent to:', data.email);
+      return true;
+    } catch (error) {
+      console.error('[Email] Failed to send email verification:', error);
       return false;
     }
   }
@@ -616,6 +650,69 @@ export class EmailService {
       <p>ISBN Scout - Smart Book Scanning for Resellers</p>
       <p>${process.env.APP_URL || 'https://isbnscout.com'}</p>
       <p>This is an automated receipt. Please keep it for your records.</p>
+    </div>
+  </div>
+</body>
+</html>
+    `.trim();
+  }
+
+  private getEmailVerificationTemplate(username: string, verifyUrl: string): string {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 0; background-color: #f4f4f4; }
+    .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+    .header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 20px; text-align: center; }
+    .header h1 { color: #ffffff; margin: 0; font-size: 28px; }
+    .content { padding: 40px 30px; }
+    .button { display: inline-block; padding: 16px 40px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; margin: 20px 0; font-size: 16px; }
+    .alert-box { background-color: #fef3c7; padding: 20px; border-radius: 8px; border-left: 4px solid #f59e0b; margin: 20px 0; }
+    .footer { background-color: #f8f9fa; padding: 20px; text-align: center; font-size: 12px; color: #666; }
+    .code-box { background: #f3f4f6; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 14px; margin: 15px 0; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h1>Verify Your Email Address</h1>
+    </div>
+    <div class="content">
+      <h2>Hi ${username},</h2>
+      <p>Thanks for signing up for ISBN Scout! To complete your registration and start scanning books, please verify your email address.</p>
+
+      <p style="text-align: center; margin: 30px 0;">
+        <a href="${verifyUrl}" class="button">Verify Email Address</a>
+      </p>
+
+      <div class="alert-box">
+        <p><strong>⏰ This link expires in 24 hours</strong></p>
+        <p style="margin: 0;">For security reasons, this verification link will expire after 24 hours. If it expires, you can request a new one from the login page.</p>
+      </div>
+
+      <p><strong>Why verify your email?</strong></p>
+      <ul>
+        <li>Protect your account from unauthorized access</li>
+        <li>Receive important notifications about your trial and subscription</li>
+        <li>Get support and updates about new features</li>
+        <li>Reset your password if needed</li>
+      </ul>
+
+      <p><strong>Button not working?</strong> Copy and paste this link into your browser:</p>
+      <div class="code-box">${verifyUrl}</div>
+
+      <p><strong>Didn't sign up for ISBN Scout?</strong> You can safely ignore this email.</p>
+
+      <p>Best regards,<br>
+      The ISBN Scout Team</p>
+    </div>
+    <div class="footer">
+      <p>ISBN Scout - Smart Book Scanning for Resellers</p>
+      <p>${process.env.APP_URL || 'https://isbnscout.com'}</p>
     </div>
   </div>
 </body>

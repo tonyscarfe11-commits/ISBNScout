@@ -289,6 +289,17 @@ export class HybridStorage implements IStorage {
     return this.local.getUserByStripeCustomerId(stripeCustomerId);
   }
 
+  async getUserByVerificationToken(token: string): Promise<User | undefined> {
+    if (this.isOnline && this.remote) {
+      try {
+        return await this.remote.getUserByVerificationToken(token);
+      } catch (error) {
+        console.warn("[HybridStorage] Remote getUserByVerificationToken failed, using local");
+      }
+    }
+    return this.local.getUserByVerificationToken(token);
+  }
+
   async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
     if (this.isOnline && this.remote) {
       try {

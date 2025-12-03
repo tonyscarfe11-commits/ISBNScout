@@ -34,15 +34,24 @@ export class AuthService {
     // Hash password
     const hashedPassword = await this.hashPassword(password);
 
+    // Generate email verification token
+    const crypto = await import('crypto');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const verificationExpires = new Date();
+    verificationExpires.setHours(verificationExpires.getHours() + 24); // 24 hours
+
     // Set up 14-day trial period
     const now = new Date();
     const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
 
-    // Create user with trial dates
+    // Create user with trial dates and verification token
     const user = await storage.createUser({
       username,
       email,
       password: hashedPassword,
+      emailVerified: 'false',
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: verificationExpires,
       subscriptionTier: 'trial',
       subscriptionStatus: 'active',
       trialStartedAt: now,
@@ -50,6 +59,15 @@ export class AuthService {
     } as any);
 
     console.log(`[Auth] Created user ${username} with trial ending ${trialEnds.toISOString()}`);
+
+    // Send email verification asynchronously (don't wait for it)
+    emailService.sendEmailVerification({
+      username,
+      email,
+      verificationToken,
+    }).catch(error => {
+      console.error('[Auth] Failed to send verification email:', error);
+    });
 
     // Send welcome email asynchronously (don't wait for it)
     emailService.sendWelcomeEmail({
@@ -125,6 +143,58 @@ export class AuthService {
 
     const { password: _, ...userWithoutPassword } = user;
     return userWithoutPassword;
+  }
+
+  async verifyEmail(token: string): Promise<boolean> {
+    const user = await storage.getUserByVerificationToken(token);
+
+    if (!user) {
+      return false;
+    }
+
+    // Check if token is expired (24 hours)
+    if (user.emailVerificationExpires && new Date() > new Date(user.emailVerificationExpires)) {
+      return false;
+    }
+
+    // Mark email as verified and clear token
+    await storage.updateUser(user.id, {
+      emailVerified: 'true',
+      emailVerificationToken: null,
+      emailVerificationExpires: null,
+    });
+
+    return true;
+  }
+
+  async resendVerificationEmail(email: string): Promise<boolean> {
+    const user = await storage.getUserByEmail(email);
+
+    if (!user || user.emailVerified === 'true') {
+      return false;
+    }
+
+    // Generate new verification token
+    const crypto = await import('crypto');
+    const verificationToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 24); // 24 hours
+
+    // Update user with new token
+    await storage.updateUser(user.id, {
+      emailVerificationToken: verificationToken,
+      emailVerificationExpires: expiresAt,
+    });
+
+    // Send verification email
+    const { emailService } = await import('./email-service');
+    await emailService.sendEmailVerification({
+      username: user.username,
+      email: user.email,
+      verificationToken,
+    });
+
+    return true;
   }
 }
 
