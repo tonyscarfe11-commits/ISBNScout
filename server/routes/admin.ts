@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { requireAuth } from "../middleware/auth";
+import { requireAuth, requireAdmin } from "../middleware/auth";
 
 const router = Router();
 
 // Admin: Get all affiliates
-router.get("/api/admin/affiliates", requireAuth, async (req, res) => {
+router.get("/api/admin/affiliates", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { AffiliateService } = await import("../affiliate-service");
     const affiliates = await AffiliateService.getAllAffiliates();
@@ -16,7 +16,7 @@ router.get("/api/admin/affiliates", requireAuth, async (req, res) => {
 });
 
 // Admin: Approve affiliate
-router.post("/api/admin/affiliates/:id/approve", requireAuth, async (req, res) => {
+router.post("/api/admin/affiliates/:id/approve", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { AffiliateService } = await import("../affiliate-service");
     const { id } = req.params;
@@ -34,7 +34,7 @@ router.post("/api/admin/affiliates/:id/approve", requireAuth, async (req, res) =
 });
 
 // Admin: Reject affiliate
-router.post("/api/admin/affiliates/:id/reject", requireAuth, async (req, res) => {
+router.post("/api/admin/affiliates/:id/reject", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { AffiliateService } = await import("../affiliate-service");
     const { id } = req.params;
@@ -52,7 +52,7 @@ router.post("/api/admin/affiliates/:id/reject", requireAuth, async (req, res) =>
 });
 
 // Admin: Get pending commissions
-router.get("/api/admin/commissions/pending", requireAuth, async (req, res) => {
+router.get("/api/admin/commissions/pending", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { AffiliateService } = await import("../affiliate-service");
     const commissions = await AffiliateService.getPendingCommissions();
@@ -64,7 +64,7 @@ router.get("/api/admin/commissions/pending", requireAuth, async (req, res) => {
 });
 
 // Admin: Mark commission as paid
-router.post("/api/admin/commissions/:id/pay", requireAuth, async (req, res) => {
+router.post("/api/admin/commissions/:id/pay", requireAuth, requireAdmin, async (req, res) => {
   try {
     const { AffiliateService } = await import("../affiliate-service");
     const { id } = req.params;

@@ -101,6 +101,65 @@ export function getUserIdOrNull(req: Request): string | null {
 }
 
 /**
+ * Middleware to require admin access
+ * Checks if user email is in ADMIN_EMAILS environment variable
+ */
+export async function requireAdmin(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    const userId = req.session.userId;
+
+    if (!userId) {
+      return res.status(401).json({
+        message: "Authentication required",
+        code: "AUTH_REQUIRED"
+      });
+    }
+
+    // Get admin emails from environment
+    const adminEmails = process.env.ADMIN_EMAILS?.split(',').map(e => e.trim().toLowerCase()) || [];
+
+    if (adminEmails.length === 0) {
+      console.error('[SECURITY] ADMIN_EMAILS not configured - blocking all admin access');
+      return res.status(403).json({
+        message: "Admin access not configured",
+        code: "ADMIN_NOT_CONFIGURED"
+      });
+    }
+
+    // Import storage to get user
+    const { storage } = await import('../storage');
+    const user = await storage.getUser(userId);
+
+    if (!user) {
+      return res.status(404).json({
+        message: "User not found",
+        code: "USER_NOT_FOUND"
+      });
+    }
+
+    // Check if user email is in admin list
+    if (!adminEmails.includes(user.email.toLowerCase())) {
+      console.warn(`[SECURITY] Unauthorized admin access attempt by user ${user.id} (${user.email})`);
+      return res.status(403).json({
+        message: "Admin access required",
+        code: "ADMIN_ACCESS_REQUIRED"
+      });
+    }
+
+    // Log admin access
+    console.log(`[ADMIN] ${user.email} accessed admin endpoint: ${req.method} ${req.path}`);
+
+    next();
+  } catch (error) {
+    console.error('[SECURITY] Admin middleware error:', error);
+    return res.status(500).json({
+      message: "Failed to verify admin access",
+      code: "ADMIN_CHECK_FAILED"
+    });
+  }
+}
+
+/**
  * Generate a cryptographically secure auth token for affiliates
  */
 export async function generateAffiliateToken(affiliateId: string): Promise<string> {
