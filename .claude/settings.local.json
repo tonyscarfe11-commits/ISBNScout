@@ -70,7 +70,12 @@
       "Bash(npm test)",
       "Bash(git restore:*)",
       "Bash(npm outdated:*)",
-      "Bash(then echo \"=== Checking critical env vars ===\")"
+      "Bash(then echo \"=== Checking critical env vars ===\")",
+      "Bash(kill:*)",
+      "Bash(git reset:*)",
+      "Bash(node --version:*)",
+      "Bash(ls:*)",
+      "Bash(openssl rand:*)"
     ],
     "deny": [],
     "ask": []

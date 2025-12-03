@@ -98,8 +98,8 @@ export function requireCsrfToken(req: Request, res: Response, next: NextFunction
     return next();
   }
 
-  // Skip CSRF check for auth endpoints (login/signup have rate limiting)
-  if (req.path.startsWith('/api/auth/login') || req.path.startsWith('/api/auth/signup')) {
+  // Skip CSRF check for ALL auth endpoints (login/signup/logout have rate limiting)
+  if (req.path.startsWith('/api/auth/')) {
     return next();
   }
 
