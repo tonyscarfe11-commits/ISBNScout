@@ -1,4 +1,5 @@
 import { Button } from "./ui/button";
+import { Badge } from "./ui/badge";
 import { useLocation } from "wouter";
 import { LogOut, ArrowLeft, HelpCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -70,7 +71,7 @@ export function AppHeader() {
   return (
     <header className="sticky top-0 z-50 bg-slate-900 border-b border-slate-800">
       <div className="max-w-7xl mx-auto px-4 h-14 flex items-center justify-between">
-        <Button 
+        <Button
           variant="ghost"
           onClick={() => setLocation(isAppRoute ? '/app/dashboard' : '/')}
           className="flex items-center gap-2 text-white hover:text-emerald-400 hover:bg-slate-800 px-2"
@@ -79,6 +80,7 @@ export function AppHeader() {
           {!isAppRoute && <ArrowLeft className="h-4 w-4" />}
           <img src={logoImage} alt="ISBNScout" className="h-7 w-7" />
           <span className="text-base font-bold">ISBNScout</span>
+          <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
         </Button>
         
         {!isLoading && (

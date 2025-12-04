@@ -1,4 +1,5 @@
 import { QueryClient, QueryFunction } from "@tanstack/react-query";
+import { getCsrfToken } from "./csrf";
 
 const AUTH_TOKEN_KEY = 'isbnscout_auth_token';
 
@@ -14,12 +15,26 @@ export function clearAuthToken(): void {
   localStorage.removeItem(AUTH_TOKEN_KEY);
 }
 
-function getAuthHeaders(): HeadersInit {
+async function getAuthHeaders(): Promise<HeadersInit> {
   const token = getAuthToken();
   const headers: HeadersInit = {};
   if (token) {
     headers['Authorization'] = `Bearer ${token}`;
   }
+  return headers;
+}
+
+async function getHeadersWithCsrf(method: string): Promise<HeadersInit> {
+  const headers = await getAuthHeaders();
+
+  // Add CSRF token for state-changing operations
+  if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(method.toUpperCase())) {
+    const csrfToken = await getCsrfToken();
+    if (csrfToken) {
+      (headers as Record<string, string>)['X-CSRF-Token'] = csrfToken;
+    }
+  }
+
   return headers;
 }
 
@@ -36,10 +51,10 @@ export async function apiRequest(
   data?: unknown | undefined,
 ): Promise<Response> {
   const headers: HeadersInit = {
-    ...getAuthHeaders(),
+    ...(await getHeadersWithCsrf(method)),
     ...(data ? { "Content-Type": "application/json" } : {}),
   };
-  
+
   const res = await fetch(url, {
     method,
     headers,

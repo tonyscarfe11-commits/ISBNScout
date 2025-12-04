@@ -38,7 +38,7 @@ const faqItems = [
   },
   {
     question: "Is the AI spine recognition real?",
-    answer: "Absolutely. AI spine recognition is ready for launch and currently in final testing. Photograph entire shelves without pulling books out—no other scouting app offers this.",
+    answer: "Absolutely. AI spine recognition is ready for launch and currently in final testing. Photograph entire shelves without pulling books out—scan dozens of books at once with a single photo.",
   },
 ];
 
@@ -102,13 +102,14 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
               <span className="text-lg font-bold text-white">ISBNScout</span>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
             </div>
 
             {/* Desktop Nav */}
             <div className="hidden md:flex items-center gap-6">
-              <button onClick={() => scrollToSection("features")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-features">Features</button>
-              <button onClick={() => scrollToSection("pricing")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-pricing">Pricing</button>
-              <button onClick={() => scrollToSection("faq")} className="text-slate-300 hover:text-white text-sm" data-testid="button-header-faq">FAQ</button>
+              <button onClick={() => scrollToSection("features")} className="text-slate-300 hover:text-white text-base" data-testid="button-header-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="text-slate-300 hover:text-white text-base" data-testid="button-header-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="text-slate-300 hover:text-white text-base" data-testid="button-header-faq">FAQ</button>
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 className="p-2 rounded-lg hover:bg-slate-800 text-slate-300 hover:text-white transition-colors"
@@ -127,7 +128,7 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   onClick={() => scrollToSection("pricing")}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   data-testid="button-header-trial"
                 >
                   Start Free Trial
@@ -148,12 +149,12 @@ export default function LandingPage() {
           {/* Mobile Menu */}
           {mobileMenuOpen && (
             <div className="md:hidden pt-4 pb-2 space-y-3">
-              <button onClick={() => scrollToSection("features")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-features">Features</button>
-              <button onClick={() => scrollToSection("pricing")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-pricing">Pricing</button>
-              <button onClick={() => scrollToSection("faq")} className="block w-full text-left text-slate-300 hover:text-white py-2" data-testid="button-mobile-faq">FAQ</button>
+              <button onClick={() => scrollToSection("features")} className="block w-full text-left text-slate-300 hover:text-white py-2 text-base" data-testid="button-mobile-features">Features</button>
+              <button onClick={() => scrollToSection("pricing")} className="block w-full text-left text-slate-300 hover:text-white py-2 text-base" data-testid="button-mobile-pricing">Pricing</button>
+              <button onClick={() => scrollToSection("faq")} className="block w-full text-left text-slate-300 hover:text-white py-2 text-base" data-testid="button-mobile-faq">FAQ</button>
               <button
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
-                className="flex items-center gap-2 w-full text-left text-slate-300 hover:text-white py-2"
+                className="flex items-center gap-2 w-full text-left text-slate-300 hover:text-white py-2 text-base"
               >
                 {theme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
                 <span>{theme === "dark" ? "Light Mode" : "Dark Mode"}</span>
@@ -169,7 +170,7 @@ export default function LandingPage() {
                 </Button>
                 <Button
                   onClick={() => scrollToSection("pricing")}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   data-testid="button-mobile-trial"
                 >
                   Start Free Trial
@@ -186,12 +187,12 @@ export default function LandingPage() {
           <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-start">
             {/* Left Column */}
             <div className="space-y-6">
-              <Badge className="bg-white dark:bg-slate-800 text-emerald-700 dark:text-emerald-400 border-2 border-emerald-600 w-fit font-semibold">
-                UK's Premier Book Scouting App
+              <Badge className="bg-white dark:bg-slate-800 text-primary dark:text-primary border-2 border-primary w-fit font-semibold">
+                Book Scouting for UK Resellers
               </Badge>
 
               <h1 className="text-4xl md:text-5xl font-bold text-slate-700 dark:text-slate-200 leading-tight">
-                Know if it's profitable<br/><span className="text-emerald-600">before you buy.</span>
+                Know if it's profitable<br/><span className="text-primary">before you buy.</span>
               </h1>
 
               <p className="text-base md:text-lg text-muted-foreground max-w-lg">
@@ -202,7 +203,7 @@ export default function LandingPage() {
                 <Button
                   size="lg"
                   onClick={() => scrollToSection("pricing")}
-                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="bg-primary hover:bg-primary/90 text-primary-foreground"
                   data-testid="button-hero-trial"
                 >
                   Start 14-Day Free Trial
@@ -391,16 +392,13 @@ export default function LandingPage() {
             {/* Spine */}
             <Card className="p-6 hover-elevate border-emerald-600 border-2">
               <div className="space-y-4">
-                <div className="flex items-center gap-2">
-                  <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg w-fit">
-                    <Eye className="h-6 w-6 text-emerald-600" />
-                  </div>
-                  <Badge className="bg-emerald-600 text-white text-xs">EXCLUSIVE</Badge>
+                <div className="p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-lg w-fit">
+                  <Eye className="h-6 w-6 text-emerald-600" />
                 </div>
                 <div>
                   <h3 className="text-lg font-bold text-slate-700 dark:text-slate-200 mb-2">AI Spine Recognition</h3>
                   <p className="text-sm text-muted-foreground">
-                    Photograph entire shelves. ISBNScout reads the spines for you. No other scouting app offers this.
+                    Photograph entire shelves. ISBNScout reads the spines for you. Scan dozens of books at once without removing them from the shelf.
                   </p>
                 </div>
               </div>
@@ -481,7 +479,7 @@ export default function LandingPage() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">Pro</h3>
-                  <Badge className="bg-emerald-600 text-white">POPULAR</Badge>
+                  <Badge className="bg-primary text-primary-foreground">RECOMMENDED</Badge>
                 </div>
                 <p className="text-sm text-muted-foreground">For weekly sourcing in charity shops and car-boots.</p>
                 <div>
@@ -499,10 +497,10 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <Button 
-                  size="lg" 
+                <Button
+                  size="lg"
                   onClick={() => setLocation("/auth")}
-                  className="w-full bg-emerald-600 hover:bg-emerald-700 text-white"
+                  className="w-full bg-primary hover:bg-primary/90 text-primary-foreground"
                   data-testid="button-pricing-pro"
                 >
                   Start Free Trial
@@ -550,7 +548,6 @@ export default function LandingPage() {
                   <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                 </svg>
                 <span className="font-semibold text-slate-700 dark:text-slate-200">Secure Payments</span>
-                <Badge variant="secondary" className="text-xs">Stripe Verified</Badge>
               </div>
               <p className="text-xs text-muted-foreground">
                 256-bit SSL encryption • PCI compliant
@@ -605,10 +602,10 @@ export default function LandingPage() {
             Scan shelves, see net profit, and make smarter buy decisions—even without signal.
           </p>
           <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Button 
+            <Button
               size="lg"
               onClick={() => scrollToSection("pricing")}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground"
               data-testid="button-cta-trial"
             >
               Start 14-Day Free Trial
@@ -637,6 +634,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
               <span className="text-white font-semibold">ISBNScout</span>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
               <button onClick={() => scrollToSection("features")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-features">Features</button>

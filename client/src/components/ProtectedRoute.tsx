@@ -27,7 +27,7 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
         const data = await response.json();
 
         // Check if email is verified
-        if (data.user.emailVerified !== 'true') {
+        if (!data.user.emailVerified) {
           // Email not verified, redirect to verify page
           setLocation("/verify-email");
           return;

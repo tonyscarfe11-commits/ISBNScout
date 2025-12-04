@@ -94,12 +94,14 @@ export function requireCsrfToken(req: Request, res: Response, next: NextFunction
   }
 
   // Skip CSRF check for webhook endpoints (they use other auth)
-  if (req.path.startsWith('/api/webhooks/')) {
+  // Note: req.path doesn't include the mount path, so we check for /webhooks/ not /api/webhooks/
+  if (req.path.startsWith('/webhooks/')) {
     return next();
   }
 
   // Skip CSRF check for ALL auth endpoints (login/signup/logout have rate limiting)
-  if (req.path.startsWith('/api/auth/')) {
+  // Note: req.path doesn't include the mount path, so we check for /auth/ not /api/auth/
+  if (req.path.startsWith('/auth/')) {
     return next();
   }
 

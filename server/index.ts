@@ -210,8 +210,11 @@ app.use((req, res, next) => {
 });
 
 (async () => {
+  // Provide CSRF tokens in all API responses
+  app.use('/api', provideCsrfToken);
+
   // CSRF token endpoint - must be before registerRoutes
-  app.get('/api/csrf-token', provideCsrfToken, (req, res) => {
+  app.get('/api/csrf-token', (req, res) => {
     res.json({ csrfToken: res.locals.csrfToken });
   });
 
