@@ -45,11 +45,12 @@ export class AuthService {
     const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
 
     // Create user with trial dates and verification token
+    // TEMP: Auto-verify emails for testing (Resend sandbox mode)
     const user = await storage.createUser({
       username,
       email,
       password: hashedPassword,
-      emailVerified: 'false',
+      emailVerified: 'true', // Auto-verified for testing
       emailVerificationToken: verificationToken,
       emailVerificationExpires: verificationExpires,
       subscriptionTier: 'trial',

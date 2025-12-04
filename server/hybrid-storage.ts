@@ -241,10 +241,14 @@ export class HybridStorage implements IStorage {
 
   // User methods
   async getUser(id: string): Promise<User | undefined> {
-    // Try remote first if online, fallback to local
+    // Try remote first if online, fallback to local if not found or error
     if (this.isOnline && this.remote) {
       try {
-        return await this.remote.getUser(id);
+        const remoteUser = await this.remote.getUser(id);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
       } catch (error) {
         console.warn("[HybridStorage] Remote getUser failed, using local");
       }
@@ -259,7 +263,11 @@ export class HybridStorage implements IStorage {
   async getUserByUsername(username: string): Promise<User | undefined> {
     if (this.isOnline && this.remote) {
       try {
-        return await this.remote.getUserByUsername(username);
+        const remoteUser = await this.remote.getUserByUsername(username);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
       } catch (error) {
         console.warn("[HybridStorage] Remote getUserByUsername failed, using local");
       }
@@ -270,7 +278,11 @@ export class HybridStorage implements IStorage {
   async getUserByEmail(email: string): Promise<User | undefined> {
     if (this.isOnline && this.remote) {
       try {
-        return await this.remote.getUserByEmail(email);
+        const remoteUser = await this.remote.getUserByEmail(email);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
       } catch (error) {
         console.warn("[HybridStorage] Remote getUserByEmail failed, using local");
       }
@@ -281,7 +293,11 @@ export class HybridStorage implements IStorage {
   async getUserByStripeCustomerId(stripeCustomerId: string): Promise<User | undefined> {
     if (this.isOnline && this.remote) {
       try {
-        return await this.remote.getUserByStripeCustomerId(stripeCustomerId);
+        const remoteUser = await this.remote.getUserByStripeCustomerId(stripeCustomerId);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
       } catch (error) {
         console.warn("[HybridStorage] Remote getUserByStripeCustomerId failed, using local");
       }
@@ -292,7 +308,11 @@ export class HybridStorage implements IStorage {
   async getUserByVerificationToken(token: string): Promise<User | undefined> {
     if (this.isOnline && this.remote) {
       try {
-        return await this.remote.getUserByVerificationToken(token);
+        const remoteUser = await this.remote.getUserByVerificationToken(token);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
       } catch (error) {
         console.warn("[HybridStorage] Remote getUserByVerificationToken failed, using local");
       }

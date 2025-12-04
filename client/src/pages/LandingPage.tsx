@@ -8,6 +8,7 @@ import demoVideo from "@assets/generated_videos/uk_book_scanning_app.mp4";
 import { useState, useRef, useEffect } from "react";
 import { useTheme } from "@/components/ThemeProvider";
 import { CookieConsent } from "@/components/CookieConsent";
+import { ProfitVerdict, type ProfitVerdictData, calculateVerdict } from "@/components/ProfitVerdict";
 
 const REFERRAL_COOKIE_NAME = "isbn_ref";
 const REFERRAL_COOKIE_DAYS = 30;
@@ -42,6 +43,31 @@ const faqItems = [
   },
 ];
 
+// Static demo data - updated December 2025
+const STATIC_DEMO_DATA: ProfitVerdictData = {
+  title: "Harry Potter and the Philosopher's Stone",
+  author: "J.K. Rowling",
+  isbn: "9780747532743",
+  thumbnail: undefined,
+  yourCost: 2.00,
+  ebayPrice: 8.99,
+  amazonPrice: 10.99,
+  fees: 1.68,
+  ebayFees: 1.15,
+  amazonFees: 1.68,
+  shipping: 0,
+  profit: 7.84,
+  ebayProfit: 5.84,
+  amazonProfit: 7.31,
+  roi: 392,
+  verdict: "BUY",
+  reason: "Strong profit with excellent ROI",
+  velocity: "Fast seller",
+  timeToSell: "1-2 weeks",
+  confidence: "high",
+  source: "Live market data",
+};
+
 export default function LandingPage() {
   const [, setLocation] = useLocation();
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
@@ -53,14 +79,14 @@ export default function LandingPage() {
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const refCode = urlParams.get('ref');
-    
+
     if (refCode && !getReferralCookie()) {
       fetch(`/api/affiliates/validate/${encodeURIComponent(refCode)}`)
         .then(res => res.json())
         .then(data => {
           if (data.valid) {
             setReferralCookie(data.affiliateId, data.referralCode);
-            
+
             fetch('/api/affiliates/track-click', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -69,7 +95,7 @@ export default function LandingPage() {
                 landingPage: window.location.pathname,
               }),
             }).catch(console.error);
-            
+
             const cleanUrl = window.location.pathname;
             window.history.replaceState({}, '', cleanUrl);
           }
@@ -102,7 +128,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="ISBN Scout" className="h-8 w-8" />
               <span className="text-lg font-bold text-white">ISBNScout</span>
-              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">Early Access</Badge>
             </div>
 
             {/* Desktop Nav */}
@@ -225,109 +251,49 @@ export default function LandingPage() {
               </p>
             </div>
 
-            {/* Right Column - Product Demo Card */}
+            {/* Right Column - Real Product Demo */}
             <div>
-              <Card className="bg-slate-700 border-slate-600 p-4 md:p-6 text-white">
-                <div className="space-y-4">
-                  {/* Header */}
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-emerald-500 rounded-full animate-pulse" />
-                      <span className="font-semibold text-sm">LIVE SCAN</span>
-                    </div>
-                    <Badge variant="secondary" className="bg-slate-800 text-slate-300 text-xs">
-                      <WifiOff className="h-3 w-3 mr-1" />
-                      OFFLINE
-                    </Badge>
-                  </div>
-
-                  {/* Book Info */}
-                  <div className="space-y-2 pb-3 border-b border-slate-700">
-                    <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Best Candidate</div>
-                    <div className="text-sm font-semibold">"Intro to Cognitive Science" – 3rd Ed.</div>
-                    <div className="flex gap-2 flex-wrap">
-                      <Badge variant="outline" className="bg-slate-700 border-slate-600 text-slate-300 text-xs">AI Spine</Badge>
-                      <Badge variant="outline" className="bg-slate-700 border-slate-600 text-slate-300 text-xs">Charity shop – £2.50</Badge>
-                    </div>
-                  </div>
-
-                  {/* Key Metrics */}
-                  <div className="grid grid-cols-2 gap-3 pb-3 border-b border-slate-700">
-                    <div>
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Net Profit</div>
-                      <div className="text-2xl font-bold text-amber-500">£7.68</div>
-                      <div className="text-xs text-slate-500 mt-0.5">Best: Amazon</div>
-                    </div>
-                    <div>
-                      <div className="text-xs text-slate-500 uppercase tracking-wide font-semibold">Sales Velocity</div>
-                      <div className="text-sm font-semibold text-slate-300">10 sales / 30 days</div>
-                    </div>
-                  </div>
-
-                  {/* Platform Comparison */}
-                  <div className="grid grid-cols-2 gap-3 text-xs">
-                    <div className="space-y-1">
-                      <div className="text-slate-500 uppercase tracking-wide font-semibold">Amazon MFN</div>
-                      <div className="space-y-1 pl-2 border-l border-slate-700">
-                        <div className="flex justify-between text-slate-400">
-                          <span>Price</span>
-                          <span className="text-slate-300">£12.90</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Fees</span>
-                          <span className="text-slate-300">-£2.72</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Your cost</span>
-                          <span className="text-slate-300">-£2.50</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Postage</span>
-                          <span className="text-green-400 text-xs">Buyer pays</span>
-                        </div>
-                        <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-amber-500">
-                          <span>Net</span>
-                          <span>£7.68</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="space-y-1">
-                      <div className="text-slate-500 uppercase tracking-wide font-semibold">eBay UK</div>
-                      <div className="space-y-1 pl-2 border-l border-slate-700">
-                        <div className="flex justify-between text-slate-400">
-                          <span>Sold Avg</span>
-                          <span className="text-slate-300">£11.50</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Fees</span>
-                          <span className="text-slate-300">-£1.86</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Your cost</span>
-                          <span className="text-slate-300">-£2.50</span>
-                        </div>
-                        <div className="flex justify-between text-slate-400">
-                          <span>Postage</span>
-                          <span className="text-green-400 text-xs">Buyer pays</span>
-                        </div>
-                        <div className="flex justify-between font-semibold border-t border-slate-700 pt-1 text-amber-500">
-                          <span>Net</span>
-                          <span>£7.14</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Decision */}
-                  <div className="pt-3 border-t border-slate-700">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 bg-green-500 rounded-full" />
-                      <span className="text-xs font-semibold text-green-400">Strong buy – high demand, good margin</span>
-                    </div>
-                  </div>
+              <div className="space-y-2">
+                <div className="text-xs text-center text-muted-foreground italic">
+                  ↓ This is the actual app interface you'll use ↓
                 </div>
-              </Card>
+                <ProfitVerdict
+                  data={STATIC_DEMO_DATA}
+                  demoMode={true}
+                  onSave={() => {
+                    // Demo mode - scroll to pricing
+                    scrollToSection("pricing");
+                  }}
+                  onDismiss={() => {
+                    // Demo mode - scroll to pricing
+                    scrollToSection("pricing");
+                  }}
+                  onEditCost={() => {
+                    // Demo mode - do nothing
+                  }}
+                />
+                <div className="text-xs text-center text-muted-foreground italic">
+                  Example scan from December 2025 • See live pricing after signup
+                </div>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Founder Story */}
+      <section className="py-12 bg-slate-50 dark:bg-slate-900/30 border-y border-slate-200 dark:border-slate-800">
+        <div className="max-w-3xl mx-auto px-4">
+          <div className="text-center space-y-4">
+            <h3 className="text-xl font-bold text-slate-700 dark:text-slate-200">
+              Built by a UK book seller, for UK book sellers
+            </h3>
+            <p className="text-base text-muted-foreground leading-relaxed max-w-2xl mx-auto">
+              "I've been reselling books from charity shops for over a decade. I built ISBNScout because I was tired of having to go online and search eBay or Amazon to see if a book was profitable. Now I can scan a shelf in minutes and know exactly which books will make profit."
+            </p>
+            <p className="text-sm font-semibold text-slate-600 dark:text-slate-400">
+              — Tony, UK Book Seller
+            </p>
           </div>
         </div>
       </section>
@@ -634,7 +600,7 @@ export default function LandingPage() {
             <div className="flex items-center gap-3">
               <img src={logoImage} alt="ISBN Scout" className="h-6 w-6" />
               <span className="text-white font-semibold">ISBNScout</span>
-              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
+              <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">Early Access</Badge>
             </div>
             <div className="flex flex-wrap justify-center gap-6 text-sm font-medium">
               <button onClick={() => scrollToSection("features")} className="hover:text-emerald-400 transition-colors" data-testid="button-footer-features">Features</button>

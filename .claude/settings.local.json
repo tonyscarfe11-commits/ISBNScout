@@ -83,7 +83,17 @@
       "Bash(psql:*)",
       "Bash(node -e:*)",
       "Bash(node /tmp/sync-user.js:*)",
-      "Bash(node sync-user.js:*)"
+      "Bash(node sync-user.js:*)",
+      "WebFetch(domain:isbn-scout.replit.app)",
+      "Bash(node /tmp/check-users.js:*)",
+      "Bash(TOKEN=\"76ddd0ce748b5a54b0ec887af726213089fe950882eb3b0b2c396e1c62bf004b\")",
+      "Bash(CSRF=\"b1d9271ae3a1a698b26ccbc5bbb8d24a68f97c3cecc70d40095feb4a60fdb93b\")",
+      "Bash(node /tmp/delete-test-users.js:*)",
+      "Bash(node delete-test-users.js:*)",
+      "Bash(node delete-test-users.cjs:*)",
+      "Bash(node show-users.cjs:*)",
+      "Bash(node delete-user-everywhere.cjs:*)",
+      "Bash(node find-tony-users.cjs:*)"
     ],
     "deny": [],
     "ask": []

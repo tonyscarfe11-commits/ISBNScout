@@ -33,7 +33,7 @@ import { getScanQueue } from "@/lib/scan-queue";
 import { getOfflineDB } from "@/lib/offline-db";
 import { lookupPricing } from "@/lib/offline-pricing";
 import { InstallPrompt, useTrackScansForInstall } from "@/components/InstallPrompt";
-import { getAuthToken } from "@/lib/queryClient";
+import { apiRequest } from "@/lib/queryClient";
 
 export default function ScanPage() {
   const [, setLocation] = useLocation();
@@ -119,18 +119,7 @@ export default function ScanPage() {
     }
 
     try {
-      const token = getAuthToken();
-      const headers: HeadersInit = { "Content-Type": "application/json" };
-      if (token) {
-        headers['Authorization'] = `Bearer ${token}`;
-      }
-      
-      const response = await fetch("/api/books", {
-        method: "POST",
-        headers,
-        body: JSON.stringify({ isbn, ...bookData }),
-        credentials: 'include',
-      });
+      const response = await apiRequest("POST", "/api/books", { isbn, ...bookData });
 
       if (response.status === 403) {
         const error = await response.json();
@@ -140,10 +129,6 @@ export default function ScanPage() {
           variant: "destructive",
         });
         return false;
-      }
-
-      if (!response.ok) {
-        throw new Error("Failed to save scan");
       }
 
       return true;
@@ -251,23 +236,12 @@ export default function ScanPage() {
         setCurrentVerdict(verdictData);
       }
 
-      const velocityToken = getAuthToken();
-      const velocityHeaders: HeadersInit = { "Content-Type": "application/json" };
-      if (velocityToken) {
-        velocityHeaders['Authorization'] = `Bearer ${velocityToken}`;
-      }
-      
-      fetch("/api/books/calculate-velocity", {
-        method: "POST",
-        headers: velocityHeaders,
-        credentials: 'include',
-        body: JSON.stringify({
-          salesRank: 15000,
-          profit,
-          profitMargin: lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0,
-          yourCost,
-          category: "Books"
-        }),
+      apiRequest("POST", "/api/books/calculate-velocity", {
+        salesRank: 15000,
+        profit,
+        profitMargin: lowestPrice > 0 ? ((profit / lowestPrice) * 100) : 0,
+        yourCost,
+        category: "Books"
       }).then(async (res) => {
         if (res.ok) {
           const velocityData = await res.json();
@@ -333,22 +307,7 @@ export default function ScanPage() {
     });
 
     try {
-      const aiToken = getAuthToken();
-      const aiHeaders: HeadersInit = { "Content-Type": "application/json" };
-      if (aiToken) {
-        aiHeaders['Authorization'] = `Bearer ${aiToken}`;
-      }
-      
-      const response = await fetch("/api/ai/analyze-image", {
-        method: "POST",
-        body: JSON.stringify({ imageUrl: imageData }),
-        headers: aiHeaders,
-        credentials: 'include',
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to analyze image");
-      }
+      const response = await apiRequest("POST", "/api/ai/analyze-image", { imageUrl: imageData });
 
       const result = await response.json();
 

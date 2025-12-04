@@ -80,7 +80,7 @@ export function AppHeader() {
           {!isAppRoute && <ArrowLeft className="h-4 w-4" />}
           <img src={logoImage} alt="ISBNScout" className="h-7 w-7" />
           <span className="text-base font-bold">ISBNScout</span>
-          <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">BETA</Badge>
+          <Badge className="bg-amber-500/20 text-amber-300 border-amber-400/30 text-xs font-semibold">Early Access</Badge>
         </Button>
         
         {!isLoading && (

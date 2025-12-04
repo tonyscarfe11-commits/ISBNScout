@@ -45,6 +45,7 @@ interface ProfitVerdictProps {
   onSave: () => void;
   onDismiss: () => void;
   onEditCost: () => void;
+  demoMode?: boolean;
 }
 
 function getAmazonSearchUrl(isbn: string, title: string): string {
@@ -61,7 +62,7 @@ function getEbaySearchUrl(isbn: string, title: string): string {
   return `https://www.ebay.co.uk/sch/i.html?_nkw=${encodeURIComponent(searchTerm)}&_sacat=267`;
 }
 
-export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVerdictProps) {
+export function ProfitVerdict({ data, onSave, onDismiss, onEditCost, demoMode = false }: ProfitVerdictProps) {
   const verdictConfig = {
     BUY: {
       icon: ThumbsUp,
@@ -165,19 +166,31 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
           </div>
 
           {/* Your Cost */}
-          <button 
-            onClick={onEditCost}
-            className="bg-background/80 rounded-lg p-3 text-left hover:bg-muted/50 transition-colors group"
-          >
-            <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
-              <ShoppingCart className="h-3 w-3" />
-              Your Cost
-              <span className="text-[10px] text-emerald-600 group-hover:underline">(edit)</span>
+          {demoMode ? (
+            <div className="bg-background/80 rounded-lg p-3">
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <ShoppingCart className="h-3 w-3" />
+                Your Cost
+              </div>
+              <div className="text-lg font-bold font-data text-red-600">
+                -£{data.yourCost.toFixed(2)}
+              </div>
             </div>
-            <div className="text-lg font-bold font-data text-red-600">
-              -£{data.yourCost.toFixed(2)}
-            </div>
-          </button>
+          ) : (
+            <button
+              onClick={onEditCost}
+              className="bg-background/80 rounded-lg p-3 text-left hover:bg-muted/50 transition-colors group"
+            >
+              <div className="flex items-center gap-2 text-xs text-muted-foreground mb-1">
+                <ShoppingCart className="h-3 w-3" />
+                Your Cost
+                <span className="text-[10px] text-emerald-600 group-hover:underline">(edit)</span>
+              </div>
+              <div className="text-lg font-bold font-data text-red-600">
+                -£{data.yourCost.toFixed(2)}
+              </div>
+            </button>
+          )}
 
           {/* Shipping */}
           <div className="bg-background/80 rounded-lg p-3">
@@ -261,52 +274,85 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost }: ProfitVer
       <div className="p-4 bg-muted/30 border-t space-y-2">
         {/* Research Links - Amazon & eBay */}
         <div className="grid grid-cols-2 gap-2">
-          <Button
-            asChild
-            className="bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-1"
-            data-testid="button-amazon-affiliate"
-          >
-            <a 
-              href={getAmazonSearchUrl(data.isbn, data.title)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <SiAmazon className="h-4 w-4" />
-              Amazon UK
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </Button>
-          <Button
-            asChild
-            className="bg-[#0064D2] hover:bg-[#0052ab] text-white font-semibold gap-1"
-            data-testid="button-ebay-view"
-          >
-            <a 
-              href={getEbaySearchUrl(data.isbn, data.title)} 
-              target="_blank" 
-              rel="noopener noreferrer"
-            >
-              <SiEbay className="h-4 w-4" />
-              eBay UK
-              <ExternalLink className="h-3 w-3" />
-            </a>
-          </Button>
+          {demoMode ? (
+            <>
+              <div className="relative">
+                <Button
+                  disabled
+                  className="w-full bg-[#FF9900]/50 text-black/50 font-semibold gap-1 cursor-not-allowed"
+                  data-testid="button-amazon-demo"
+                >
+                  <Search className="h-4 w-4" />
+                  Search Amazon
+                </Button>
+                <Badge className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                  Sign up to unlock
+                </Badge>
+              </div>
+              <div className="relative">
+                <Button
+                  disabled
+                  className="w-full bg-[#0064D2]/50 text-white/50 font-semibold gap-1 cursor-not-allowed"
+                  data-testid="button-ebay-demo"
+                >
+                  <Search className="h-4 w-4" />
+                  Search eBay
+                </Button>
+                <Badge className="absolute -top-2 -right-2 bg-emerald-600 text-white text-[10px] px-1.5 py-0.5 whitespace-nowrap">
+                  Sign up to unlock
+                </Badge>
+              </div>
+            </>
+          ) : (
+            <>
+              <Button
+                asChild
+                className="bg-[#FF9900] hover:bg-[#e88b00] text-black font-semibold gap-1"
+                data-testid="button-amazon-affiliate"
+              >
+                <a
+                  href={getAmazonSearchUrl(data.isbn, data.title)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Search className="h-4 w-4" />
+                  Search Amazon
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </Button>
+              <Button
+                asChild
+                className="bg-[#0064D2] hover:bg-[#0052ab] text-white font-semibold gap-1"
+                data-testid="button-ebay-view"
+              >
+                <a
+                  href={getEbaySearchUrl(data.isbn, data.title)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <Search className="h-4 w-4" />
+                  Search eBay
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </Button>
+            </>
+          )}
         </div>
-        
+
         <div className="grid grid-cols-2 gap-2">
-          <Button 
+          <Button
             onClick={onSave}
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-save-scan"
           >
-            Save to Library
+            {demoMode ? "Start Free Trial" : "Save to Library"}
           </Button>
-          <Button 
+          <Button
             onClick={onDismiss}
             variant="ghost"
             data-testid="button-scan-another"
           >
-            Scan Another
+            {demoMode ? "See Pricing" : "Scan Another"}
           </Button>
         </div>
       </div>

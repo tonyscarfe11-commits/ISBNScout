@@ -14,6 +14,79 @@ import { AmazonService } from "../amazon-service";
 
 const router = Router();
 
+// Demo lookup for landing page - no auth required, cached heavily
+router.get("/demo-lookup", async (req, res) => {
+  try {
+    const { isbn } = req.query;
+
+    if (!isbn || typeof isbn !== 'string') {
+      return res.status(400).json({ message: "ISBN is required" });
+    }
+
+    console.log(`[DemoLookup] Looking up ISBN ${isbn} for landing page demo...`);
+
+    // Check cache first (demo uses aggressive caching to avoid API limits)
+    const priceCache = getPriceCache();
+    const cached = priceCache.getCachedPrice(isbn);
+
+    // Use cached data if less than 7 days old (demo can use stale data)
+    if (cached) {
+      const cacheAge = Date.now() - cached.cachedAt.getTime();
+      const cacheAgeDays = cacheAge / (1000 * 60 * 60 * 24);
+
+      if (cacheAgeDays < 7) {
+        console.log(`[DemoLookup] ✅ Cache HIT (${cacheAgeDays.toFixed(1)} days old)`);
+        return res.json({
+          isbn: cached.isbn,
+          title: cached.title,
+          author: cached.author,
+          ebayPrice: cached.ebayPrice,
+          amazonPrice: cached.amazonPrice,
+          cached: true,
+        });
+      }
+    }
+
+    // Fetch fresh data if no cache or cache expired
+    console.log(`[DemoLookup] Cache miss, fetching fresh data...`);
+
+    // Try to get book info and pricing
+    const bookInfo = await googleBooksService.lookupByISBN(isbn);
+    const ebayPrice = await ebayPricingService.getAveragePrice(isbn);
+
+    // Cache the result
+    priceCache.setCachedPrice({
+      isbn,
+      title: bookInfo?.title || "Unknown Book",
+      author: bookInfo?.author,
+      ebayPrice,
+      amazonPrice: null, // Amazon not configured for demo
+      cachedAt: new Date(),
+    });
+
+    return res.json({
+      isbn,
+      title: bookInfo?.title || "Unknown Book",
+      author: bookInfo?.author,
+      ebayPrice,
+      amazonPrice: null,
+      cached: false,
+    });
+  } catch (error: any) {
+    console.error('[DemoLookup] Error:', error);
+    // Return fallback data on error (better UX for landing page)
+    return res.json({
+      isbn: req.query.isbn,
+      title: "Sample Textbook",
+      author: "Various Authors",
+      ebayPrice: 11.50,
+      amazonPrice: 12.90,
+      cached: false,
+      fallback: true,
+    });
+  }
+});
+
 // Lookup book pricing by ISBN (real-time API calls + caching)
 // Requires auth + active subscription (trial or paid)
 router.post("/lookup-pricing", pricingLimiter, requireAuth, requireActiveSubscription, async (req, res) => {

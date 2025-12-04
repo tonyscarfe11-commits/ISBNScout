@@ -162,12 +162,20 @@ export default function AuthPage() {
         trialEndsAt: data.user.trialEndsAt,
       });
 
-      toast({
-        title: "Account created!",
-        description: `Welcome, ${data.user.username}! Please verify your email to continue.`,
-      });
-
-      setLocation("/verify-email");
+      // Check if email is already verified (auto-verified in testing mode)
+      if (data.user.emailVerified === 'true' || data.user.emailVerified === true) {
+        toast({
+          title: "Account created!",
+          description: `Welcome, ${data.user.username}! Your trial has started.`,
+        });
+        setLocation("/app/scan");
+      } else {
+        toast({
+          title: "Account created!",
+          description: `Welcome, ${data.user.username}! Please verify your email to continue.`,
+        });
+        setLocation("/verify-email");
+      }
     } catch (error: any) {
       toast({
         title: "Signup failed",

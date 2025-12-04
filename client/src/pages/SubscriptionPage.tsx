@@ -98,9 +98,19 @@ export default function SubscriptionPage() {
     });
 
     try {
+      // Get CSRF token first
+      const csrfResponse = await fetch("/api/csrf-token", {
+        credentials: "include",
+      });
+      const { csrfToken } = await csrfResponse.json();
+
       const response = await fetch("/api/subscription/checkout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRF-Token": csrfToken,
+        },
+        credentials: "include",
         body: JSON.stringify({ planId: `${planId}_monthly` }),
       });
 
