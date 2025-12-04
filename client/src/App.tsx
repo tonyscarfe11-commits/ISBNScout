@@ -35,6 +35,8 @@ const AmazonRedirectPage = lazy(() => import("@/pages/AmazonRedirectPage"));
 const AffiliatePage = lazy(() => import("@/pages/AffiliatePage"));
 const AffiliateDashboard = lazy(() => import("@/pages/AffiliateDashboard"));
 const VerifyEmailPage = lazy(() => import("@/pages/VerifyEmailPage"));
+const ForgotPasswordPage = lazy(() => import("@/pages/ForgotPasswordPage"));
+const ResetPasswordPage = lazy(() => import("@/pages/ResetPasswordPage"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
 // Loading fallback component
@@ -66,6 +68,8 @@ function Router() {
         {/* Public routes */}
         <Route path="/auth" component={AuthPage} />
         <Route path="/verify-email" component={VerifyEmailPage} />
+        <Route path="/forgot-password" component={ForgotPasswordPage} />
+        <Route path="/reset-password" component={ResetPasswordPage} />
         <Route path="/subscription" component={SubscriptionPage} />
         <Route path="/subscription/success" component={SubscriptionSuccessPage} />
         <Route path="/about" component={AboutPage} />

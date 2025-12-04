@@ -170,4 +170,43 @@ router.post("/resend-verification", async (req, res) => {
   }
 });
 
+// POST /api/auth/forgot-password
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: "Email is required" });
+    }
+
+    await authService.requestPasswordReset(email);
+
+    // Always return success to prevent email enumeration
+    res.json({ message: "If your email is registered, you will receive a password reset link" });
+  } catch (error: any) {
+    res.status(500).json({ message: error.message });
+  }
+});
+
+// POST /api/auth/reset-password
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, password } = req.body;
+
+    if (!token || !password) {
+      return res.status(400).json({ message: "Token and password are required" });
+    }
+
+    const success = await authService.resetPassword(token, password);
+
+    if (!success) {
+      return res.status(400).json({ message: "Invalid or expired reset token" });
+    }
+
+    res.json({ message: "Password reset successfully" });
+  } catch (error: any) {
+    res.status(400).json({ message: error.message });
+  }
+});
+
 export default router;

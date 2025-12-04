@@ -56,6 +56,12 @@ export class SQLiteStorage implements IStorage {
     if (!columns.includes('email_verification_expires')) {
       this.db.exec("ALTER TABLE users ADD COLUMN email_verification_expires TEXT");
     }
+    if (!columns.includes('password_reset_token')) {
+      this.db.exec("ALTER TABLE users ADD COLUMN password_reset_token TEXT");
+    }
+    if (!columns.includes('password_reset_expires')) {
+      this.db.exec("ALTER TABLE users ADD COLUMN password_reset_expires TEXT");
+    }
 
     if (!columns.includes("trialStartedAt")) {
       this.db.exec("ALTER TABLE users ADD COLUMN trialStartedAt TEXT");
@@ -177,6 +183,12 @@ export class SQLiteStorage implements IStorage {
     return row ? this.deserializeUser(row) : undefined;
   }
 
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    const stmt = this.db.prepare("SELECT * FROM users WHERE password_reset_token = ?");
+    const row = stmt.get(token) as any;
+    return row ? this.deserializeUser(row) : undefined;
+  }
+
   async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
     const stmt = this.db.prepare(`
       SELECT * FROM users
@@ -192,26 +204,33 @@ export class SQLiteStorage implements IStorage {
     const id = randomUUID();
     const now = new Date();
     const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000); // 14 days from now
+
     const user: User = {
-      ...insertUser,
       id,
-      subscriptionTier: "trial",
-      subscriptionStatus: "trialing",
-      subscriptionExpiresAt: null,
-      trialStartedAt: now,
-      trialEndsAt: trialEnds,
-      stripeCustomerId: null,
-      stripeSubscriptionId: null,
-      referredByAffiliateId: null,
+      username: insertUser.username,
+      email: insertUser.email,
+      password: insertUser.password,
+      emailVerified: (insertUser as any).emailVerified || 'false',
+      emailVerificationToken: (insertUser as any).emailVerificationToken || null,
+      emailVerificationExpires: (insertUser as any).emailVerificationExpires || null,
+      subscriptionTier: (insertUser as any).subscriptionTier || "trial",
+      subscriptionStatus: (insertUser as any).subscriptionStatus || "trialing",
+      subscriptionExpiresAt: (insertUser as any).subscriptionExpiresAt || null,
+      trialStartedAt: (insertUser as any).trialStartedAt || now,
+      trialEndsAt: (insertUser as any).trialEndsAt || trialEnds,
+      stripeCustomerId: (insertUser as any).stripeCustomerId || null,
+      stripeSubscriptionId: (insertUser as any).stripeSubscriptionId || null,
+      referredByAffiliateId: (insertUser as any).referredByAffiliateId || null,
       createdAt: now,
       updatedAt: now,
     };
 
     const stmt = this.db.prepare(`
       INSERT INTO users (
-        id, username, email, password, subscriptionTier, subscriptionStatus,
-        subscriptionExpiresAt, trialStartedAt, trialEndsAt, stripeCustomerId, stripeSubscriptionId, referredByAffiliateId, createdAt, updatedAt
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        id, username, email, password, email_verified, email_verification_token, email_verification_expires,
+        subscriptionTier, subscriptionStatus, subscriptionExpiresAt, trialStartedAt, trialEndsAt,
+        stripeCustomerId, stripeSubscriptionId, referredByAffiliateId, createdAt, updatedAt
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `);
 
     stmt.run(
@@ -219,6 +238,9 @@ export class SQLiteStorage implements IStorage {
       user.username,
       user.email,
       user.password,
+      user.emailVerified,
+      user.emailVerificationToken,
+      user.emailVerificationExpires?.toISOString() || null,
       user.subscriptionTier,
       user.subscriptionStatus,
       user.subscriptionExpiresAt,
@@ -243,14 +265,22 @@ export class SQLiteStorage implements IStorage {
 
     const stmt = this.db.prepare(`
       UPDATE users SET
-        username = ?, email = ?, subscriptionTier = ?, subscriptionStatus = ?,
-        subscriptionExpiresAt = ?, trialStartedAt = ?, trialEndsAt = ?, stripeCustomerId = ?, stripeSubscriptionId = ?, updatedAt = ?
+        username = ?, email = ?, password = ?, email_verified = ?, email_verification_token = ?, email_verification_expires = ?,
+        password_reset_token = ?, password_reset_expires = ?,
+        subscriptionTier = ?, subscriptionStatus = ?, subscriptionExpiresAt = ?, trialStartedAt = ?,
+        trialEndsAt = ?, stripeCustomerId = ?, stripeSubscriptionId = ?, updatedAt = ?
       WHERE id = ?
     `);
 
     stmt.run(
       updatedUser.username,
       updatedUser.email,
+      updatedUser.password,
+      updatedUser.emailVerified,
+      updatedUser.emailVerificationToken,
+      updatedUser.emailVerificationExpires?.toISOString() || null,
+      updatedUser.passwordResetToken,
+      updatedUser.passwordResetExpires?.toISOString() || null,
       updatedUser.subscriptionTier,
       updatedUser.subscriptionStatus,
       updatedUser.subscriptionExpiresAt?.toISOString() || null,
@@ -398,6 +428,11 @@ export class SQLiteStorage implements IStorage {
       username: row.username,
       email: row.email,
       password: row.password,
+      emailVerified: row.emailVerified || row.email_verified || 'false',
+      emailVerificationToken: row.emailVerificationToken || row.email_verification_token || null,
+      emailVerificationExpires: row.emailVerificationExpires || row.email_verification_expires ? new Date(row.emailVerificationExpires || row.email_verification_expires) : null,
+      passwordResetToken: row.passwordResetToken || row.password_reset_token || null,
+      passwordResetExpires: row.passwordResetExpires || row.password_reset_expires ? new Date(row.passwordResetExpires || row.password_reset_expires) : null,
       subscriptionTier: row.subscriptionTier || row.subscription_tier,
       subscriptionStatus: row.subscriptionStatus || row.subscription_status,
       subscriptionExpiresAt: row.subscriptionExpiresAt || row.subscription_expires_at ? new Date(row.subscriptionExpiresAt || row.subscription_expires_at) : null,

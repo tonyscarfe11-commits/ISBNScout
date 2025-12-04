@@ -11,6 +11,8 @@ export const users = pgTable("users", {
   emailVerified: text("email_verified").notNull().default("false"), // 'true' or 'false'
   emailVerificationToken: text("email_verification_token"), // Token for email verification
   emailVerificationExpires: timestamp("email_verification_expires"), // When verification token expires
+  passwordResetToken: text("password_reset_token"), // Token for password reset
+  passwordResetExpires: timestamp("password_reset_expires"), // When reset token expires
   subscriptionTier: text("subscription_tier").notNull().default("trial"), // 'trial', 'basic', 'pro', 'enterprise'
   subscriptionStatus: text("subscription_status").notNull().default("active"), // 'active', 'cancelled', 'past_due', 'trialing'
   subscriptionExpiresAt: timestamp("subscription_expires_at"),

@@ -320,6 +320,21 @@ export class HybridStorage implements IStorage {
     return this.local.getUserByVerificationToken(token);
   }
 
+  async getUserByPasswordResetToken(token: string): Promise<User | undefined> {
+    if (this.isOnline && this.remote) {
+      try {
+        const remoteUser = await this.remote.getUserByPasswordResetToken(token);
+        if (remoteUser) {
+          return remoteUser;
+        }
+        // Not found in remote, check local (might not be synced yet)
+      } catch (error) {
+        console.warn("[HybridStorage] Remote getUserByPasswordResetToken failed, using local");
+      }
+    }
+    return this.local.getUserByPasswordResetToken(token);
+  }
+
   async getUsersWithTrialExpiringBetween(startDate: Date, endDate: Date): Promise<User[]> {
     if (this.isOnline && this.remote) {
       try {

@@ -379,7 +379,7 @@ export default function ScanPage() {
             data={currentVerdict}
             onSave={() => {
               toast({
-                title: "Saved to Library",
+                title: "Saved to History",
                 description: `${currentVerdict.title} saved successfully`,
               });
               setCurrentVerdict(null);

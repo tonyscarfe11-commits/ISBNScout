@@ -1,10 +1,11 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ThumbsUp, 
-  ThumbsDown, 
-  AlertTriangle, 
+import { CachedImage } from "@/components/CachedImage";
+import {
+  ThumbsUp,
+  ThumbsDown,
+  AlertTriangle,
   TrendingUp,
   Clock,
   PoundSterling,
@@ -125,17 +126,14 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost, demoMode = 
       {/* Book Info */}
       <div className="p-4 border-b border-border/50">
         <div className="flex gap-3">
-          {data.thumbnail ? (
-            <img 
-              src={data.thumbnail} 
+          <div className="w-16 h-20 bg-muted rounded-md flex-shrink-0 overflow-hidden flex items-center justify-center">
+            <CachedImage
+              src={data.thumbnail}
               alt={data.title}
               className="w-16 h-20 object-cover rounded-md shadow-sm"
+              fallbackIcon={true}
             />
-          ) : (
-            <div className="w-16 h-20 bg-muted rounded-md flex items-center justify-center">
-              <BookOpen className="h-6 w-6 text-muted-foreground" />
-            </div>
-          )}
+          </div>
           <div className="flex-1 min-w-0">
             <h3 className="font-semibold text-base leading-tight line-clamp-2">{data.title}</h3>
             <p className="text-sm text-muted-foreground truncate">{data.author}</p>
@@ -345,7 +343,7 @@ export function ProfitVerdict({ data, onSave, onDismiss, onEditCost, demoMode = 
             className="bg-emerald-600 hover:bg-emerald-700 text-white"
             data-testid="button-save-scan"
           >
-            {demoMode ? "Start Free Trial" : "Save to Library"}
+            {demoMode ? "Start Free Trial" : "Save to History"}
           </Button>
           <Button
             onClick={onDismiss}

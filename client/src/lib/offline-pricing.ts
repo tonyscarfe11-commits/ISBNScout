@@ -5,9 +5,12 @@
  * 1. IndexedDB cache (instant, works offline)
  * 2. Server cache (/api/offline/lookup)
  * 3. Live API call (/api/books/lookup-pricing)
+ *
+ * All POST requests include CSRF token for security
  */
 
 import { getOfflineDB, type PriceCacheRecord } from './offline-db';
+import { getCsrfToken } from './csrf';
 
 export interface PricingResult {
   isbn: string;
@@ -107,9 +110,13 @@ export async function lookupPricing(
   if (navigator.onLine) {
     try {
       console.log('[OfflinePricing] Trying server cache...');
+      const csrfToken = await getCsrfToken();
       const response = await fetch('/api/offline/lookup', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
         body: JSON.stringify({
           isbn,
           title: metadata?.title,
@@ -146,9 +153,13 @@ export async function lookupPricing(
     // 3. Try live API call (freshest data)
     try {
       console.log('[OfflinePricing] Trying live API...');
+      const csrfToken = await getCsrfToken();
       const response = await fetch('/api/books/lookup-pricing', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': csrfToken,
+        },
         body: JSON.stringify({ isbn }),
       });
 

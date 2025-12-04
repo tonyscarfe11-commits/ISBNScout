@@ -93,7 +93,15 @@
       "Bash(node delete-test-users.cjs:*)",
       "Bash(node show-users.cjs:*)",
       "Bash(node delete-user-everywhere.cjs:*)",
-      "Bash(node find-tony-users.cjs:*)"
+      "Bash(node find-tony-users.cjs:*)",
+      "Bash(node /tmp/check-db.cjs:*)",
+      "Bash(node check-db.cjs:*)",
+      "Bash(node test-login.cjs:*)",
+      "Bash(node set-test-password.cjs:*)",
+      "Bash(node test-tony-login.cjs:*)",
+      "Bash(node test-storage-direct.cjs:*)",
+      "Bash(node /tmp/test-isbn.js:*)",
+      "Bash(node /tmp/check-book.cjs:*)"
     ],
     "deny": [],
     "ask": []

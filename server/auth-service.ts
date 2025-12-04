@@ -105,7 +105,7 @@ export class AuthService {
       const now = new Date();
       const trialEnds = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000);
 
-      await storage.updateUser(user.id, {
+      const updatedUser = await storage.updateUser(user.id, {
         subscriptionTier: 'trial',
         subscriptionStatus: 'active',
         trialStartedAt: now,
@@ -114,11 +114,12 @@ export class AuthService {
 
       console.log(`[Auth] Set user ${user.id} to trial (was: ${user.subscriptionTier || 'none'}) - 14 days from now`);
 
-      // Update the user object
-      user.subscriptionTier = 'trial';
-      user.subscriptionStatus = 'active';
-      user.trialStartedAt = now;
-      user.trialEndsAt = trialEnds;
+      // Use the updated user object from database instead of manually updating
+      if (updatedUser) {
+        // Remove password from response
+        const { password: _, ...userWithoutPassword } = updatedUser;
+        return userWithoutPassword;
+      }
     }
 
     // Remove password from response
@@ -195,6 +196,69 @@ export class AuthService {
       verificationToken,
     });
 
+    return true;
+  }
+
+  async requestPasswordReset(email: string): Promise<boolean> {
+    const user = await storage.getUserByEmail(email);
+
+    if (!user) {
+      // Don't reveal if email exists or not (security best practice)
+      return true;
+    }
+
+    // Generate password reset token
+    const crypto = await import('crypto');
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date();
+    expiresAt.setHours(expiresAt.getHours() + 1); // 1 hour expiry
+
+    // Update user with reset token
+    await storage.updateUser(user.id, {
+      passwordResetToken: resetToken,
+      passwordResetExpires: expiresAt,
+    });
+
+    // Send password reset email
+    const { emailService } = await import('./email-service');
+    await emailService.sendPasswordResetEmail({
+      username: user.username,
+      email: user.email,
+      resetToken,
+    });
+
+    console.log(`[Auth] Password reset requested for ${email}`);
+    return true;
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<boolean> {
+    const user = await storage.getUserByPasswordResetToken(token);
+
+    if (!user) {
+      return false;
+    }
+
+    // Check if token is expired (1 hour)
+    if (user.passwordResetExpires && new Date() > new Date(user.passwordResetExpires)) {
+      return false;
+    }
+
+    // Validate password strength
+    if (newPassword.length < 8) {
+      throw new Error('Password must be at least 8 characters long');
+    }
+
+    // Hash new password
+    const hashedPassword = await this.hashPassword(newPassword);
+
+    // Update password and clear reset token
+    await storage.updateUser(user.id, {
+      password: hashedPassword,
+      passwordResetToken: null,
+      passwordResetExpires: null,
+    });
+
+    console.log(`[Auth] Password reset successful for user ${user.id}`);
     return true;
   }
 }
